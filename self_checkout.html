@@ -109,8 +109,8 @@
     }
 
     function closeHistory() { document.getElementById('history-modal').style.display = 'none'; }
-    function resetSalesOnly() { if(confirm('売上記録だけリセット？')){ localStorage.removeItem('myPosSalesHistory'); location.reload(); } }
-    function resetAllData() { if(confirm('すべてリセット？')){ localStorage.removeItem('myPosDatabase'); localStorage.removeItem('myPosSalesHistory'); location.reload(); } }
+    function resetSalesOnly() { if(confirm('売上記録だけリセットします')){ localStorage.removeItem('myPosSalesHistory'); location.reload(); } }
+    function resetAllData() { if(confirm('すべてリセットします')){ localStorage.removeItem('myPosDatabase'); localStorage.removeItem('myPosSalesHistory'); location.reload(); } }
     
     function pay() {
       if (cartHistory.length === 0) return;

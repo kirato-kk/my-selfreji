@@ -118,7 +118,7 @@
     
     function closeManager() { document.getElementById('manager-modal').style.display = 'none'; }
     
-    // 編集機能（パスワード確認なしで更新）
+   // 編集機能（パスワード入力なし）
     function editItem(code) {
       const n = prompt("新しい商品名:", itemDatabase[code].name);
       if (n) {
@@ -126,20 +126,21 @@
         if (!isNaN(p)) { 
           itemDatabase[code] = { name: n, price: p }; 
           localStorage.setItem('myPosDatabase', JSON.stringify(itemDatabase)); 
-          renderManagerList(); // パスワード再入力なしでリストを再描画
+          renderManagerList(); 
         }
       }
     }
     
-    // 削除機能（パスワード確認なしで更新）
+    // 削除機能（パスワード入力なし）
     function deleteItem(code) {
       if (confirm(`${itemDatabase[code].name} を削除しますか？`)) {
         delete itemDatabase[code]; 
         localStorage.setItem('myPosDatabase', JSON.stringify(itemDatabase)); 
-        renderManagerList(); // パスワード再入力なしでリストを再描画
+        renderManagerList(); 
       }
     }
 
+ 
 
     
     function closeManager() { document.getElementById('manager-modal').style.display = 'none'; }

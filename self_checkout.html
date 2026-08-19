@@ -95,17 +95,52 @@
     }
 
     // 商品管理画面（パスワード保護）
+     // 商品管理を開く（最初に1回だけパスワード確認）
     function openDatabaseManager() {
-      const input = prompt("管理用パスワードを入力");
-      if (input !== SALES_PASSWORD) { alert("パスワードが違います"); return; }
+      const input = prompt("管理用パスワードを入力:");
+      if (input !== SALES_PASSWORD) { 
+        if (input !== null) alert("パスワードが違います"); 
+        return; 
+      }
+      renderManagerList();
+      document.getElementById('manager-modal').style.display = 'flex';
+    }
+
+    // 管理画面のリストを描画（パスワード確認なし）
+    function renderManagerList() {
       const container = document.getElementById('manager-list');
       container.innerHTML = '';
       for (let code in itemDatabase) {
         const item = itemDatabase[code];
         container.innerHTML += `<div style="margin-bottom:10px;"><strong>${item.name}</strong> (${item.price}円) <button class="small-btn" onclick="editItem('${code}')">✏️</button><button class="small-btn" onclick="deleteItem('${code}')" style="background:#ff7675;">❌</button></div>`;
       }
-      document.getElementById('manager-modal').style.display = 'flex';
     }
+    
+    function closeManager() { document.getElementById('manager-modal').style.display = 'none'; }
+    
+    // 編集機能（パスワード確認なしで更新）
+    function editItem(code) {
+      const n = prompt("新しい商品名:", itemDatabase[code].name);
+      if (n) {
+        const p = Number(prompt("新しい価格:", itemDatabase[code].price));
+        if (!isNaN(p)) { 
+          itemDatabase[code] = { name: n, price: p }; 
+          localStorage.setItem('myPosDatabase', JSON.stringify(itemDatabase)); 
+          renderManagerList(); // パスワード再入力なしでリストを再描画
+        }
+      }
+    }
+    
+    // 削除機能（パスワード確認なしで更新）
+    function deleteItem(code) {
+      if (confirm(`${itemDatabase[code].name} を削除しますか？`)) {
+        delete itemDatabase[code]; 
+        localStorage.setItem('myPosDatabase', JSON.stringify(itemDatabase)); 
+        renderManagerList(); // パスワード再入力なしでリストを再描画
+      }
+    }
+
+
     
     function closeManager() { document.getElementById('manager-modal').style.display = 'none'; }
     function closeReceipt() { document.getElementById('receipt-modal').style.display = 'none'; location.reload(); }

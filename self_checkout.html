@@ -84,7 +84,7 @@
   <h1>🛒 AI CAMERA POS</h1>
   <div class="status" id="status-msg">カメラにかざしてください</div>
 
-  <!-- カメラ映像が表示される枠 -->
+  <!-- カメラ映像 -->
   <div id="interactive" class="viewport"></div>
 
   <h2>購入リスト</h2>
@@ -104,186 +104,115 @@
     let totalPrice = 0;
     let isFirst = true;
     let canScan = true;
-    let cartHistory = []; // スキャン履歴の保存用
+    let cartHistory = []; // 履歴管理用
 
-    // 📦 初期データベース
+    // データベース初期値
     const defaultData = {
       "4901330502880": { name: "ポテトチップス", price: 160 },
       "4902102072618": { name: "コカ・コーラ 500ml", price: 150 },
       "4901085089330": { name: "お〜いお茶 525ml", price: 140 }
     };
 
-    // 保存データの読み込み
+    // 保存データを読み込み
     let itemDatabase = JSON.parse(localStorage.getItem('myPosDatabase')) || defaultData;
 
-    // 🔊 【高音】スキャン成功時（ピピッ）
-    function playScanSound() {
+    // 音声機能
+    function playSound(freq, duration, type = 'sine') {
       const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      const oscillator = audioCtx.createOscillator();
-      const gainNode = audioCtx.createGain();
-
-      oscillator.type = 'sine';
-      oscillator.frequency.setValueAtTime(1200, audioCtx.currentTime);
-      gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
-
-      oscillator.connect(gainNode);
-      gainNode.connect(audioCtx.destination);
-
-      oscillator.start();
-      oscillator.stop(audioCtx.currentTime + 0.08);
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+      gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + duration);
     }
 
-    // 🔊 【低音】戻る・キャンセル時（ブッ）
-    function playErrorSound() {
-      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      const oscillator = audioCtx.createOscillator();
-      const gainNode = audioCtx.createGain();
+    // 各種音の定義
+    function playScanSound() { playSound(1200, 0.08); } // 既存商品
+    function playNewItemSound() { playSound(800, 0.1); setTimeout(() => playSound(1000, 0.1), 150); } // 新規商品
+    function playErrorSound() { playSound(220, 0.15, 'sawtooth'); } // エラー/戻る
 
-      oscillator.type = 'sawtooth';
-      oscillator.frequency.setValueAtTime(220, audioCtx.currentTime);
-      gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime);
-
-      oscillator.connect(gainNode);
-      gainNode.connect(audioCtx.destination);
-
-      oscillator.start();
-      oscillator.stop(audioCtx.currentTime + 0.15);
-    }
-
-    // 🛒 カート追加
+    // カート追加処理
     function addItem(name, price) {
       playScanSound();
-
       const cartList = document.getElementById('cart-list');
-      if (isFirst) {
-        cartList.innerHTML = '';
-        isFirst = false;
-      }
-
-      const taxIncludedPrice = Math.round(price * 1.1);
-
-      const itemElement = document.createElement('p');
-      itemElement.style.margin = '5px 0';
-      itemElement.textContent = `▶ ${name} : ${price}円 (税込${taxIncludedPrice}円)`;
-      cartList.appendChild(itemElement);
-
-      cartHistory.push({ element: itemElement, price: taxIncludedPrice });
-
-      totalPrice += taxIncludedPrice;
+      if (isFirst) { cartList.innerHTML = ''; isFirst = false; }
+      
+      const taxPrice = Math.round(price * 1.1);
+      const itemEl = document.createElement('p');
+      itemEl.style.margin = '5px 0';
+      itemEl.textContent = `▶ ${name} : ${price}円 (税込${taxPrice}円)`;
+      cartList.appendChild(itemEl);
+      
+      cartHistory.push({ element: itemEl, price: taxPrice });
+      totalPrice += taxPrice;
       document.getElementById('total-price').textContent = totalPrice;
     }
 
-    // ↩️ 1つ取り消す（戻る処理）
+    // 1つ取り消し
     function removeLastItem() {
-      if (cartHistory.length === 0) {
-        playErrorSound();
-        alert('取り消せる商品がありません');
-        return;
-      }
-
+      if (cartHistory.length === 0) { playErrorSound(); alert('商品がありません'); return; }
       playErrorSound();
-
-      const lastItem = cartHistory.pop();
-      lastItem.element.remove();
-
-      totalPrice -= lastItem.price;
+      const last = cartHistory.pop();
+      last.element.remove();
+      totalPrice -= last.price;
       document.getElementById('total-price').textContent = totalPrice;
-
       if (cartHistory.length === 0) {
         document.getElementById('cart-list').innerHTML = '<p style="color: #888;">スキャンした商品がここに表示されます</p>';
         isFirst = true;
       }
-
       document.getElementById('status-msg').textContent = "1つ取り消しました";
     }
 
-    // 📷 Quagga初期化
+    // スキャン検知
     Quagga.init({
-      inputStream: {
-        name: "Live",
-        type: "LiveStream",
-        target: document.querySelector('#interactive')
-      },
-      decoder: {
-        readers: ["ean_reader"]
-      }
-    }, function(err) {
-      if (err) {
-        document.getElementById('status-msg').textContent = "カメラの起動に失敗しました";
-        return;
-      }
-      Quagga.start();
-    });
+      inputStream: { name: "Live", type: "LiveStream", target: document.querySelector('#interactive') },
+      decoder: { readers: ["ean_reader"] }
+    }, function(err) { if (!err) Quagga.start(); });
 
-    // 🔍 スキャン検知
     Quagga.onDetected(function(result) {
       if (!canScan) return;
-
       const code = result.codeResult.code;
 
       if (itemDatabase[code]) {
-        const item = itemDatabase[code];
-        addItem(item.name, item.price);
-        document.getElementById('status-msg').textContent = `読み取り成功！: ${item.name}`;
-
+        addItem(itemDatabase[code].name, itemDatabase[code].price);
+        document.getElementById('status-msg').textContent = `読み取り成功！: ${itemDatabase[code].name}`;
         canScan = false;
-        setTimeout(() => {
-          canScan = true;
-          document.getElementById('status-msg').textContent = "カメラにかざしてください";
-        }, 1500);
-
+        setTimeout(() => { canScan = true; }, 1500);
       } else {
         canScan = false;
-        playScanSound();
-
-        const newName = prompt(`【未登録のバーコード: ${code}】\n商品名を入力してください:`);
-        
+        playNewItemSound();
+        const newName = prompt(`【新規商品】商品名を入力してください:`);
         if (newName) {
-          const newPriceInput = prompt(`「${newName}」の価格（税抜き）を入力してください:`);
-          const newPrice = Number(newPriceInput);
-
-          if (!isNaN(newPrice) && newPrice > 0) {
+          const newPrice = Number(prompt(`価格（税抜き）を入力:`));
+          if (!isNaN(newPrice)) {
             itemDatabase[code] = { name: newName, price: newPrice };
             localStorage.setItem('myPosDatabase', JSON.stringify(itemDatabase));
-
             addItem(newName, newPrice);
-            document.getElementById('status-msg').textContent = `新商品を登録・保存しました: ${newName}`;
-          } else {
-            playErrorSound();
-            alert('正しい価格が入力されませんでした。');
           }
         }
-
-        setTimeout(() => {
-          canScan = true;
-          document.getElementById('status-msg').textContent = "カメラにかざしてください";
-        }, 2000);
+        setTimeout(() => { canScan = true; }, 2000);
       }
     });
 
-    // 💳 お会計
     function pay() {
-      if (totalPrice === 0) {
-        playErrorSound();
-        alert('商品が選ばれていません');
-        return;
-      }
+      if (totalPrice === 0) return;
       playScanSound();
-      alert(`【決済完了】\n合計：${totalPrice}円\nご利用ありがとうございました！`);
+      alert(`合計：${totalPrice}円\nありがとうございました！`);
       location.reload();
     }
 
-    // 🗑️ データリセット
     function resetDatabase() {
       playErrorSound();
-      if (confirm('登録した商品データをすべてリセットしますか？')) {
+      if (confirm('すべての登録データをリセットしますか？')) {
         localStorage.removeItem('myPosDatabase');
-        alert('データをリセットしました。');
         location.reload();
       }
     }
   </script>
-
 </body>
 </html>
 

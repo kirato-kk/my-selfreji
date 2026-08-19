@@ -263,6 +263,47 @@
       setTimeout(() => { canScan = true; }, 1500);
     });
   </script>
+
+    <!-- PayPay決済画面 -->
+  <div class="modal-overlay" id="paypay-modal">
+    <div class="receipt">
+      <div class="paypay-box">
+        <h2 style="color: white; margin: 0;">PayPay 決済</h2>
+        <p style="margin: 5px 0; font-size: 13px;">スキャンして決済を完了してください</p>
+      </div>
+      <div class="qr-img">
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=130x130&data=https://paypay.ne.jp" alt="PayPay QR" style="width:100%; height:100%;">
+      </div>
+      <p style="font-size: 18px; font-weight: bold; margin: 10px 0;">お支払い額: <span id="paypay-amount">0</span>円</p>
+      <button class="btn paypay-btn" onclick="confirmPayPayPay()">決済を確定する</button>
+      <button class="close-btn" onclick="closePayPayModal()">キャンセル</button>
+    </div>
+  </div>
+
+
 </body>
+  
+  <button class="btn pay-btn" onclick="completeTransaction('現金')">💵 現金でお会計</button>
+  <button class="btn paypay-btn" onclick="startPayPayPayment()">📱 PayPayでお会計</button>
+
+
 </html>
 
+    // お会計完了・レシート発行共通処理
+    function completeTransaction(method) {
+      if (cartHistory.length === 0) return;
+      const container = document.getElementById('receipt-items');
+      container.innerHTML = cartHistory.map(i => `<div class="receipt-item"><span>${i.name}</span><span>${i.taxPrice}円</span></div>`).join('');
+      document.getElementById('receipt-method').textContent = `[支払い方法: ${method}]`;
+      document.getElementById('receipt-total').textContent = `合計: ${totalPrice}円`;
+      document.getElementById('receipt-modal').style.display = 'flex';
+      
+      const itemsPurchased = cartHistory.map(i => `${i.name} (${i.taxPrice}円)`).join(', ');
+      salesHistory.push({ date: new Date().toLocaleString(), total: totalPrice, items: itemsPurchased, method: method });
+      localStorage.setItem('myPosSalesHistory', JSON.stringify(salesHistory));
+    }
+
+ /* PayPayボタンと画面用のスタイル */
+    .paypay-btn { background-color: #ff0033; border: 2px solid #fff; margin-top: 8px; }
+    .paypay-box { background: #ff0033; color: white; padding: 15px; border-radius: 10px; margin-bottom: 15px; }
+    .qr-img { width: 140px; height: 140px; background: white; margin: 10px auto; padding: 5px; border-radius: 5px; }

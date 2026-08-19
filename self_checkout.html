@@ -93,8 +93,29 @@
 
     function showSalesHistory() {
       const input = prompt("売上履歴を見るためのパスワードを入力してください");
-      if (input === SALES_PASSWORD) {
-        playSound(1200, 0.08);
+       // ★ここを書き換えてください（playSound 関数と、その上の1行）
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    function playSound(freq, duration) {
+      // ブラウザが音を止めていたら「再開」する命令
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      
+      osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+      gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+      
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      
+      osc.start();
+      osc.stop(audioCtx.currentTime + duration);
+    }
+
+
         const container = document.getElementById('history-list');
         container.innerHTML = salesHistory.length === 0 ? '記録なし' : '';
         salesHistory.forEach((sale, i) => {

@@ -58,8 +58,8 @@
   </div>
 
   <script>
-    const SALES_PASSWORD = "4869"; // ★ここにパスワードを設定
-    let canScan = true; // ★連続スキャンを防ぐフラグ
+    const SALES_PASSWORD = "4869"; 
+    let canScan = true;
     let totalPrice = 0;
     let isFirst = true;
     let cartHistory = []; 
@@ -91,7 +91,6 @@
       document.getElementById('total-price').textContent = totalPrice;
     }
 
-    // 📊 パスワード付き売上履歴表示
     function showSalesHistory() {
       const input = prompt("売上履歴を見るためのパスワードを入力してください");
       if (input === SALES_PASSWORD) {
@@ -121,15 +120,29 @@
       document.getElementById('receipt-modal').style.display = 'flex';
     }
 
-    // 📷 スキャン処理（連続防止付き）
     Quagga.init({ inputStream: { type: "LiveStream", target: document.querySelector('#interactive') }, decoder: { readers: ["ean_reader"] } }, (err) => { if(!err) Quagga.start(); });
+    
+    // ★修正済み：スキャン処理
     Quagga.onDetected((res) => {
-      if (!canScan) return; // ★読み取り中なら何もしない
+      if (!canScan) return;
       const code = res.codeResult.code;
+      canScan = false; // 読み取りを一時停止
+
       if (itemDatabase[code]) {
-        canScan = false; // ★読み取り開始
         addItem(itemDatabase[code].name, itemDatabase[code].price);
-        setTimeout(() => { canScan = true; }, 1500); // ★1.5秒待ってから再開
+        setTimeout(() => { canScan = true; }, 1500);
+      } else {
+        // 新規登録処理
+        const newName = prompt(`【新規商品】商品名を入力してください:`);
+        if (newName) {
+          const newPrice = Number(prompt(`価格（税抜き）を入力:`));
+          if (!isNaN(newPrice) && newPrice > 0) {
+            itemDatabase[code] = { name: newName, price: newPrice };
+            localStorage.setItem('myPosDatabase', JSON.stringify(itemDatabase));
+            addItem(newName, newPrice);
+          }
+        }
+        setTimeout(() => { canScan = true; }, 1000);
       }
     });
   </script>

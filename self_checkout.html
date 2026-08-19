@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SELF-CHECKOUT</title>
+  <title>本格カメラセルフレジ</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
   <style>
     body { font-family: 'Segoe UI', sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; background-color: #1a1a2e; color: #ffffff; border-radius: 15px; }
@@ -25,19 +25,19 @@
 </head>
 <body>
 
-  <h1>SELF-CHECKOUT</h1>
+  <h1>🛒 AI CAMERA POS</h1>
   <div id="interactive" class="viewport"></div>
 
   <div class="cart" id="cart-list"><p style="color: #888;">スキャンした商品がここに表示されます</p></div>
   <div class="total">合計: <span id="total-price">0</span> 円</div>
 
-  <button class="btn undo-btn" onclick="removeLastItem()">直前のスキャンを取り消す</button>
+  <button class="btn undo-btn" onclick="removeLastItem()">↩️ 直前のスキャンを取り消す</button>
   <button class="btn pay-btn" onclick="pay()">お会計する</button>
-  <button class="btn history-btn" onclick="showSalesHistory()">売上履歴（記録）を見る</button>
+  <button class="btn history-btn" onclick="showSalesHistory()">📊 売上履歴を見る</button>
   
   <div style="margin-top:20px; border-top:1px solid #333; padding-top:10px;">
-    <button class="reset-btn" onclick="resetSalesOnly()">売上記録だけリセット</button>
-    <button class="reset-btn" onclick="resetAllData()" style="border-color:#ff2e63; color:#ff2e63;">すべてリセット</button>
+    <button class="reset-btn" onclick="resetSalesOnly()">⚠️ 売上記録だけリセット</button>
+    <button class="reset-btn" onclick="resetAllData()" style="border-color:#ff2e63; color:#ff2e63;">❌ すべてリセット</button>
   </div>
 
   <div class="modal-overlay" id="receipt-modal">
@@ -58,9 +58,8 @@
   </div>
 
   <script>
-    // ★ここがパスワードです！好きな数字に変えられます
-    const SALES_PASSWORD = "1234"; 
-
+    const SALES_PASSWORD = "1234"; // ★ここにパスワードを設定
+    let canScan = true; // ★連続スキャンを防ぐフラグ
     let totalPrice = 0;
     let isFirst = true;
     let cartHistory = []; 
@@ -112,6 +111,7 @@
     function closeHistory() { document.getElementById('history-modal').style.display = 'none'; }
     function resetSalesOnly() { if(confirm('売上記録だけリセット？')){ localStorage.removeItem('myPosSalesHistory'); location.reload(); } }
     function resetAllData() { if(confirm('すべてリセット？')){ localStorage.removeItem('myPosDatabase'); localStorage.removeItem('myPosSalesHistory'); location.reload(); } }
+    
     function pay() {
       if (cartHistory.length === 0) return;
       salesHistory.push({ date: new Date().toLocaleString(), items: cartHistory, total: totalPrice });
@@ -120,9 +120,18 @@
       document.getElementById('receipt-total-price').textContent = `合計: ￥${totalPrice}`;
       document.getElementById('receipt-modal').style.display = 'flex';
     }
-    function removeLastItem() { location.reload(); }
+
+    // 📷 スキャン処理（連続防止付き）
     Quagga.init({ inputStream: { type: "LiveStream", target: document.querySelector('#interactive') }, decoder: { readers: ["ean_reader"] } }, (err) => { if(!err) Quagga.start(); });
-    Quagga.onDetected((res) => { if(itemDatabase[res.codeResult.code]) addItem(itemDatabase[res.codeResult.code].name, itemDatabase[res.codeResult.code].price); });
+    Quagga.onDetected((res) => {
+      if (!canScan) return; // ★読み取り中なら何もしない
+      const code = res.codeResult.code;
+      if (itemDatabase[code]) {
+        canScan = false; // ★読み取り開始
+        addItem(itemDatabase[code].name, itemDatabase[code].price);
+        setTimeout(() => { canScan = true; }, 1500); // ★1.5秒待ってから再開
+      }
+    });
   </script>
 </body>
 </html>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>本格カメラセルフレジ</title>
+  <title>SELF-CHECKOUT</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
   <style>
     body { font-family: 'Segoe UI', sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; background-color: #1a1a2e; color: #ffffff; border-radius: 15px; }
@@ -25,19 +25,19 @@
 </head>
 <body>
 
-  <h1>🛒 AI CAMERA POS</h1>
+  <h1>SELF-CHECKOUT</h1>
   <div id="interactive" class="viewport"></div>
 
   <div class="cart" id="cart-list"><p style="color: #888;">スキャンした商品がここに表示されます</p></div>
   <div class="total">合計: <span id="total-price">0</span> 円</div>
 
-  <button class="btn undo-btn" onclick="removeLastItem()">↩️ 直前のスキャンを取り消す</button>
+  <button class="btn undo-btn" onclick="removeLastItem()">直前のスキャンを取り消す</button>
   <button class="btn pay-btn" onclick="pay()">お会計する</button>
-  <button class="btn history-btn" onclick="showSalesHistory()">📊 売上履歴を見る</button>
+  <button class="btn history-btn" onclick="showSalesHistory()">売上履歴を見る</button>
   
   <div style="margin-top:20px; border-top:1px solid #333; padding-top:10px;">
-    <button class="reset-btn" onclick="resetSalesOnly()">⚠️ 売上記録だけリセット</button>
-    <button class="reset-btn" onclick="resetAllData()" style="border-color:#ff2e63; color:#ff2e63;">❌ すべてリセット</button>
+    <button class="reset-btn" onclick="resetSalesOnly()">売上記録だけリセット</button>
+    <button class="reset-btn" onclick="resetAllData()" style="border-color:#ff2e63; color:#ff2e63;">すべてリセット</button>
   </div>
 
   <div class="modal-overlay" id="receipt-modal">

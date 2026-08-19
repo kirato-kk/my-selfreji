@@ -139,7 +139,24 @@
 
     function removeLastItem() { if (cartHistory.length > 0) { const last = cartHistory.pop(); last.element.remove(); totalPrice -= last.taxPrice; document.getElementById('total-price').textContent = totalPrice; } }
 
-    function pay() { if (cartHistory.length === 0) return; alert("お会計完了"); location.reload(); }
+   // お会計処理（レシート表示・売上保存）
+    function pay() {
+      if (cartHistory.length === 0) return;
+      
+      // レシートに商品リストと合計を表示
+      const container = document.getElementById('receipt-items');
+      container.innerHTML = cartHistory.map(i => `<div class="receipt-item"><span>${i.name}</span><span>${i.taxPrice}円</span></div>`).join('');
+      document.getElementById('receipt-total').textContent = `合計: ${totalPrice}円`;
+      
+      // レシート画面（モーダル）を開く
+      document.getElementById('receipt-modal').style.display = 'flex';
+      
+      // 売上履歴に記録を保存
+      salesHistory.push({ date: new Date().toLocaleString(), total: totalPrice });
+      localStorage.setItem('myPosSalesHistory', JSON.stringify(salesHistory));
+    }
+
+ 
 
     function showSalesHistory() {
       const input = prompt("管理用パスワードを入力");

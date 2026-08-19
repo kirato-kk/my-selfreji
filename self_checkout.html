@@ -216,6 +216,21 @@
       salesHistory.push({ date: new Date().toLocaleString(), total: totalPrice, items: itemsPurchased, method: method });
       localStorage.setItem('myPosSalesHistory', JSON.stringify(salesHistory));
     }
+
+    <div class="modal-overlay" id="receipt-modal">
+    <div class="receipt">
+      <h2>レシート</h2>
+      <!-- ↓この1行を追加↓ -->
+      <p id="receipt-method" style="font-size:12px; color:#666; margin-top:-5px; text-align:center;"></p>
+      
+      <div id="receipt-items"></div>
+      <hr>
+      <div id="receipt-total" style="font-weight:bold; text-align:right;"></div>
+      <button class="close-btn" onclick="closeReceipt()">閉じる</button>
+    </div>
+  </div>
+
+
       // 売上履歴に「購入商品リスト」も追加して保存
       salesHistory.push({
         date: new Date().toLocaleString(),

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>本格カメラセルフレジ</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      max-width: 600px;
+      margin: 20px auto;
+      padding: 20px;
+      background-color: #1a1a2e;
+      color: #ffffff;
+      border-radius: 15px;
+    }
+    h1 { text-align: center; color: #00fff5; }
+    #interactive.viewport {
+      width: 100%;
+      height: 250px;
+      background-color: #000;
+      border: 2px solid #00fff5;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+    #interactive.viewport video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .cart {
+      background: #0f3460;
+      padding: 15px;
+      border-radius: 10px;
+      min-height: 120px;
+      border: 1px solid #00fff5;
+    }
+    .total {
+      font-size: 22px;
+      font-weight: bold;
+      text-align: right;
+      margin-top: 15px;
+      color: #ff2e63;
+    }
+    .pay-btn {
+      width: 100%;
+      padding: 15px;
+      font-size: 20px;
+      font-weight: bold;
+      background-color: #ff2e63;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      margin-top: 15px;
+    }
+    .pay-btn:hover { background-color: #e01e4f; }
+    .status { text-align: center; color: #00fff5; margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+
+  <h1>🛒 AI CAMERA POS</h1>
+  <div class="status" id="status-msg">カメラにかざしてください</div>
+
+  <div id="interactive" class="viewport"></div>
+
+  <h2>購入リスト</h2>
+  <div class="cart" id="cart-list">
+    <p style="color: #888;">スキャンした商品がここに表示されます</p>
+  </div>
+
+  <div class="total">
+    合計 (税込): <span id="total-price">0</span> 円
+  </div>
+
+  <button class="pay-btn" onclick="pay()">お会計する</button>
+
+  <script>
+    let totalPrice = 0;
+    let isFirst = true;
+    let canScan = true;
+
+    const itemDatabase = {
+      "4901330502880": { name: "ポテトチップス", price: 160 },
+      "4902102072618": { name: "コカ・コーラ 500ml", price: 150 },
+      "4901085089330": { name: "お〜いお茶 525ml", price: 140 }
+    };
+
+    function playBeep() {
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const oscillator = audioCtx.createOscillator();
+      const gainNode = audioCtx.createGain();
+
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(1200, audioCtx.currentTime);
+      gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+
+      oscillator.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+
+      oscillator.start();
+      oscillator.stop(audioCtx.currentTime + 0.08);
+    }
+
+    function addItem(name, price) {
+      playBeep();
+
+      const cartList = document.getElementById('cart-list');
+      if (isFirst) {
+        cartList.innerHTML = '';
+        isFirst = false;
+      }
+
+      const itemElement = document.createElement('p');
+      itemElement.style.margin = '5px 0';
+      itemElement.textContent = `▶ ${name} : ${price}円`;
+      cartList.appendChild(itemElement);
+
+      totalPrice += Math.round(price * 1.1);
+      document.getElementById('total-price').textContent = totalPrice;
+    }
+
+    Quagga.init({
+      inputStream: {
+        name: "Live",
+        type: "LiveStream",
+        target: document.querySelector('#interactive')
+      },
+      decoder: {
+        readers: ["ean_reader"]
+      }
+    }, function(err) {
+      if (err) {
+        document.getElementById('status-msg').textContent = "カメラの起動に失敗しました";
+        return;
+      }
+      Quagga.start();
+    });
+
+    // 🔍 【更新】バーコードを読み取った瞬間の処理
+    Quagga.onDetected(function(result) {
+      if (!canScan) return;
+
+      const code = result.codeResult.code;
+
+      // 1. 登録済みの場合 ➔ カートに追加
+      if (itemDatabase[code]) {
+        const item = itemDatabase[code];
+        addItem(item.name, item.price);
+        document.getElementById('status-msg').textContent = `読み取り成功！: ${item.name}`;
+
+        canScan = false;
+        setTimeout(() => {
+          canScan = true;
+          document.getElementById('status-msg').textContent = "カメラにかざしてください";
+        }, 1500);
+
+      // 2. 未登録の場合 ➔ その場で登録ダイアログを出す
+      } else {
+        canScan = false;
+        playBeep();
+
+        const newName = prompt(`【未登録のバーコード: ${code}】\n商品名を入力してください:`);
+        
+        if (newName) {
+          const newPriceInput = prompt(`「${newName}」の価格（税抜き）を入力してください:`);
+          const newPrice = Number(newPriceInput);
+
+          if (!isNaN(newPrice) && newPrice > 0) {
+            itemDatabase[code] = { name: newName, price: newPrice };
+            addItem(newName, newPrice);
+            document.getElementById('status-msg').textContent = `新商品を登録・追加しました: ${newName}`;
+          } else {
+            alert('正しい価格が入力されませんでした。');
+          }
+        }
+
+        setTimeout(() => {
+          canScan = true;
+          document.getElementById('status-msg').textContent = "カメラにかざしてください";
+        }, 2000);
+      }
+    });
+
+    function pay() {
+      if (totalPrice === 0) {
+        alert('商品が選ばれていません');
+        return;
+      }
+      playBeep();
+      alert(`【決済完了】\n合計：${totalPrice}円\nご利用ありがとうございました！`);
+      location.reload();
+    }
+  </script>
+
+</body>
+</html>
+

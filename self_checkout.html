@@ -16,10 +16,10 @@
     .pay-btn { background-color: #ff2e63; }
     .undo-btn { background-color: #ff9900; }
     .history-btn { background-color: #00adb5; }
-    .reset-btn { display: block; margin: 20px auto 0; background: transparent; color: #aaa; border: 1px solid #555; padding: 5px 10px; border-radius: 5px; font-size: 12px; cursor: pointer; }
+    .reset-btn { display: block; margin: 15px auto 0; background: transparent; color: #aaa; border: 1px solid #555; padding: 5px 10px; border-radius: 5px; font-size: 12px; cursor: pointer; }
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); justify-content: center; align-items: center; z-index: 100; }
     .receipt { background: #ffffff; color: #333333; font-family: 'Courier New', monospace; padding: 25px; width: 300px; max-height: 80vh; overflow-y: auto; border-radius: 5px; }
-    .receipt-item { display: flex; justify-content: space-between; margin: 5px 0; font-size: 14px; }
+    .receipt-total { font-size: 18px; font-weight: bold; text-align: right; margin-top: 10px; }
     .close-btn { width: 100%; padding: 10px; margin-top: 15px; background: #333; color: white; border: none; font-weight: bold; cursor: pointer; }
   </style>
 </head>
@@ -28,21 +28,18 @@
   <h1>SELF-CHECKOUT</h1>
   <div id="interactive" class="viewport"></div>
 
-  <div class="cart" id="cart-list">
-    <p style="color: #888;">スキャンした商品がここに表示されます</p>
-  </div>
+  <div class="cart" id="cart-list"><p style="color: #888;">スキャンした商品がここに表示されます</p></div>
   <div class="total">合計: <span id="total-price">0</span> 円</div>
 
   <button class="btn undo-btn" onclick="removeLastItem()">直前のスキャンを取り消す</button>
   <button class="btn pay-btn" onclick="pay()">お会計する</button>
-  <button class="btn history-btn" onclick="showSalesHistory()">売上履歴を見る</button>
+  <button class="btn history-btn" onclick="showSalesHistory()">売上履歴（記録）を見る</button>
   
   <div style="margin-top:20px; border-top:1px solid #333; padding-top:10px;">
     <button class="reset-btn" onclick="resetSalesOnly()">売上記録だけリセット</button>
-    <button class="reset-btn" onclick="resetAllData()" style="border-color:#ff2e63; color:#ff2e63;">すべて（商品データ含む）リセット</button>
+    <button class="reset-btn" onclick="resetAllData()" style="border-color:#ff2e63; color:#ff2e63;">すべてリセット</button>
   </div>
 
-  <!-- ポップアップ類 -->
   <div class="modal-overlay" id="receipt-modal">
     <div class="receipt">
       <h2>RECEIPT</h2>
@@ -61,6 +58,9 @@
   </div>
 
   <script>
+    // ★ここがパスワードです！好きな数字に変えられます
+    const SALES_PASSWORD = "1234"; 
+
     let totalPrice = 0;
     let isFirst = true;
     let cartHistory = []; 
@@ -92,53 +92,37 @@
       document.getElementById('total-price').textContent = totalPrice;
     }
 
-    // 売上記録のみリセット
-    function resetSalesOnly() {
-      if (confirm('売上記録だけをリセットしますか？\n（登録した商品は消えません）')) {
-        localStorage.removeItem('myPosSalesHistory');
-        alert('売上記録をリセットしました。');
-        location.reload();
+    // 📊 パスワード付き売上履歴表示
+    function showSalesHistory() {
+      const input = prompt("売上履歴を見るためのパスワードを入力してください：");
+      if (input === SALES_PASSWORD) {
+        playSound(1200, 0.08);
+        const container = document.getElementById('history-list');
+        container.innerHTML = salesHistory.length === 0 ? '記録なし' : '';
+        salesHistory.forEach((sale, i) => {
+          container.innerHTML += `<div style="margin-bottom:10px;"><small>#${i+1} ${sale.date}</small><br>${sale.items.map(it=>it.name).join(', ')} <br><strong>￥${sale.total}</strong></div>`;
+        });
+        document.getElementById('history-modal').style.display = 'flex';
+      } else if (input !== null) {
+        playSound(220, 0.15);
+        alert("パスワードが違います！");
       }
     }
 
-    // 全データリセット
-    function resetAllData() {
-      if (confirm('すべて（商品・売上データ）を初期化しますか？')) {
-        localStorage.removeItem('myPosDatabase');
-        localStorage.removeItem('myPosSalesHistory');
-        location.reload();
-      }
-    }
-
-    // 決済処理
+    function closeHistory() { document.getElementById('history-modal').style.display = 'none'; }
+    function resetSalesOnly() { if(confirm('売上記録だけリセット？')){ localStorage.removeItem('myPosSalesHistory'); location.reload(); } }
+    function resetAllData() { if(confirm('すべてリセット？')){ localStorage.removeItem('myPosDatabase'); localStorage.removeItem('myPosSalesHistory'); location.reload(); } }
     function pay() {
       if (cartHistory.length === 0) return;
-      const saleRecord = { date: new Date().toLocaleString(), items: cartHistory, total: totalPrice };
-      salesHistory.push(saleRecord);
+      salesHistory.push({ date: new Date().toLocaleString(), items: cartHistory, total: totalPrice });
       localStorage.setItem('myPosSalesHistory', JSON.stringify(salesHistory));
-      
-      document.getElementById('receipt-items').innerHTML = cartHistory.map(i => `<div class="receipt-item"><span>${i.name}</span><span>￥${i.price}</span></div>`).join('');
+      document.getElementById('receipt-items').innerHTML = cartHistory.map(i => `<div style="display:flex; justify-content:space-between;"><span>${i.name}</span><span>￥${i.price}</span></div>`).join('');
       document.getElementById('receipt-total-price').textContent = `合計: ￥${totalPrice}`;
       document.getElementById('receipt-modal').style.display = 'flex';
     }
-
-    // 履歴表示
-    function showSalesHistory() {
-      const container = document.getElementById('history-list');
-      container.innerHTML = salesHistory.length === 0 ? '記録なし' : '';
-      salesHistory.forEach((sale, i) => {
-        container.innerHTML += `<div style="margin-bottom:10px;"><small>#${i+1} ${sale.date}</small><br>${sale.items.map(it=>it.name).join(', ')} <br><strong>￥${sale.total}</strong></div>`;
-      });
-      document.getElementById('history-modal').style.display = 'flex';
-    }
-    function closeHistory() { document.getElementById('history-modal').style.display = 'none'; }
-    function removeLastItem() { location.reload(); } // 簡易リセット用
-    
+    function removeLastItem() { location.reload(); }
     Quagga.init({ inputStream: { type: "LiveStream", target: document.querySelector('#interactive') }, decoder: { readers: ["ean_reader"] } }, (err) => { if(!err) Quagga.start(); });
-    Quagga.onDetected((res) => {
-      const code = res.codeResult.code;
-      if(itemDatabase[code]) addItem(itemDatabase[code].name, itemDatabase[code].price);
-    });
+    Quagga.onDetected((res) => { if(itemDatabase[res.codeResult.code]) addItem(itemDatabase[res.codeResult.code].name, itemDatabase[res.codeResult.code].price); });
   </script>
 </body>
 </html>

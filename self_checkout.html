@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>本格カメラセルフレジ</title>
+  <!-- バーコード読み取りライブラリ -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
   <style>
     body {
@@ -14,7 +15,8 @@
       color: #ffffff;
       border-radius: 15px;
     }
-    h1 { text-align: center; color: #00fff5; }
+    h1 { text-align: center; color: #00fff5; margin-bottom: 5px; }
+    
     #interactive.viewport {
       width: 100%;
       height: 250px;
@@ -29,6 +31,7 @@
       height: 100%;
       object-fit: cover;
     }
+
     .cart {
       background: #0f3460;
       padding: 15px;
@@ -56,6 +59,20 @@
       margin-top: 15px;
     }
     .pay-btn:hover { background-color: #e01e4f; }
+    
+    .reset-btn {
+      display: block;
+      margin: 15px auto 0;
+      background: transparent;
+      color: #888;
+      border: 1px solid #555;
+      padding: 5px 10px;
+      border-radius: 5px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .reset-btn:hover { color: #fff; border-color: #888; }
+    
     .status { text-align: center; color: #00fff5; margin-bottom: 10px; }
   </style>
 </head>
@@ -64,6 +81,7 @@
   <h1>🛒 AI CAMERA POS</h1>
   <div class="status" id="status-msg">カメラにかざしてください</div>
 
+  <!-- カメラ映像が表示される枠 -->
   <div id="interactive" class="viewport"></div>
 
   <h2>購入リスト</h2>
@@ -76,18 +94,24 @@
   </div>
 
   <button class="pay-btn" onclick="pay()">お会計する</button>
+  <button class="reset-btn" onclick="resetDatabase()">登録した商品データを初期化</button>
 
   <script>
     let totalPrice = 0;
     let isFirst = true;
     let canScan = true;
 
-    const itemDatabase = {
+    // 📦 データベースの読み込み
+    // スマホ内に保存データがあればそれを読み込み、なければ初期データをセットします
+    const defaultData = {
       "4901330502880": { name: "ポテトチップス", price: 160 },
       "4902102072618": { name: "コカ・コーラ 500ml", price: 150 },
       "4901085089330": { name: "お〜いお茶 525ml", price: 140 }
     };
 
+    let itemDatabase = JSON.parse(localStorage.getItem('myPosDatabase')) || defaultData;
+
+    // 🔊 「ピピッ」音を鳴らす関数
     function playBeep() {
       const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       const oscillator = audioCtx.createOscillator();
@@ -104,6 +128,7 @@
       oscillator.stop(audioCtx.currentTime + 0.08);
     }
 
+    // 🛒 商品をカートに追加する関数
     function addItem(name, price) {
       playBeep();
 
@@ -118,10 +143,11 @@
       itemElement.textContent = `▶ ${name} : ${price}円`;
       cartList.appendChild(itemElement);
 
-      totalPrice += Math.round(price * 1.1);
+      totalPrice += Math.round(price * 1.1); // 税込計算
       document.getElementById('total-price').textContent = totalPrice;
     }
 
+    // 📷 Quagga（カメラ機能）の初期化
     Quagga.init({
       inputStream: {
         name: "Live",
@@ -139,7 +165,7 @@
       Quagga.start();
     });
 
-    // 🔍 【更新】バーコードを読み取った瞬間の処理
+    // 🔍 バーコードを読み取った瞬間の処理
     Quagga.onDetected(function(result) {
       if (!canScan) return;
 
@@ -157,7 +183,7 @@
           document.getElementById('status-msg').textContent = "カメラにかざしてください";
         }, 1500);
 
-      // 2. 未登録の場合 ➔ その場で登録ダイアログを出す
+      // 2. 未登録の場合 ➔ その場で登録ダイアログを出して【保存】する
       } else {
         canScan = false;
         playBeep();
@@ -169,9 +195,14 @@
           const newPrice = Number(newPriceInput);
 
           if (!isNaN(newPrice) && newPrice > 0) {
+            // メモリに追加
             itemDatabase[code] = { name: newName, price: newPrice };
+            
+            // ★【追加ポイント】スマホ内に永久保存する命令！
+            localStorage.setItem('myPosDatabase', JSON.stringify(itemDatabase));
+
             addItem(newName, newPrice);
-            document.getElementById('status-msg').textContent = `新商品を登録・追加しました: ${newName}`;
+            document.getElementById('status-msg').textContent = `新商品を登録・保存しました: ${newName}`;
           } else {
             alert('正しい価格が入力されませんでした。');
           }
@@ -184,6 +215,7 @@
       }
     });
 
+    // 💳 お会計処理
     function pay() {
       if (totalPrice === 0) {
         alert('商品が選ばれていません');
@@ -192,6 +224,15 @@
       playBeep();
       alert(`【決済完了】\n合計：${totalPrice}円\nご利用ありがとうございました！`);
       location.reload();
+    }
+
+    // 🗑️ 登録データをリセットする機能
+    function resetDatabase() {
+      if (confirm('登録した商品データをすべてリセットしますか？')) {
+        localStorage.removeItem('myPosDatabase');
+        alert('データをリセットしました。');
+        location.reload();
+      }
     }
   </script>
 

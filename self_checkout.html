@@ -333,6 +333,7 @@
     }
 
     // カメラ設定（背面カメラ強制）
+    // カメラ設定（8桁のJANコードにも対応）
     Quagga.init({
       inputStream: {
         name: "Live",
@@ -340,7 +341,10 @@
         target: document.querySelector('#interactive'),
         constraints: { facingMode: "environment" }
       },
-      decoder: { readers: ["ean_reader"] }
+      decoder: { 
+        // ★ ean_8_reader を追加して、13桁と8桁の両方に対応させます
+        readers: ["ean_reader", "ean_8_reader"] 
+      }
     }, function(err) {
       if (err) {
         document.getElementById('status-msg').textContent = "カメラエラー: " + err;
@@ -348,6 +352,7 @@
       }
       Quagga.start();
     });
+
 
     // スキャン検知
     Quagga.onDetected(function(result) {

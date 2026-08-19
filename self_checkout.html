@@ -24,7 +24,12 @@
     .receipt h2 { text-align: center; margin: 0 0 10px 0; font-size: 20px; }
     .receipt-item { display: flex; justify-content: space-between; margin: 5px 0; font-size: 14px; }
     .close-btn { width: 100%; padding: 10px; margin-top: 15px; background: #333; color: white; border: none; font-weight: bold; cursor: pointer; }
-    .small-btn { font-size: 12px; padding: 3px 8px; margin-left: 5px; cursor: pointer; border: none; border-radius: 3px; }
+    .small-btn { font-size: 12px; padding: 3px 8px; margin-left: 5px; cursor: pointer; border: none; border-radius: 3px}
+    .paypay-btn { background-color: #ff0033; black: 2px solid #fff; margin-top: 8px; }
+    .paypay-box { background: #ff0033; color: white; padding: 15px; border-radius: 10px; margin-bottom: 15px; }
+    .qr-img { width: 140px; height: 140px; background: white; margin: 10px auto; padding: 5px; border-radius: 5px; }
+
+  
   </style>
 </head>
 <body>
@@ -38,7 +43,8 @@
   <div class="total">合計 (税込): <span id="total-price">0</span> 円</div>
 
   <button class="btn undo-btn" onclick="removeLastItem()">直前のスキャンを取り消す</button>
-  <button class="btn pay-btn" onclick="pay()">お会計</button>
+  <button class="btn pay-btn" onclick="completeTransaction('現金')">現金でお会計</button>
+  <button class="btn paypay-btn" onclick="startPayPayPayment()">PayPayでお会計</button>
   <button class="btn history-btn" onclick="showSalesHistory()">売上履歴</button>
   <button class="btn edit-btn" onclick="openDatabaseManager()">商品を編集・削除</button>
 
@@ -196,7 +202,20 @@
 
       // ★修正箇所：購入された商品名と価格のリストを作成
       const itemsPurchased = cartHistory.map(i => `${i.name} (${i.taxPrice}円)`).join(', ');
-
+      
+      // お会計完了・レシート発行共通処理
+    function completeTransaction(method) {
+      if (cartHistory.length === 0) return;
+      const container = document.getElementById('receipt-items');
+      container.innerHTML = cartHistory.map(i => `<div class="receipt-item"><span>${i.name}</span><span>${i.taxPrice}円</span></div>`).join('');
+      document.getElementById('receipt-method').textContent = `[支払い方法: ${method}]`;
+      document.getElementById('receipt-total').textContent = `合計: ${totalPrice}円`;
+      document.getElementById('receipt-modal').style.display = 'flex';
+      
+      const itemsPurchased = cartHistory.map(i => `${i.name} (${i.taxPrice}円)`).join(', ');
+      salesHistory.push({ date: new Date().toLocaleString(), total: totalPrice, items: itemsPurchased, method: method });
+      localStorage.setItem('myPosSalesHistory', JSON.stringify(salesHistory));
+    }
       // 売上履歴に「購入商品リスト」も追加して保存
       salesHistory.push({
         date: new Date().toLocaleString(),
@@ -283,27 +302,9 @@
 
 </body>
   
-  <button class="btn pay-btn" onclick="completeTransaction('現金')">💵 現金でお会計</button>
-  <button class="btn paypay-btn" onclick="startPayPayPayment()">📱 PayPayでお会計</button>
-
+  
 
 </html>
 
-    // お会計完了・レシート発行共通処理
-    function completeTransaction(method) {
-      if (cartHistory.length === 0) return;
-      const container = document.getElementById('receipt-items');
-      container.innerHTML = cartHistory.map(i => `<div class="receipt-item"><span>${i.name}</span><span>${i.taxPrice}円</span></div>`).join('');
-      document.getElementById('receipt-method').textContent = `[支払い方法: ${method}]`;
-      document.getElementById('receipt-total').textContent = `合計: ${totalPrice}円`;
-      document.getElementById('receipt-modal').style.display = 'flex';
-      
-      const itemsPurchased = cartHistory.map(i => `${i.name} (${i.taxPrice}円)`).join(', ');
-      salesHistory.push({ date: new Date().toLocaleString(), total: totalPrice, items: itemsPurchased, method: method });
-      localStorage.setItem('myPosSalesHistory', JSON.stringify(salesHistory));
-    }
+  
 
- /* PayPayボタンと画面用のスタイル */
-    .paypay-btn { background-color: #ff0033; border: 2px solid #fff; margin-top: 8px; }
-    .paypay-box { background: #ff0033; color: white; padding: 15px; border-radius: 10px; margin-bottom: 15px; }
-    .qr-img { width: 140px; height: 140px; background: white; margin: 10px auto; padding: 5px; border-radius: 5px; }

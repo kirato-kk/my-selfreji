@@ -2,6 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>本格カメラセルフレジ</title>
   <!-- バーコード読み取りライブラリ -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
@@ -46,19 +47,21 @@
       margin-top: 15px;
       color: #ff2e63;
     }
-    .pay-btn {
+    .btn {
       width: 100%;
       padding: 15px;
-      font-size: 20px;
+      font-size: 18px;
       font-weight: bold;
-      background-color: #ff2e63;
       color: white;
       border: none;
       border-radius: 10px;
       cursor: pointer;
-      margin-top: 15px;
+      margin-top: 10px;
     }
+    .pay-btn { background-color: #ff2e63; }
     .pay-btn:hover { background-color: #e01e4f; }
+    .undo-btn { background-color: #ff9900; }
+    .undo-btn:hover { background-color: #e68a00; }
     
     .reset-btn {
       display: block;
@@ -93,26 +96,28 @@
     合計 (税込): <span id="total-price">0</span> 円
   </div>
 
-  <button class="pay-btn" onclick="pay()">お会計する</button>
+  <button class="btn undo-btn" onclick="removeLastItem()">↩️ 直前のスキャンを取り消す</button>
+  <button class="btn pay-btn" onclick="pay()">お会計する</button>
   <button class="reset-btn" onclick="resetDatabase()">登録した商品データを初期化</button>
 
   <script>
     let totalPrice = 0;
     let isFirst = true;
     let canScan = true;
+    let cartHistory = []; // スキャン履歴の保存用
 
-    // 📦 データベースの読み込み
-    // スマホ内に保存データがあればそれを読み込み、なければ初期データをセットします
+    // 📦 初期データベース
     const defaultData = {
       "4901330502880": { name: "ポテトチップス", price: 160 },
       "4902102072618": { name: "コカ・コーラ 500ml", price: 150 },
       "4901085089330": { name: "お〜いお茶 525ml", price: 140 }
     };
 
+    // 保存データの読み込み
     let itemDatabase = JSON.parse(localStorage.getItem('myPosDatabase')) || defaultData;
 
-    // 🔊 「ピピッ」音を鳴らす関数
-    function playBeep() {
+    // 🔊 【高音】スキャン成功時（ピピッ）
+    function playScanSound() {
       const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       const oscillator = audioCtx.createOscillator();
       const gainNode = audioCtx.createGain();
@@ -128,9 +133,26 @@
       oscillator.stop(audioCtx.currentTime + 0.08);
     }
 
-    // 🛒 商品をカートに追加する関数
+    // 🔊 【低音】戻る・キャンセル時（ブッ）
+    function playErrorSound() {
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const oscillator = audioCtx.createOscillator();
+      const gainNode = audioCtx.createGain();
+
+      oscillator.type = 'sawtooth';
+      oscillator.frequency.setValueAtTime(220, audioCtx.currentTime);
+      gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime);
+
+      oscillator.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+
+      oscillator.start();
+      oscillator.stop(audioCtx.currentTime + 0.15);
+    }
+
+    // 🛒 カート追加
     function addItem(name, price) {
-      playBeep();
+      playScanSound();
 
       const cartList = document.getElementById('cart-list');
       if (isFirst) {
@@ -138,16 +160,44 @@
         isFirst = false;
       }
 
+      const taxIncludedPrice = Math.round(price * 1.1);
+
       const itemElement = document.createElement('p');
       itemElement.style.margin = '5px 0';
-      itemElement.textContent = `▶ ${name} : ${price}円`;
+      itemElement.textContent = `▶ ${name} : ${price}円 (税込${taxIncludedPrice}円)`;
       cartList.appendChild(itemElement);
 
-      totalPrice += Math.round(price * 1.1); // 税込計算
+      cartHistory.push({ element: itemElement, price: taxIncludedPrice });
+
+      totalPrice += taxIncludedPrice;
       document.getElementById('total-price').textContent = totalPrice;
     }
 
-    // 📷 Quagga（カメラ機能）の初期化
+    // ↩️ 1つ取り消す（戻る処理）
+    function removeLastItem() {
+      if (cartHistory.length === 0) {
+        playErrorSound();
+        alert('取り消せる商品がありません');
+        return;
+      }
+
+      playErrorSound();
+
+      const lastItem = cartHistory.pop();
+      lastItem.element.remove();
+
+      totalPrice -= lastItem.price;
+      document.getElementById('total-price').textContent = totalPrice;
+
+      if (cartHistory.length === 0) {
+        document.getElementById('cart-list').innerHTML = '<p style="color: #888;">スキャンした商品がここに表示されます</p>';
+        isFirst = true;
+      }
+
+      document.getElementById('status-msg').textContent = "1つ取り消しました";
+    }
+
+    // 📷 Quagga初期化
     Quagga.init({
       inputStream: {
         name: "Live",
@@ -165,13 +215,12 @@
       Quagga.start();
     });
 
-    // 🔍 バーコードを読み取った瞬間の処理
+    // 🔍 スキャン検知
     Quagga.onDetected(function(result) {
       if (!canScan) return;
 
       const code = result.codeResult.code;
 
-      // 1. 登録済みの場合 ➔ カートに追加
       if (itemDatabase[code]) {
         const item = itemDatabase[code];
         addItem(item.name, item.price);
@@ -183,10 +232,9 @@
           document.getElementById('status-msg').textContent = "カメラにかざしてください";
         }, 1500);
 
-      // 2. 未登録の場合 ➔ その場で登録ダイアログを出して【保存】する
       } else {
         canScan = false;
-        playBeep();
+        playScanSound();
 
         const newName = prompt(`【未登録のバーコード: ${code}】\n商品名を入力してください:`);
         
@@ -195,15 +243,13 @@
           const newPrice = Number(newPriceInput);
 
           if (!isNaN(newPrice) && newPrice > 0) {
-            // メモリに追加
             itemDatabase[code] = { name: newName, price: newPrice };
-            
-            // ★【追加ポイント】スマホ内に永久保存する命令！
             localStorage.setItem('myPosDatabase', JSON.stringify(itemDatabase));
 
             addItem(newName, newPrice);
             document.getElementById('status-msg').textContent = `新商品を登録・保存しました: ${newName}`;
           } else {
+            playErrorSound();
             alert('正しい価格が入力されませんでした。');
           }
         }
@@ -215,19 +261,21 @@
       }
     });
 
-    // 💳 お会計処理
+    // 💳 お会計
     function pay() {
       if (totalPrice === 0) {
+        playErrorSound();
         alert('商品が選ばれていません');
         return;
       }
-      playBeep();
+      playScanSound();
       alert(`【決済完了】\n合計：${totalPrice}円\nご利用ありがとうございました！`);
       location.reload();
     }
 
-    // 🗑️ 登録データをリセットする機能
+    // 🗑️ データリセット
     function resetDatabase() {
+      playErrorSound();
       if (confirm('登録した商品データをすべてリセットしますか？')) {
         localStorage.removeItem('myPosDatabase');
         alert('データをリセットしました。');

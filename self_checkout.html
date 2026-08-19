@@ -62,6 +62,8 @@
     .pay-btn:hover { background-color: #e01e4f; }
     .undo-btn { background-color: #ff9900; }
     .undo-btn:hover { background-color: #e68a00; }
+    .history-btn { background-color: #00adb5; }
+    .history-btn:hover { background-color: #008891; }
     
     .reset-btn {
       display: block;
@@ -77,7 +79,7 @@
     .reset-btn:hover { color: #fff; border-color: #888; }
     .status { text-align: center; color: #00fff5; margin-bottom: 10px; }
 
-    /* 🧾 レシート用モーダル（ポップアップ）のデザイン */
+    /* モーダル（レシート・履歴用） */
     .modal-overlay {
       display: none;
       position: fixed;
@@ -92,7 +94,9 @@
       color: #333333;
       font-family: 'Courier New', Courier, monospace;
       padding: 25px;
-      width: 280px;
+      width: 300px;
+      max-height: 80vh;
+      overflow-y: auto;
       border-radius: 5px;
       box-shadow: 0 0 20px rgba(255,255,255,0.2);
     }
@@ -131,6 +135,7 @@
 
   <button class="btn undo-btn" onclick="removeLastItem()">↩️ 直前のスキャンを取り消す</button>
   <button class="btn pay-btn" onclick="pay()">お会計する</button>
+  <button class="btn history-btn" onclick="showSalesHistory()">📊 売上履歴（記録）を見る</button>
   <button class="reset-btn" onclick="resetDatabase()">登録した商品データを初期化</button>
 
   <!-- 🧾 レシート表示ポップアップ -->
@@ -147,13 +152,25 @@
     </div>
   </div>
 
+  <!-- 📊 売上履歴ポップアップ -->
+  <div class="modal-overlay" id="history-modal">
+    <div class="receipt">
+      <h2>SALES HISTORY</h2>
+      <div style="text-align: center; font-size: 12px; color: #666;">これまでの売上記録</div>
+      <div class="receipt-line"></div>
+      <div id="history-list"></div>
+      <div class="receipt-line"></div>
+      <div class="receipt-total" id="history-grand-total"></div>
+      <button class="close-btn" onclick="closeHistory()">閉じる</button>
+    </div>
+  </div>
+
   <script>
     let totalPrice = 0;
     let isFirst = true;
     let canScan = true;
-    let cartHistory = []; // 履歴管理用
+    let cartHistory = []; 
 
-    // データベース初期値
     const defaultData = {
       "4901330502880": { name: "ポテトチップス", price: 160 },
       "4902102072618": { name: "コカ・コーラ 500ml", price: 150 },
@@ -161,6 +178,8 @@
     };
 
     let itemDatabase = JSON.parse(localStorage.getItem('myPosDatabase')) || defaultData;
+    // 📊 売上記録用のデータ保存場所
+    let salesHistory = JSON.parse(localStorage.getItem('myPosSalesHistory')) || [];
 
     function playSound(freq, duration, type = 'sine') {
       const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -239,7 +258,7 @@
       }
     });
 
-    // 💳 お会計＆レシート生成
+    // 💳 お会計＆記録の保存
     function pay() {
       if (cartHistory.length === 0) {
         playErrorSound();
@@ -248,11 +267,20 @@
       }
       playScanSound();
 
-      // 日時をセット
       const now = new Date();
-      document.getElementById('receipt-date').textContent = now.toLocaleString('ja-JP');
+      const dateStr = now.toLocaleString('ja-JP');
 
-      // レシートに商品を一覧表示
+      // 📊 売上記録に追加して保存！
+      const saleRecord = {
+        date: dateStr,
+        items: cartHistory.map(i => ({ name: i.name, price: i.taxPrice })),
+        total: totalPrice
+      };
+      salesHistory.push(saleRecord);
+      localStorage.setItem('myPosSalesHistory', JSON.stringify(salesHistory));
+
+      // レシート表示
+      document.getElementById('receipt-date').textContent = dateStr;
       const container = document.getElementById('receipt-items');
       container.innerHTML = '';
       cartHistory.forEach(item => {
@@ -262,23 +290,52 @@
         container.appendChild(row);
       });
 
-      // 合計をセット
       document.getElementById('receipt-total-price').textContent = `合計 (税込): ￥${totalPrice}`;
-
-      // レシート画面を表示
       document.getElementById('receipt-modal').style.display = 'flex';
     }
 
-    // レシートを閉じて画面をリセット
     function closeReceipt() {
       document.getElementById('receipt-modal').style.display = 'none';
       location.reload();
     }
 
+    // 📊 売上履歴を表示する機能
+    function showSalesHistory() {
+      playScanSound();
+      const container = document.getElementById('history-list');
+      container.innerHTML = '';
+
+      if (salesHistory.length === 0) {
+        container.innerHTML = '<p style="text-align:center; color:#888;">まだお会計の記録がありません</p>';
+        document.getElementById('history-grand-total').textContent = '累計売上: ￥0';
+      } else {
+        let grandTotal = 0;
+        salesHistory.forEach((sale, index) => {
+          grandTotal += sale.total;
+          const block = document.createElement('div');
+          block.style.marginBottom = '15px';
+          block.innerHTML = `
+            <div style="font-size: 10px; color: #666;">#${index + 1} - ${sale.date}</div>
+            ${sale.items.map(i => `<div class="receipt-item"><span>${i.name}</span><span>￥${i.price}</span></div>`).join('')}
+            <div style="text-align: right; font-weight: bold; font-size: 13px; margin-top: 3px;">小計: ￥${sale.total}</div>
+          `;
+          container.appendChild(block);
+        });
+        document.getElementById('history-grand-total').textContent = `累計売上: ￥${grandTotal}`;
+      }
+
+      document.getElementById('history-modal').style.display = 'flex';
+    }
+
+    function closeHistory() {
+      document.getElementById('history-modal').style.display = 'none';
+    }
+
     function resetDatabase() {
       playErrorSound();
-      if (confirm('すべての登録データをリセットしますか？')) {
+      if (confirm('商品データと売上記録をすべてリセットしますか？')) {
         localStorage.removeItem('myPosDatabase');
+        localStorage.removeItem('myPosSalesHistory');
         location.reload();
       }
     }

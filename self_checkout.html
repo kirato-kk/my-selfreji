@@ -63,7 +63,7 @@
   </div>
 
   <script>
-    const SALES_PASSWORD = "1234"; 
+    const SALES_PASSWORD = "4869"; 
     let canScan = true;
     let totalPrice = 0;
     let isFirst = true;
@@ -86,8 +86,8 @@
 
     // 商品管理（パスワード保護付き）
     function openDatabaseManager() {
-      const input = prompt("管理用パスワードを入力してください：");
-      if (input !== SALES_PASSWORD) { alert("パスワードが違います！"); return; }
+      const input = prompt("管理用パスワードを入力");
+      if (input !== SALES_PASSWORD) { alert("パスワードが違います"); return; }
       
       const container = document.getElementById('manager-list');
       container.innerHTML = '';
@@ -106,9 +106,9 @@
     function closeManager() { document.getElementById('manager-modal').style.display = 'none'; }
     
     function editItem(code) {
-      const newName = prompt("新しい商品名:", itemDatabase[code].name);
+      const newName = prompt("新しい商品名", itemDatabase[code].name);
       if (newName) {
-        const newPrice = Number(prompt("新しい価格:", itemDatabase[code].price));
+        const newPrice = Number(prompt("新しい価格", itemDatabase[code].price));
         if (!isNaN(newPrice)) {
           itemDatabase[code] = { name: newName, price: newPrice };
           localStorage.setItem('myPosDatabase', JSON.stringify(itemDatabase));
@@ -142,9 +142,9 @@
     function pay() { if (cartHistory.length === 0) return; alert("お会計完了"); location.reload(); }
 
     function showSalesHistory() {
-      const input = prompt("パスワードを入力:");
+      const input = prompt("管理用パスワードを入力");
       if (input === SALES_PASSWORD) { document.getElementById('history-modal').style.display = 'flex'; }
-      else if(input !== null) alert("違います");
+      else if(input !== null) alert("パスワードが違います");
     }
     function closeHistory() { document.getElementById('history-modal').style.display = 'none'; }
     function resetSalesOnly() { localStorage.removeItem('myPosSalesHistory'); location.reload(); }

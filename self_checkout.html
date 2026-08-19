@@ -6,154 +6,341 @@
   <title>SELF-CHECKOUT</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
   <style>
-    body { font-family: 'Segoe UI', sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; background-color: #1a1a2e; color: #ffffff; border-radius: 15px; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      max-width: 600px;
+      margin: 20px auto;
+      padding: 20px;
+      background-color: #1a1a2e;
+      color: #ffffff;
+      border-radius: 15px;
+    }
     h1 { text-align: center; color: #00fff5; margin-bottom: 5px; }
-    #interactive.viewport { width: 100%; height: 250px; background-color: #000; border: 2px solid #00fff5; border-radius: 10px; overflow: hidden; margin-bottom: 20px; }
-    #interactive.viewport video { width: 100%; height: 100%; object-fit: cover; }
-    .cart { background: #0f3460; padding: 15px; border-radius: 10px; min-height: 120px; border: 1px solid #00fff5; }
-    .total { font-size: 22px; font-weight: bold; text-align: right; margin-top: 15px; color: #ff2e63; }
-    .btn { width: 100%; padding: 15px; font-size: 18px; font-weight: bold; color: white; border: none; border-radius: 10px; cursor: pointer; margin-top: 10px; }
+    .status { text-align: center; color: #00fff5; margin-bottom: 10px; font-weight: bold; }
+    
+    #interactive.viewport {
+      width: 100%;
+      height: 250px;
+      background-color: #000;
+      border: 2px solid #00fff5;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+    #interactive.viewport video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .cart {
+      background: #0f3460;
+      padding: 15px;
+      border-radius: 10px;
+      min-height: 120px;
+      border: 1px solid #00fff5;
+    }
+    .total {
+      font-size: 22px;
+      font-weight: bold;
+      text-align: right;
+      margin-top: 15px;
+      color: #ff2e63;
+    }
+    .btn {
+      width: 100%;
+      padding: 15px;
+      font-size: 18px;
+      font-weight: bold;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
     .pay-btn { background-color: #ff2e63; }
+    .pay-btn:hover { background-color: #e01e4f; }
     .undo-btn { background-color: #ff9900; }
+    .undo-btn:hover { background-color: #e68a00; }
     .history-btn { background-color: #00adb5; }
-    .reset-btn { display: block; margin: 15px auto 0; background: transparent; color: #aaa; border: 1px solid #555; padding: 5px 10px; border-radius: 5px; font-size: 12px; cursor: pointer; }
-    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); justify-content: center; align-items: center; z-index: 100; }
-    .receipt { background: #ffffff; color: #333333; font-family: 'Courier New', monospace; padding: 25px; width: 300px; max-height: 80vh; overflow-y: auto; border-radius: 5px; }
+    .history-btn:hover { background-color: #008891; }
+    
+    .reset-btn {
+      display: block;
+      margin: 10px auto 0;
+      background: transparent;
+      color: #aaa;
+      border: 1px solid #555;
+      padding: 5px 10px;
+      border-radius: 5px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      justify-content: center;
+      align-items: center;
+      z-index: 100;
+    }
+    .receipt {
+      background: #ffffff;
+      color: #333333;
+      font-family: 'Courier New', monospace;
+      padding: 25px;
+      width: 300px;
+      max-height: 80vh;
+      overflow-y: auto;
+      border-radius: 5px;
+      box-shadow: 0 0 20px rgba(255,255,255,0.2);
+    }
+    .receipt h2 { text-align: center; margin: 0 0 10px 0; font-size: 20px; }
+    .receipt-line { border-bottom: 1px dashed #666; margin: 10px 0; }
+    .receipt-item { display: flex; justify-content: space-between; margin: 5px 0; font-size: 14px; }
     .receipt-total { font-size: 18px; font-weight: bold; text-align: right; margin-top: 10px; }
-    .close-btn { width: 100%; padding: 10px; margin-top: 15px; background: #333; color: white; border: none; font-weight: bold; cursor: pointer; }
+    .close-btn {
+      width: 100%;
+      padding: 10px;
+      margin-top: 15px;
+      background: #333;
+      color: white;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
 
-  <h1>SELF-CHECKOUT・</h1>
+  <h1>SELF-CHECKOUT</h1>
+  <div class="status" id="status-msg">カメラにかざしてください</div>
+
+  <!-- カメラ映像 -->
   <div id="interactive" class="viewport"></div>
 
-  <div class="cart" id="cart-list"><p style="color: #888;">スキャンした商品がここに表示されます</p></div>
-  <div class="total">合計: <span id="total-price">0</span> 円</div>
+  <h2>購入リスト</h2>
+  <div class="cart" id="cart-list">
+    <p style="color: #888;">スキャンした商品がここに表示されます</p>
+  </div>
 
+  <div class="total">
+    合計 (税込): <span id="total-price">0</span> 円
+  </div>
+
+  <!-- 操作ボタン群 -->
   <button class="btn undo-btn" onclick="removeLastItem()">直前のスキャンを取り消す</button>
   <button class="btn pay-btn" onclick="pay()">お会計する</button>
   <button class="btn history-btn" onclick="showSalesHistory()">売上履歴を見る</button>
-  
+
   <div style="margin-top:20px; border-top:1px solid #333; padding-top:10px;">
     <button class="reset-btn" onclick="resetSalesOnly()">売上記録だけリセット</button>
-    <button class="reset-btn" onclick="resetAllData()" style="border-color:#ff2e63; color:#ff2e63;">すべてリセット</button>
+    <button class="reset-btn" onclick="resetAllData()" style="border-color:#ff2e63; color:#ff2e63;">すべて（商品データ含む）リセット</button>
   </div>
 
+  <!-- レシート表示ポップアップ -->
   <div class="modal-overlay" id="receipt-modal">
     <div class="receipt">
       <h2>RECEIPT</h2>
+      <div style="text-align: center; font-size: 12px; color: #666;" id="receipt-date"></div>
+      <div class="receipt-line"></div>
       <div id="receipt-items"></div>
+      <div class="receipt-line"></div>
       <div class="receipt-total" id="receipt-total-price"></div>
-      <button class="close-btn" onclick="location.reload()">閉じる</button>
+      <div style="text-align: center; margin-top: 15px; font-size: 12px;">ありがとうございました！</div>
+      <button class="close-btn" onclick="closeReceipt()">閉じる</button>
     </div>
   </div>
 
+  <!-- 売上履歴ポップアップ -->
   <div class="modal-overlay" id="history-modal">
     <div class="receipt">
       <h2>SALES HISTORY</h2>
+      <div style="text-align: center; font-size: 12px; color: #666;">これまでの売上記録</div>
+      <div class="receipt-line"></div>
       <div id="history-list"></div>
+      <div class="receipt-line"></div>
+      <div class="receipt-total" id="history-grand-total"></div>
       <button class="close-btn" onclick="closeHistory()">閉じる</button>
     </div>
   </div>
 
   <script>
+    // パスワード設定（必要に応じて変更してください）
     const SALES_PASSWORD = "4869"; 
+
     let canScan = true;
     let totalPrice = 0;
     let isFirst = true;
     let cartHistory = []; 
+
     let itemDatabase = JSON.parse(localStorage.getItem('myPosDatabase')) || {
-        "4901330502880": { name: "ポテトチップス", price: 160 },
-        "4902102072618": { name: "コカ・コーラ 500ml", price: 150 }
+      "4901330502880": { name: "ポテトチップス", price: 160 },
+      "4902102072618": { name: "コカ・コーラ 500ml", price: 150 },
+      "4901085089330": { name: "お〜いお茶 525ml", price: 140 }
     };
+
     let salesHistory = JSON.parse(localStorage.getItem('myPosSalesHistory')) || [];
 
-    function playSound(freq, duration) {
-      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-      gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-      osc.connect(gain); gain.connect(audioCtx.destination);
-      osc.start(); osc.stop(audioCtx.currentTime + duration);
-    }
-
-    function addItem(name, price) {
-      playSound(1200, 0.08);
-      if (isFirst) { document.getElementById('cart-list').innerHTML = ''; isFirst = false; }
-      const taxPrice = Math.round(price * 1.1);
-      const itemEl = document.createElement('p');
-      itemEl.textContent = `▶ ${name} : ${taxPrice}円`;
-      document.getElementById('cart-list').appendChild(itemEl);
-      cartHistory.push({ name: name, price: taxPrice, element: itemEl });
-      totalPrice += taxPrice;
-      document.getElementById('total-price').textContent = totalPrice;
-    }
-
-    function showSalesHistory() {
-      const input = prompt("売上履歴を見るためのパスワードを入力してください");
-       // ★ここを書き換えてください（playSound 関数と、その上の1行）
+    // 音声処理
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
-    function playSound(freq, duration) {
-      // ブラウザが音を止めていたら「再開」する命令
+    function playSound(freq, duration, type = 'sine') {
       if (audioCtx.state === 'suspended') {
         audioCtx.resume();
       }
-      
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
-      
+      osc.type = type;
       osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
       gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-      
       osc.connect(gain);
       gain.connect(audioCtx.destination);
-      
       osc.start();
       osc.stop(audioCtx.currentTime + duration);
     }
 
+    function playScanSound() { playSound(1200, 0.08); }
+    function playNewItemSound() { playSound(800, 0.1); setTimeout(() => playSound(1000, 0.1), 150); }
+    function playErrorSound() { playSound(220, 0.15, 'sawtooth'); }
 
+    // 商品追加
+    function addItem(name, price) {
+      playScanSound();
+      const cartList = document.getElementById('cart-list');
+      if (isFirst) { cartList.innerHTML = ''; isFirst = false; }
+      
+      const taxPrice = Math.round(price * 1.1);
+      const itemEl = document.createElement('p');
+      itemEl.style.margin = '5px 0';
+      itemEl.textContent = `▶ ${name} : ${price}円 (税込${taxPrice}円)`;
+      cartList.appendChild(itemEl);
+      
+      cartHistory.push({ name: name, price: price, taxPrice: taxPrice, element: itemEl });
+      totalPrice += taxPrice;
+      document.getElementById('total-price').textContent = totalPrice;
+    }
+
+    // 1つ取り消す
+    function removeLastItem() {
+      if (cartHistory.length === 0) { playErrorSound(); alert('商品がありません'); return; }
+      playErrorSound();
+      const last = cartHistory.pop();
+      last.element.remove();
+      totalPrice -= last.taxPrice;
+      document.getElementById('total-price').textContent = totalPrice;
+      if (cartHistory.length === 0) {
+        document.getElementById('cart-list').innerHTML = '<p style="color: #888;">スキャンした商品がここに表示されます</p>';
+        isFirst = true;
+      }
+      document.getElementById('status-msg').textContent = "1つ取り消しました";
+    }
+
+    // お会計処理
+    function pay() {
+      if (cartHistory.length === 0) {
+        playErrorSound();
+        alert('商品が選ばれていません');
+        return;
+      }
+      playScanSound();
+
+      const now = new Date();
+      const dateStr = now.toLocaleString('ja-JP');
+
+      const saleRecord = {
+        date: dateStr,
+        items: cartHistory.map(i => ({ name: i.name, price: i.taxPrice })),
+        total: totalPrice
+      };
+      salesHistory.push(saleRecord);
+      localStorage.setItem('myPosSalesHistory', JSON.stringify(salesHistory));
+
+      document.getElementById('receipt-date').textContent = dateStr;
+      const container = document.getElementById('receipt-items');
+      container.innerHTML = '';
+      cartHistory.forEach(item => {
+        const row = document.createElement('div');
+        row.className = 'receipt-item';
+        row.innerHTML = `<span>${item.name}</span><span>￥${item.taxPrice}</span>`;
+        container.appendChild(row);
+      });
+
+      document.getElementById('receipt-total-price').textContent = `合計 (税込): ￥${totalPrice}`;
+      document.getElementById('receipt-modal').style.display = 'flex';
+    }
+
+    function closeReceipt() {
+      document.getElementById('receipt-modal').style.display = 'none';
+      location.reload();
+    }
+
+    // パスワード付き売上履歴表示
+    function showSalesHistory() {
+      const input = prompt("売上履歴を見るためのパスワードを入力してください");
+      if (input === SALES_PASSWORD) {
+        playScanSound();
         const container = document.getElementById('history-list');
-        container.innerHTML = salesHistory.length === 0 ? '記録なし' : '';
-        salesHistory.forEach((sale, i) => {
-          container.innerHTML += `<div style="margin-bottom:10px;"><small>#${i+1} ${sale.date}</small><br>${sale.items.map(it=>it.name).join(', ')} <br><strong>￥${sale.total}</strong></div>`;
-        });
+        container.innerHTML = '';
+
+        if (salesHistory.length === 0) {
+          container.innerHTML = '<p style="text-align:center; color:#888;">まだお会計の記録がありません</p>';
+          document.getElementById('history-grand-total').textContent = '累計売上: ￥0';
+        } else {
+          let grandTotal = 0;
+          salesHistory.forEach((sale, index) => {
+            grandTotal += sale.total;
+            const block = document.createElement('div');
+            block.style.marginBottom = '15px';
+            block.innerHTML = `
+              <div style="font-size: 10px; color: #666;">#${index + 1} - ${sale.date}</div>
+              ${sale.items.map(i => `<div class="receipt-item"><span>${i.name}</span><span>￥${i.price}</span></div>`).join('')}
+              <div style="text-align: right; font-weight: bold; font-size: 13px; margin-top: 3px;">小計: ￥${sale.total}</div>
+            `;
+            container.appendChild(block);
+          });
+          document.getElementById('history-grand-total').textContent = `累計売上: ￥${grandTotal}`;
+        }
         document.getElementById('history-modal').style.display = 'flex';
       } else if (input !== null) {
-        playSound(220, 0.15);
+        playErrorSound();
         alert("パスワードが違います");
       }
     }
 
-    function closeHistory() { document.getElementById('history-modal').style.display = 'none'; }
-    function resetSalesOnly() { if(confirm('売上記録だけリセットします')){ localStorage.removeItem('myPosSalesHistory'); location.reload(); } }
-    function resetAllData() { if(confirm('すべてリセットします')){ localStorage.removeItem('myPosDatabase'); localStorage.removeItem('myPosSalesHistory'); location.reload(); } }
-    
-    function pay() {
-      if (cartHistory.length === 0) return;
-      salesHistory.push({ date: new Date().toLocaleString(), items: cartHistory, total: totalPrice });
-      localStorage.setItem('myPosSalesHistory', JSON.stringify(salesHistory));
-      document.getElementById('receipt-items').innerHTML = cartHistory.map(i => `<div style="display:flex; justify-content:space-between;"><span>${i.name}</span><span>￥${i.price}</span></div>`).join('');
-      document.getElementById('receipt-total-price').textContent = `合計: ￥${totalPrice}`;
-      document.getElementById('receipt-modal').style.display = 'flex';
+    function closeHistory() {
+      document.getElementById('history-modal').style.display = 'none';
     }
 
-    // 📷 スキャン処理をこれに書き換えてください
+    // リセット機能
+    function resetSalesOnly() {
+      playErrorSound();
+      if (confirm('売上記録だけをリセットしますか？\n（登録した商品は消えません）')) {
+        localStorage.removeItem('myPosSalesHistory');
+        alert('売上記録をリセットしました。');
+        location.reload();
+      }
+    }
+
+    function resetAllData() {
+      playErrorSound();
+      if (confirm('すべて（商品・売上データ）を初期化しますか？')) {
+        localStorage.removeItem('myPosDatabase');
+        localStorage.removeItem('myPosSalesHistory');
+        location.reload();
+      }
+    }
+
+    // カメラ設定（背面カメラ強制）
     Quagga.init({
       inputStream: {
         name: "Live",
         type: "LiveStream",
         target: document.querySelector('#interactive'),
-        constraints: {
-          facingMode: "environment" // ★ここが超重要！背面カメラを強制指定
-        }
+        constraints: { facingMode: "environment" }
       },
-      decoder: {
-        readers: ["ean_reader"]
-      }
+      decoder: { readers: ["ean_reader"] }
     }, function(err) {
       if (err) {
         document.getElementById('status-msg').textContent = "カメラエラー: " + err;
@@ -162,17 +349,18 @@
       Quagga.start();
     });
 
-    Quagga.onDetected((res) => {
+    // スキャン検知
+    Quagga.onDetected(function(result) {
       if (!canScan) return;
-      const code = res.codeResult.code;
-      
-      // ★バーコードが近すぎる場合などを考慮し、少しだけ連続読み取り制限を緩和
-      canScan = false; 
+      const code = result.codeResult.code;
+      canScan = false;
 
       if (itemDatabase[code]) {
         addItem(itemDatabase[code].name, itemDatabase[code].price);
-        setTimeout(() => { canScan = true; }, 1000); // 1秒待機
+        document.getElementById('status-msg').textContent = `読み取り成功！: ${itemDatabase[code].name}`;
+        setTimeout(() => { canScan = true; }, 1500);
       } else {
+        playNewItemSound();
         const newName = prompt(`【新規商品】バーコード: ${code}\n商品名を入力してください:`);
         if (newName) {
           const newPrice = Number(prompt(`価格（税抜き）を入力:`));
@@ -180,32 +368,7 @@
             itemDatabase[code] = { name: newName, price: newPrice };
             localStorage.setItem('myPosDatabase', JSON.stringify(itemDatabase));
             addItem(newName, newPrice);
-          }
-        }
-        setTimeout(() => { canScan = true; }, 1000);
-      }
-    });
-
-
-    
-    // ★修正済み：スキャン処理
-    Quagga.onDetected((res) => {
-      if (!canScan) return;
-      const code = res.codeResult.code;
-      canScan = false; // 読み取りを一時停止
-
-      if (itemDatabase[code]) {
-        addItem(itemDatabase[code].name, itemDatabase[code].price);
-        setTimeout(() => { canScan = true; }, 1500);
-      } else {
-        // 新規登録処理
-        const newName = prompt(`【新規商品】商品名を入力してください:`);
-        if (newName) {
-          const newPrice = Number(prompt(`価格（税抜き）を入力:`));
-          if (!isNaN(newPrice) && newPrice > 0) {
-            itemDatabase[code] = { name: newName, price: newPrice };
-            localStorage.setItem('myPosDatabase', JSON.stringify(itemDatabase));
-            addItem(newName, newPrice);
+            document.getElementById('status-msg').textContent = `登録完了！: ${newName}`;
           }
         }
         setTimeout(() => { canScan = true; }, 1000);

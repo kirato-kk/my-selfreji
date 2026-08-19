@@ -148,27 +148,55 @@
     }
 
     // お会計処理
+    // お会計処理（商品名・価格の内訳も売上履歴に保存する）
     function pay() {
       if (cartHistory.length === 0) return;
+
+      // レシート表示の作成
       const container = document.getElementById('receipt-items');
       container.innerHTML = cartHistory.map(i => `<div class="receipt-item"><span>${i.name}</span><span>${i.taxPrice}円</span></div>`).join('');
       document.getElementById('receipt-total').textContent = `合計: ${totalPrice}円`;
       document.getElementById('receipt-modal').style.display = 'flex';
-      
-      salesHistory.push({ date: new Date().toLocaleString(), total: totalPrice });
+
+      // ★修正箇所：購入された商品名と価格のリストを作成
+      const itemsPurchased = cartHistory.map(i => `${i.name} (${i.taxPrice}円)`).join(', ');
+
+      // 売上履歴に「購入商品リスト」も追加して保存
+      salesHistory.push({
+        date: new Date().toLocaleString(),
+        total: totalPrice,
+        items: itemsPurchased // 商品名を記録
+      });
       localStorage.setItem('myPosSalesHistory', JSON.stringify(salesHistory));
     }
 
+
     // 売上履歴表示（パスワード保護）
+    // 売上履歴表示（商品名も一覧に表示する）
     function showSalesHistory() {
-      const input = prompt("管理用パスワードを入力");
+      const input = prompt("管理用パスワードを入力:");
       if (input === SALES_PASSWORD) {
-        document.getElementById('history-list').innerHTML = salesHistory.length === 0 ? "履歴なし" : salesHistory.map(s => `<div>${s.date}: ${s.total}円</div>`).join('');
+        const historyContainer = document.getElementById('history-list');
+
+        if (salesHistory.length === 0) {
+          historyContainer.innerHTML = "履歴なし";
+        } else {
+          // ★修正箇所：日時・合計金額だけでなく、購入した商品名も表示する
+          historyContainer.innerHTML = salesHistory.map(s => {
+            const itemList = s.items ? `<br><small style="color:#666;">内訳: ${s.items}</small>` : '';
+            return `<div style="margin-bottom: 10px; border-bottom: 1px dashed #ccc; padding-bottom: 5px;">
+                      <strong>${s.date}</strong><br>
+                      合計: ${s.total}円 ${itemList}
+                    </div>`;
+          }).join('');
+        }
+
         document.getElementById('history-modal').style.display = 'flex';
       } else if (input !== null) {
         alert("パスワードが違います");
       }
     }
+
 
     function resetSalesOnly() { if(confirm("売上記録を削除しますか？")){ localStorage.removeItem('myPosSalesHistory'); location.reload(); } }
     function resetAllData() { if(confirm("すべての登録データと売上を削除しますか？")){ localStorage.clear(); location.reload(); } }

@@ -93,7 +93,7 @@
 
     // 📊 パスワード付き売上履歴表示
     function showSalesHistory() {
-      const input = prompt("売上履歴を見るためのパスワードを入力してください：");
+      const input = prompt("売上履歴を見るためのパスワードを入力してください");
       if (input === SALES_PASSWORD) {
         playSound(1200, 0.08);
         const container = document.getElementById('history-list');
@@ -104,7 +104,7 @@
         document.getElementById('history-modal').style.display = 'flex';
       } else if (input !== null) {
         playSound(220, 0.15);
-        alert("パスワードが違います！");
+        alert("パスワードが違います");
       }
     }
 

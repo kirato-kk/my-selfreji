@@ -22,6 +22,7 @@
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); justify-content: center; align-items: center; z-index: 100; }
     .receipt { background: #ffffff; color: #333333; font-family: 'Courier New', monospace; padding: 25px; width: 300px; max-height: 80vh; overflow-y: auto; border-radius: 5px; }
     .receipt h2 { text-align: center; margin: 0 0 10px 0; font-size: 20px; }
+    .receipt-item { display: flex; justify-content: space-between; margin: 5px 0; font-size: 14px; }
     .close-btn { width: 100%; padding: 10px; margin-top: 15px; background: #333; color: white; border: none; font-weight: bold; cursor: pointer; }
     .small-btn { font-size: 12px; padding: 3px 8px; margin-left: 5px; cursor: pointer; border: none; border-radius: 3px; }
   </style>
@@ -46,6 +47,18 @@
     <button class="reset-btn" onclick="resetAllData()" style="border-color:#ff2e63; color:#ff2e63;">すべてリセット</button>
   </div>
 
+  <!-- レシート表示画面 -->
+  <div class="modal-overlay" id="receipt-modal">
+    <div class="receipt">
+      <h2>レシート</h2>
+      <div id="receipt-items"></div>
+      <hr>
+      <div id="receipt-total" style="font-weight:bold; text-align:right;"></div>
+      <button class="close-btn" onclick="closeReceipt()">閉じる</button>
+    </div>
+  </div>
+
+  <!-- 商品管理画面 -->
   <div class="modal-overlay" id="manager-modal">
     <div class="receipt">
       <h2>商品管理</h2>
@@ -54,25 +67,22 @@
     </div>
   </div>
 
+  <!-- 売上履歴画面 -->
   <div class="modal-overlay" id="history-modal">
     <div class="receipt">
-      <h2>SALES HISTORY</h2>
+      <h2>売上履歴</h2>
       <div id="history-list"></div>
       <button class="close-btn" onclick="closeHistory()">閉じる</button>
     </div>
   </div>
 
   <script>
-    const SALES_PASSWORD = "4869"; 
-    let canScan = true;
-    let totalPrice = 0;
-    let isFirst = true;
-    let cartHistory = []; 
-    let itemDatabase = JSON.parse(localStorage.getItem('myPosDatabase')) || {
-      "4901330502880": { name: "ポテトチップス", price: 160 }
-    };
+    const SALES_PASSWORD = "1234"; 
+    let canScan = true, totalPrice = 0, isFirst = true, cartHistory = []; 
+    let itemDatabase = JSON.parse(localStorage.getItem('myPosDatabase')) || { "4901330502880": { name: "ポテトチップス", price: 160 } };
     let salesHistory = JSON.parse(localStorage.getItem('myPosSalesHistory')) || [];
 
+    // 音声効果
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     function playSound(freq, duration, type = 'sine') {
       if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -84,47 +94,38 @@
       osc.start(); osc.stop(audioCtx.currentTime + duration);
     }
 
-    // 商品管理（パスワード保護付き）
+    // 商品管理画面（パスワード保護）
     function openDatabaseManager() {
       const input = prompt("管理用パスワードを入力");
       if (input !== SALES_PASSWORD) { alert("パスワードが違います"); return; }
-      
       const container = document.getElementById('manager-list');
       container.innerHTML = '';
       for (let code in itemDatabase) {
         const item = itemDatabase[code];
-        const div = document.createElement('div');
-        div.style.marginBottom = "10px";
-        div.innerHTML = `<div><strong>${item.name}</strong> (${item.price}円)</div>
-                         <button class="small-btn" onclick="editItem('${code}')">編集</button>
-                         <button class="small-btn" onclick="deleteItem('${code}')" style="background:#ff7675;">削除</button>`;
-        container.appendChild(div);
+        container.innerHTML += `<div style="margin-bottom:10px;"><strong>${item.name}</strong> (${item.price}円) <button class="small-btn" onclick="editItem('${code}')">✏️</button><button class="small-btn" onclick="deleteItem('${code}')" style="background:#ff7675;">❌</button></div>`;
       }
       document.getElementById('manager-modal').style.display = 'flex';
     }
     
     function closeManager() { document.getElementById('manager-modal').style.display = 'none'; }
+    function closeReceipt() { document.getElementById('receipt-modal').style.display = 'none'; location.reload(); }
+    function closeHistory() { document.getElementById('history-modal').style.display = 'none'; }
     
     function editItem(code) {
-      const newName = prompt("新しい商品名", itemDatabase[code].name);
-      if (newName) {
-        const newPrice = Number(prompt("新しい価格", itemDatabase[code].price));
-        if (!isNaN(newPrice)) {
-          itemDatabase[code] = { name: newName, price: newPrice };
-          localStorage.setItem('myPosDatabase', JSON.stringify(itemDatabase));
-          openDatabaseManager();
-        }
+      const n = prompt("新しい商品名", itemDatabase[code].name);
+      if (n) {
+        const p = Number(prompt("新しい価格", itemDatabase[code].price));
+        if (!isNaN(p)) { itemDatabase[code] = { name: n, price: p }; localStorage.setItem('myPosDatabase', JSON.stringify(itemDatabase)); openDatabaseManager(); }
       }
     }
     
     function deleteItem(code) {
-      if (confirm(`削除しますか？`)) {
-        delete itemDatabase[code];
-        localStorage.setItem('myPosDatabase', JSON.stringify(itemDatabase));
-        openDatabaseManager();
+      if (confirm(`${itemDatabase[code].name} を削除しますか？`)) {
+        delete itemDatabase[code]; localStorage.setItem('myPosDatabase', JSON.stringify(itemDatabase)); openDatabaseManager();
       }
     }
 
+    // カート追加処理
     function addItem(name, price) {
       playSound(1200, 0.08);
       if (isFirst) { document.getElementById('cart-list').innerHTML = ''; isFirst = false; }
@@ -137,36 +138,42 @@
       document.getElementById('total-price').textContent = totalPrice;
     }
 
-    function removeLastItem() { if (cartHistory.length > 0) { const last = cartHistory.pop(); last.element.remove(); totalPrice -= last.taxPrice; document.getElementById('total-price').textContent = totalPrice; } }
+    function removeLastItem() {
+      if (cartHistory.length > 0) {
+        const last = cartHistory.pop();
+        last.element.remove();
+        totalPrice -= last.taxPrice;
+        document.getElementById('total-price').textContent = totalPrice;
+      }
+    }
 
-   // お会計処理（レシート表示・売上保存）
+    // お会計処理
     function pay() {
       if (cartHistory.length === 0) return;
-      
-      // レシートに商品リストと合計を表示
       const container = document.getElementById('receipt-items');
       container.innerHTML = cartHistory.map(i => `<div class="receipt-item"><span>${i.name}</span><span>${i.taxPrice}円</span></div>`).join('');
       document.getElementById('receipt-total').textContent = `合計: ${totalPrice}円`;
-      
-      // レシート画面（モーダル）を開く
       document.getElementById('receipt-modal').style.display = 'flex';
       
-      // 売上履歴に記録を保存
       salesHistory.push({ date: new Date().toLocaleString(), total: totalPrice });
       localStorage.setItem('myPosSalesHistory', JSON.stringify(salesHistory));
     }
 
- 
-
+    // 売上履歴表示（パスワード保護）
     function showSalesHistory() {
       const input = prompt("管理用パスワードを入力");
-      if (input === SALES_PASSWORD) { document.getElementById('history-modal').style.display = 'flex'; }
-      else if(input !== null) alert("パスワードが違います");
+      if (input === SALES_PASSWORD) {
+        document.getElementById('history-list').innerHTML = salesHistory.length === 0 ? "履歴なし" : salesHistory.map(s => `<div>${s.date}: ${s.total}円</div>`).join('');
+        document.getElementById('history-modal').style.display = 'flex';
+      } else if (input !== null) {
+        alert("パスワードが違います");
+      }
     }
-    function closeHistory() { document.getElementById('history-modal').style.display = 'none'; }
-    function resetSalesOnly() { localStorage.removeItem('myPosSalesHistory'); location.reload(); }
-    function resetAllData() { localStorage.removeItem('myPosDatabase'); localStorage.removeItem('myPosSalesHistory'); location.reload(); }
 
+    function resetSalesOnly() { if(confirm("売上記録を削除しますか？")){ localStorage.removeItem('myPosSalesHistory'); location.reload(); } }
+    function resetAllData() { if(confirm("すべての登録データと売上を削除しますか？")){ localStorage.clear(); location.reload(); } }
+
+    // Quaggaカメラ読み取り設定
     Quagga.init({
       inputStream: { type: "LiveStream", target: document.querySelector('#interactive'), constraints: { facingMode: "environment" } },
       decoder: { readers: ["ean_reader", "ean_8_reader"] }
@@ -176,15 +183,16 @@
       if (!canScan) return;
       const code = res.codeResult.code;
       canScan = false;
-      if (itemDatabase[code]) { addItem(itemDatabase[code].name, itemDatabase[code].price); }
-      else {
-        const newName = prompt("【新規商品】商品名");
-        if (newName) {
-          const newPrice = Number(prompt("価格"));
-          if (!isNaN(newPrice)) {
-            itemDatabase[code] = { name: newName, price: newPrice };
+      if (itemDatabase[code]) {
+        addItem(itemDatabase[code].name, itemDatabase[code].price);
+      } else {
+        const n = prompt("【新規商品】商品名を入力");
+        if (n) {
+          const p = Number(prompt("価格を入力"));
+          if (!isNaN(p)) {
+            itemDatabase[code] = { name: n, price: p };
             localStorage.setItem('myPosDatabase', JSON.stringify(itemDatabase));
-            addItem(newName, newPrice);
+            addItem(n, p);
           }
         }
       }

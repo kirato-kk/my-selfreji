@@ -120,7 +120,52 @@
       document.getElementById('receipt-modal').style.display = 'flex';
     }
 
-    Quagga.init({ inputStream: { type: "LiveStream", target: document.querySelector('#interactive') }, decoder: { readers: ["ean_reader"] } }, (err) => { if(!err) Quagga.start(); });
+    // 📷 スキャン処理をこれに書き換えてください
+    Quagga.init({
+      inputStream: {
+        name: "Live",
+        type: "LiveStream",
+        target: document.querySelector('#interactive'),
+        constraints: {
+          facingMode: "environment" // ★ここが超重要！背面カメラを強制指定
+        }
+      },
+      decoder: {
+        readers: ["ean_reader"]
+      }
+    }, function(err) {
+      if (err) {
+        document.getElementById('status-msg').textContent = "カメラエラー: " + err;
+        return;
+      }
+      Quagga.start();
+    });
+
+    Quagga.onDetected((res) => {
+      if (!canScan) return;
+      const code = res.codeResult.code;
+      
+      // ★バーコードが近すぎる場合などを考慮し、少しだけ連続読み取り制限を緩和
+      canScan = false; 
+
+      if (itemDatabase[code]) {
+        addItem(itemDatabase[code].name, itemDatabase[code].price);
+        setTimeout(() => { canScan = true; }, 1000); // 1秒待機
+      } else {
+        const newName = prompt(`【新規商品】バーコード: ${code}\n商品名を入力してください:`);
+        if (newName) {
+          const newPrice = Number(prompt(`価格（税抜き）を入力:`));
+          if (!isNaN(newPrice) && newPrice > 0) {
+            itemDatabase[code] = { name: newName, price: newPrice };
+            localStorage.setItem('myPosDatabase', JSON.stringify(itemDatabase));
+            addItem(newName, newPrice);
+          }
+        }
+        setTimeout(() => { canScan = true; }, 1000);
+      }
+    });
+
+
     
     // ★修正済み：スキャン処理
     Quagga.onDetected((res) => {

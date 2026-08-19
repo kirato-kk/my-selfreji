@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>本格カメラセルフレジ</title>
+  <title>SELF-CHECKOUT</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
   <style>
     body { font-family: 'Segoe UI', sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; background-color: #1a1a2e; color: #ffffff; border-radius: 15px; }
@@ -32,7 +32,7 @@
 </head>
 <body>
 
-  <h1>🛒 AI CAMERA POS</h1>
+  <h1>SELF-CHECKOUT</h1>
   <div class="status" id="status-msg">カメラにかざしてください</div>
   <div id="interactive" class="viewport"></div>
 
@@ -40,15 +40,15 @@
   <div class="cart" id="cart-list"><p style="color: #888;">スキャンした商品がここに表示されます</p></div>
   <div class="total">合計 (税込): <span id="total-price">0</span> 円</div>
 
-  <button class="btn undo-btn" onclick="removeLastItem()">↩️ 直前のスキャンを取り消す</button>
-  <button class="btn pay-btn" onclick="completeTransaction('現金')">💵 現金でお会計</button>
-  <button class="btn paypay-btn" onclick="startPayPayPayment()">📱 PayPayでお会計</button>
-  <button class="btn history-btn" onclick="showSalesHistory()">📊 売上履歴を見る</button>
-  <button class="btn edit-btn" onclick="openDatabaseManager()">✏️ 商品を編集・削除</button>
+  <button class="btn undo-btn" onclick="removeLastItem()">直前のスキャンを取り消す</button>
+  <button class="btn pay-btn" onclick="completeTransaction('現金')">現金でお会計</button>
+  <button class="btn paypay-btn" onclick="startPayPayPayment()">PayPayでお会計</button>
+  <button class="btn history-btn" onclick="showSalesHistory()">売上履歴</button>
+  <button class="btn edit-btn" onclick="openDatabaseManager()">商品を編集・削除</button>
 
   <div style="margin-top:20px; border-top:1px solid #333; padding-top:10px;">
-    <button class="reset-btn" onclick="resetSalesOnly()">⚠️ 売上記録だけリセット</button>
-    <button class="reset-btn" onclick="resetAllData()" style="border-color:#ff2e63; color:#ff2e63;">❌ すべて初期化</button>
+    <button class="reset-btn" onclick="resetSalesOnly()">売上記録のみリセット</button>
+    <button class="reset-btn" onclick="resetAllData()" style="border-color:#ff2e63; color:#ff2e63;">すべてリセット</button>
   </div>
 
   <!-- PayPay決済画面 -->
@@ -98,7 +98,7 @@
   </div>
 
   <script>
-    const SALES_PASSWORD = "1234"; 
+    const SALES_PASSWORD = "4869"; 
     let canScan = true, totalPrice = 0, isFirst = true, cartHistory = []; 
     let itemDatabase = JSON.parse(localStorage.getItem('myPosDatabase')) || { "4901330502880": { name: "ポテトチップス", price: 160 } };
     let salesHistory = JSON.parse(localStorage.getItem('myPosSalesHistory')) || [];
@@ -140,7 +140,7 @@
 
     // 商品管理（パスワードは開く時のみ確認）
     function openDatabaseManager() {
-      const input = prompt("管理用パスワードを入力:");
+      const input = prompt("管理用パスワードを入力");
       if (input !== SALES_PASSWORD) { 
         if (input !== null) alert("パスワードが違います"); 
         return; 
@@ -165,9 +165,9 @@
     
     // 編集・削除（パスワード確認なしで実行）
     function editItem(code) {
-      const n = prompt("新しい商品名:", itemDatabase[code].name);
+      const n = prompt("新しい商品名", itemDatabase[code].name);
       if (n) {
-        const p = Number(prompt("新しい価格:", itemDatabase[code].price));
+        const p = Number(prompt("新しい価格", itemDatabase[code].price));
         if (!isNaN(p)) { 
           itemDatabase[code] = { name: n, price: p }; 
           localStorage.setItem('myPosDatabase', JSON.stringify(itemDatabase)); 
@@ -225,8 +225,8 @@
       if (cartHistory.length === 0) return;
       const container = document.getElementById('receipt-items');
       container.innerHTML = cartHistory.map(i => `<div class="receipt-item"><span>${i.name}</span><span>${i.taxPrice}円</span></div>`).join('');
-      document.getElementById('receipt-method').textContent = `[支払い方法: ${method}]`;
-      document.getElementById('receipt-total').textContent = `合計: ${totalPrice}円`;
+      document.getElementById('receipt-method').textContent = `[支払い方法 ${method}]`;
+      document.getElementById('receipt-total').textContent = `合計 ${totalPrice}円`;
       document.getElementById('receipt-modal').style.display = 'flex';
       
       const itemsPurchased = cartHistory.map(i => `${i.name} (${i.taxPrice}円)`).join(', ');
@@ -236,7 +236,7 @@
 
     // 売上履歴表示（内訳と支払い方法を表示）
     function showSalesHistory() {
-      const input = prompt("管理用パスワードを入力:");
+      const input = prompt("管理用パスワードを入力");
       if (input === SALES_PASSWORD) {
         const historyContainer = document.getElementById('history-list');
         if (salesHistory.length === 0) {
@@ -247,7 +247,7 @@
             const payMethod = s.method ? ` (${s.method})` : '';
             return `<div style="margin-bottom: 10px; border-bottom: 1px dashed #ccc; padding-bottom: 5px;">
                       <strong>${s.date}</strong>${payMethod}<br>
-                      合計: ${s.total}円 ${itemList}
+                      合計 ${s.total}円 ${itemList}
                     </div>`;
           }).join('');
         }
@@ -279,9 +279,9 @@
       if (itemDatabase[code]) {
         addItem(itemDatabase[code].name, itemDatabase[code].price);
       } else {
-        const n = prompt("【新規商品】商品名を入力:");
+        const n = prompt("【新規商品】商品名を入力");
         if (n) {
-          const p = Number(prompt("価格を入力:"));
+          const p = Number(prompt("価格を入力"));
           if (!isNaN(p)) {
             itemDatabase[code] = { name: n, price: p };
             localStorage.setItem('myPosDatabase', JSON.stringify(itemDatabase));

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>本格カメラセルフレジ</title>
+  <title>SELF-CHECKOUT</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
   <style>
     body { font-family: 'Segoe UI', sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; background-color: #1a1a2e; color: #ffffff; border-radius: 15px; }
@@ -30,7 +30,7 @@
 </head>
 <body>
 
-  <h1>🛒 AI CAMERA POS</h1>
+  <h1>SELF-CHECKOUT</h1>
   <div class="status" id="status-msg">カメラにかざしてください</div>
   <div id="interactive" class="viewport"></div>
 
@@ -38,14 +38,14 @@
   <div class="cart" id="cart-list"><p style="color: #888;">スキャンした商品がここに表示されます</p></div>
   <div class="total">合計 (税込): <span id="total-price">0</span> 円</div>
 
-  <button class="btn undo-btn" onclick="removeLastItem()">↩️ 直前のスキャンを取り消す</button>
-  <button class="btn pay-btn" onclick="openStaffCheck()">💵 お会計する</button>
-  <button class="btn history-btn" onclick="showSalesHistory()">📊 売上履歴を見る</button>
-  <button class="btn edit-btn" onclick="openDatabaseManager()">✏️ 商品を編集・削除</button>
+  <button class="btn undo-btn" onclick="removeLastItem()">直前のスキャンを取り消す</button>
+  <button class="btn pay-btn" onclick="openStaffCheck()">お会計する</button>
+  <button class="btn history-btn" onclick="showSalesHistory()">売上履歴を見る</button>
+  <button class="btn edit-btn" onclick="openDatabaseManager()">商品を編集・削除</button>
 
   <div style="margin-top:20px; border-top:1px solid #333; padding-top:10px;">
-    <button class="reset-btn" onclick="resetSalesOnly()">⚠️ 売上記録だけリセット</button>
-    <button class="reset-btn" onclick="resetAllData()" style="border-color:#ff2e63; color:#ff2e63;">❌ すべて初期化</button>
+    <button class="reset-btn" onclick="resetSalesOnly()">売上記録だけリセット</button>
+    <button class="reset-btn" onclick="resetAllData()" style="border-color:#ff2e63; color:#ff2e63;">すべて初期化</button>
   </div>
 
   <!-- スタッフ確認画面 -->
@@ -55,7 +55,7 @@
         <h2 style="color: white; margin: 0; font-size: 18px;">スタッフに見せてください</h2>
       </div>
       <p style="font-size: 26px; font-weight: bold; margin: 20px 0; color: #ff2e63;"><span id="staff-amount">0</span> 円</p>
-      <button class="btn pay-btn" onclick="confirmPayment()">完了</button>
+      <button class="btn pay-btn" onclick="confirmPayment()">確認</button>
       <button class="close-btn" onclick="closeStaffModal()">戻る</button>
     </div>
   </div>
@@ -90,7 +90,7 @@
   </div>
 
   <script>
-    const SALES_PASSWORD = "1234"; 
+    const SALES_PASSWORD = "4869"; 
     let canScan = true, totalPrice = 0, isFirst = true, cartHistory = []; 
     let itemDatabase = JSON.parse(localStorage.getItem('myPosDatabase')) || { "4901330502880": { name: "ポテトチップス", price: 160 } };
     let salesHistory = JSON.parse(localStorage.getItem('myPosSalesHistory')) || [];
@@ -109,7 +109,7 @@
 
     // 商品管理（パスワードは最初のみ）
     function openDatabaseManager() {
-      const input = prompt("管理用パスワードを入力:");
+      const input = prompt("管理用パスワードを入力");
       if (input !== SALES_PASSWORD) { 
         if (input !== null) alert("パスワードが違います"); 
         return; 
@@ -133,9 +133,9 @@
     function closeStaffModal() { document.getElementById('staff-modal').style.display = 'none'; }
     
     function editItem(code) {
-      const n = prompt("新しい商品名:", itemDatabase[code].name);
+      const n = prompt("新しい商品名", itemDatabase[code].name);
       if (n) {
-        const p = Number(prompt("新しい価格:", itemDatabase[code].price));
+        const p = Number(prompt("新しい価格", itemDatabase[code].price));
         if (!isNaN(p)) { 
           itemDatabase[code] = { name: n, price: p }; 
           localStorage.setItem('myPosDatabase', JSON.stringify(itemDatabase)); 
@@ -196,7 +196,7 @@
 
     // 売上履歴表示
     function showSalesHistory() {
-      const input = prompt("管理用パスワードを入力:");
+      const input = prompt("管理用パスワードを入力");
       if (input === SALES_PASSWORD) {
         const historyContainer = document.getElementById('history-list');
         if (salesHistory.length === 0) {
@@ -216,7 +216,7 @@
       }
     }
 
-    function resetSalesOnly() { if(confirm("売上記録をクリアしますか？")){ localStorage.removeItem('myPosSalesHistory'); location.reload(); } }
+    function resetSalesOnly() { if(confirm("売上記録を削除しますか？")){ localStorage.removeItem('myPosSalesHistory'); location.reload(); } }
     function resetAllData() { if(confirm("すべての登録データと売上を削除しますか？")){ localStorage.clear(); location.reload(); } }
 
     Quagga.init({

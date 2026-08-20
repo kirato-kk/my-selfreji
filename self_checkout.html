@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SELF-CHECKOUT</title>
+  <title>本格カメラセルフレジ</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
   <style>
     body { font-family: 'Segoe UI', sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; background-color: #1a1a2e; color: #ffffff; border-radius: 15px; }
@@ -15,7 +15,6 @@
     .total { font-size: 22px; font-weight: bold; text-align: right; margin-top: 15px; color: #ff2e63; }
     .btn { width: 100%; padding: 15px; font-size: 18px; font-weight: bold; color: white; border: none; border-radius: 10px; cursor: pointer; margin-top: 10px; }
     .pay-btn { background-color: #ff2e63; }
-    .paypay-btn { background-color: #ff0033; border: 2px solid #fff; margin-top: 8px; }
     .undo-btn { background-color: #ff9900; }
     .history-btn { background-color: #00adb5; }
     .edit-btn { background-color: #6c5ce7; }
@@ -26,13 +25,12 @@
     .receipt-item { display: flex; justify-content: space-between; margin: 5px 0; font-size: 14px; }
     .close-btn { width: 100%; padding: 10px; margin-top: 15px; background: #333; color: white; border: none; font-weight: bold; cursor: pointer; border-radius: 5px; }
     .small-btn { font-size: 12px; padding: 3px 8px; margin-left: 5px; cursor: pointer; border: none; border-radius: 3px; }
-    .paypay-box { background: #ff0033; color: white; padding: 15px; border-radius: 10px; margin-bottom: 15px; }
-    .qr-img { width: 140px; height: 140px; background: white; margin: 10px auto; padding: 5px; border-radius: 5px; }
+    .staff-box { background: #ff2e63; color: white; padding: 15px; border-radius: 10px; margin-bottom: 15px; }
   </style>
 </head>
 <body>
 
-  <h1>SELF-CHECKOUT</h1>
+  <h1>🛒 AI CAMERA POS</h1>
   <div class="status" id="status-msg">カメラにかざしてください</div>
   <div id="interactive" class="viewport"></div>
 
@@ -40,30 +38,25 @@
   <div class="cart" id="cart-list"><p style="color: #888;">スキャンした商品がここに表示されます</p></div>
   <div class="total">合計 (税込): <span id="total-price">0</span> 円</div>
 
-  <button class="btn undo-btn" onclick="removeLastItem()">直前のスキャンを取り消す</button>
-  <button class="btn pay-btn" onclick="completeTransaction('現金')">現金でお会計</button>
-  <button class="btn paypay-btn" onclick="startPayPayPayment()">PayPayでお会計</button>
-  <button class="btn history-btn" onclick="showSalesHistory()">売上履歴</button>
-  <button class="btn edit-btn" onclick="openDatabaseManager()">商品を編集・削除</button>
+  <button class="btn undo-btn" onclick="removeLastItem()">↩️ 直前のスキャンを取り消す</button>
+  <button class="btn pay-btn" onclick="openStaffCheck()">💵 お会計する</button>
+  <button class="btn history-btn" onclick="showSalesHistory()">📊 売上履歴を見る</button>
+  <button class="btn edit-btn" onclick="openDatabaseManager()">✏️ 商品を編集・削除</button>
 
   <div style="margin-top:20px; border-top:1px solid #333; padding-top:10px;">
-    <button class="reset-btn" onclick="resetSalesOnly()">売上記録のみリセット</button>
-    <button class="reset-btn" onclick="resetAllData()" style="border-color:#ff2e63; color:#ff2e63;">すべてリセット</button>
+    <button class="reset-btn" onclick="resetSalesOnly()">⚠️ 売上記録だけリセット</button>
+    <button class="reset-btn" onclick="resetAllData()" style="border-color:#ff2e63; color:#ff2e63;">❌ すべて初期化</button>
   </div>
 
-  <!-- PayPay決済画面 -->
-  <div class="modal-overlay" id="paypay-modal">
+  <!-- スタッフ確認画面 -->
+  <div class="modal-overlay" id="staff-modal">
     <div class="receipt">
-      <div class="paypay-box">
-        <h2 style="color: white; margin: 0;">PayPay 決済</h2>
-        <p style="margin: 5px 0; font-size: 13px;">スキャンして決済を完了してください</p>
+      <div class="staff-box">
+        <h2 style="color: white; margin: 0; font-size: 18px;">スタッフに見せてください</h2>
       </div>
-      <div class="qr-img">
-        <img src="https://api.qrserver.com/v1/create-qr-code/?size=130x130&data=https://paypay.ne.jp" alt="PayPay QR" style="width:100%; height:100%;">
-      </div>
-      <p style="font-size: 18px; font-weight: bold; margin: 10px 0;">お支払い額: <span id="paypay-amount">0</span>円</p>
-      <button class="btn paypay-btn" onclick="confirmPayPayPay()">決済を確定する</button>
-      <button class="close-btn" onclick="closePayPayModal()">キャンセル</button>
+      <p style="font-size: 26px; font-weight: bold; margin: 20px 0; color: #ff2e63;"><span id="staff-amount">0</span> 円</p>
+      <button class="btn pay-btn" onclick="confirmPayment()">完了</button>
+      <button class="close-btn" onclick="closeStaffModal()">戻る</button>
     </div>
   </div>
 
@@ -71,7 +64,6 @@
   <div class="modal-overlay" id="receipt-modal">
     <div class="receipt">
       <h2>レシート</h2>
-      <p id="receipt-method" style="font-size:12px; color:#666; margin-top:-5px; text-align:center;"></p>
       <div id="receipt-items"></div>
       <hr>
       <div id="receipt-total" style="font-weight:bold; text-align:right;"></div>
@@ -98,14 +90,13 @@
   </div>
 
   <script>
-    const SALES_PASSWORD = "4869"; 
+    const SALES_PASSWORD = "1234"; 
     let canScan = true, totalPrice = 0, isFirst = true, cartHistory = []; 
     let itemDatabase = JSON.parse(localStorage.getItem('myPosDatabase')) || { "4901330502880": { name: "ポテトチップス", price: 160 } };
     let salesHistory = JSON.parse(localStorage.getItem('myPosSalesHistory')) || [];
 
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     
-    // スキャン音
     function playSound(freq, duration, type = 'sine') {
       if (audioCtx.state === 'suspended') audioCtx.resume();
       const osc = audioCtx.createOscillator();
@@ -116,31 +107,9 @@
       osc.start(); osc.stop(audioCtx.currentTime + duration);
     }
 
-    // PayPay決済音（ペーイペイ♪）
-    function playPayPaySound() {
-      if (audioCtx.state === 'suspended') audioCtx.resume();
-      const now = audioCtx.currentTime;
-      
-      const osc1 = audioCtx.createOscillator();
-      const gain1 = audioCtx.createGain();
-      osc1.type = 'sine';
-      osc1.frequency.setValueAtTime(523.25, now);
-      gain1.gain.setValueAtTime(0.15, now);
-      osc1.connect(gain1); gain1.connect(audioCtx.destination);
-      osc1.start(now); osc1.stop(now + 0.12);
-
-      const osc2 = audioCtx.createOscillator();
-      const gain2 = audioCtx.createGain();
-      osc2.type = 'sine';
-      osc2.frequency.setValueAtTime(659.25, now + 0.12);
-      gain2.gain.setValueAtTime(0.2, now + 0.12);
-      osc2.connect(gain2); gain2.connect(audioCtx.destination);
-      osc2.start(now + 0.12); osc2.stop(now + 0.35);
-    }
-
-    // 商品管理（パスワードは開く時のみ確認）
+    // 商品管理（パスワードは最初のみ）
     function openDatabaseManager() {
-      const input = prompt("管理用パスワードを入力");
+      const input = prompt("管理用パスワードを入力:");
       if (input !== SALES_PASSWORD) { 
         if (input !== null) alert("パスワードが違います"); 
         return; 
@@ -161,13 +130,12 @@
     function closeManager() { document.getElementById('manager-modal').style.display = 'none'; }
     function closeReceipt() { document.getElementById('receipt-modal').style.display = 'none'; location.reload(); }
     function closeHistory() { document.getElementById('history-modal').style.display = 'none'; }
-    function closePayPayModal() { document.getElementById('paypay-modal').style.display = 'none'; }
+    function closeStaffModal() { document.getElementById('staff-modal').style.display = 'none'; }
     
-    // 編集・削除（パスワード確認なしで実行）
     function editItem(code) {
-      const n = prompt("新しい商品名", itemDatabase[code].name);
+      const n = prompt("新しい商品名:", itemDatabase[code].name);
       if (n) {
-        const p = Number(prompt("新しい価格", itemDatabase[code].price));
+        const p = Number(prompt("新しい価格:", itemDatabase[code].price));
         if (!isNaN(p)) { 
           itemDatabase[code] = { name: n, price: p }; 
           localStorage.setItem('myPosDatabase', JSON.stringify(itemDatabase)); 
@@ -205,38 +173,30 @@
       }
     }
 
-    // PayPay処理
-    function startPayPayPayment() {
+    // 「お会計する」ボタンを押したとき（確認画面を表示）
+    function openStaffCheck() {
       if (cartHistory.length === 0) return;
-      document.getElementById('paypay-amount').textContent = totalPrice;
-      document.getElementById('paypay-modal').style.display = 'flex';
+      document.getElementById('staff-amount').textContent = totalPrice;
+      document.getElementById('staff-modal').style.display = 'flex';
     }
 
-    function confirmPayPayPay() {
-      playPayPaySound();
-      closePayPayModal();
-      setTimeout(() => {
-        completeTransaction("PayPay");
-      }, 300);
-    }
-
-    // お会計完了処理（現金・PayPay共通）
-    function completeTransaction(method) {
-      if (cartHistory.length === 0) return;
+    // 「完了」ボタンを押したとき（お会計完了・保存）
+    function confirmPayment() {
+      closeStaffModal();
+      
       const container = document.getElementById('receipt-items');
       container.innerHTML = cartHistory.map(i => `<div class="receipt-item"><span>${i.name}</span><span>${i.taxPrice}円</span></div>`).join('');
-      document.getElementById('receipt-method').textContent = `[支払い方法 ${method}]`;
-      document.getElementById('receipt-total').textContent = `合計 ${totalPrice}円`;
+      document.getElementById('receipt-total').textContent = `合計: ${totalPrice}円`;
       document.getElementById('receipt-modal').style.display = 'flex';
       
       const itemsPurchased = cartHistory.map(i => `${i.name} (${i.taxPrice}円)`).join(', ');
-      salesHistory.push({ date: new Date().toLocaleString(), total: totalPrice, items: itemsPurchased, method: method });
+      salesHistory.push({ date: new Date().toLocaleString(), total: totalPrice, items: itemsPurchased });
       localStorage.setItem('myPosSalesHistory', JSON.stringify(salesHistory));
     }
 
-    // 売上履歴表示（内訳と支払い方法を表示）
+    // 売上履歴表示
     function showSalesHistory() {
-      const input = prompt("管理用パスワードを入力");
+      const input = prompt("管理用パスワードを入力:");
       if (input === SALES_PASSWORD) {
         const historyContainer = document.getElementById('history-list');
         if (salesHistory.length === 0) {
@@ -244,10 +204,9 @@
         } else {
           historyContainer.innerHTML = salesHistory.map(s => {
             const itemList = s.items ? `<br><small style="color:#666;">内訳: ${s.items}</small>` : '';
-            const payMethod = s.method ? ` (${s.method})` : '';
             return `<div style="margin-bottom: 10px; border-bottom: 1px dashed #ccc; padding-bottom: 5px;">
-                      <strong>${s.date}</strong>${payMethod}<br>
-                      合計 ${s.total}円 ${itemList}
+                      <strong>${s.date}</strong><br>
+                      合計: ${s.total}円 ${itemList}
                     </div>`;
           }).join('');
         }
@@ -260,7 +219,6 @@
     function resetSalesOnly() { if(confirm("売上記録をクリアしますか？")){ localStorage.removeItem('myPosSalesHistory'); location.reload(); } }
     function resetAllData() { if(confirm("すべての登録データと売上を削除しますか？")){ localStorage.clear(); location.reload(); } }
 
-    // カメラ起動処理
     Quagga.init({
       inputStream: { type: "LiveStream", target: document.querySelector('#interactive'), constraints: { facingMode: "environment" } },
       decoder: { readers: ["ean_reader", "ean_8_reader"] }
@@ -279,9 +237,9 @@
       if (itemDatabase[code]) {
         addItem(itemDatabase[code].name, itemDatabase[code].price);
       } else {
-        const n = prompt("【新規商品】商品名を入力");
+        const n = prompt("【新規商品】商品名を入力:");
         if (n) {
-          const p = Number(prompt("価格を入力"));
+          const p = Number(prompt("価格を入力:"));
           if (!isNaN(p)) {
             itemDatabase[code] = { name: n, price: p };
             localStorage.setItem('myPosDatabase', JSON.stringify(itemDatabase));

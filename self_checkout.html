@@ -230,14 +230,19 @@
       Quagga.start(); 
     });
 
-    Quagga.onDetected((res) => {
+   Quagga.onDetected((res) => {
       if (!canScan) return;
       const code = res.codeResult.code;
       canScan = false;
+
+      // ★修正1: 新規登録・既存登録に関わらず、スキャンした瞬間に音を鳴らす
+      playSound(1200, 0.08);
+
       if (itemDatabase[code]) {
         addItem(itemDatabase[code].name, itemDatabase[code].price);
       } else {
-        const n = prompt("【新規商品】商品名を入力:");
+        // ★修正2: プロンプトにバーコード番号を表示させる
+        const n = prompt(`【新規商品】\nバーコード: ${code}\n\n商品名を入力:`);
         if (n) {
           const p = Number(prompt("価格を入力:"));
           if (!isNaN(p)) {
@@ -249,6 +254,8 @@
       }
       setTimeout(() => { canScan = true; }, 1500);
     });
+
+
   </script>
 </body>
 </html>

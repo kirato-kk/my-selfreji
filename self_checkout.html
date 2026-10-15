@@ -13,7 +13,7 @@
     body { background-color: #0f172a; color: #333; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
     .container { width: 100%; max-width: 480px; background: #ffffff; height: 100vh; max-height: 900px; display: flex; flex-direction: column; position: relative; box-shadow: 0 20px 40px rgba(0,0,0,0.3); overflow: hidden; border-radius: 24px; }
 
-    /* --- おしゃれなスタート画面 --- */
+    /* --- スタート画面 --- */
     #start-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); z-index: 50; display: flex; flex-direction: column; justify-content: space-between; align-items: center; padding: 40px 24px; }
     .settings-icon { position: absolute; top: 24px; right: 24px; font-size: 22px; cursor: pointer; background: white; border: none; width: 44px; height: 44px; border-radius: 50%; box-shadow: 0 4px 12px rgba(0,0,0,0.08); display: flex; justify-content: center; align-items: center; transition: transform 0.2s; }
     .settings-icon:active { transform: scale(0.92); }
@@ -22,49 +22,56 @@
     .start-title { font-size: 32px; font-weight: 800; color: #1e293b; margin-bottom: 8px; letter-spacing: -0.5px; }
     .start-subtitle { font-size: 14px; color: #64748b; margin-bottom: 40px; font-weight: 500; }
     
-    /* おしゃれなイラストカード風デザイン */
     .start-illustration-card { width: 200px; height: 200px; background: white; border-radius: 36px; box-shadow: 0 16px 32px rgba(79, 70, 229, 0.1); display: flex; justify-content: center; align-items: center; position: relative; margin-bottom: 30px; border: 1px solid rgba(226, 232, 240, 0.8); }
-    
-    .start-btn { width: 100%; max-width: 320px; background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%); color: #ffffff; font-size: 18px; font-weight: bold; border: none; border-radius: 18px; padding: 18px 0; cursor: pointer; box-shadow: 0 10px 25px rgba(79, 70, 229, 0.4); transition: transform 0.2s, box-shadow 0.2s; margin-bottom: 20px; }
-    .start-btn:active { transform: scale(0.97); box-shadow: 0 5px 15px rgba(79, 70, 229, 0.3); }
+    .start-btn { width: 100%; max-width: 320px; background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%); color: #ffffff; font-size: 18px; font-weight: bold; border: none; border-radius: 18px; padding: 18px 0; cursor: pointer; box-shadow: 0 10px 25px rgba(79, 70, 229, 0.4); transition: transform 0.2s; margin-bottom: 20px; }
+    .start-btn:active { transform: scale(0.97); }
 
     /* --- メイン画面（初期は非表示） --- */
-    #main-screen { display: none; flex-direction: column; height: 100%; position: relative; background: #000; }
+    #main-screen { display: none; flex-direction: column; height: 100%; position: relative; background: #ffffff; }
     
-    /* ヘッダー情報 */
-    .top-bar { background-color: #ff3b30; color: white; display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; font-weight: bold; border-bottom-left-radius: 20px; border-bottom-right-radius: 20px; z-index: 30; box-shadow: 0 4px 12px rgba(255, 59, 48, 0.3); cursor: pointer; }
+    /* 赤色のトップヘッダー */
+    .top-bar { background-color: #ff5252; color: white; display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; font-weight: bold; border-bottom-left-radius: 18px; border-bottom-right-radius: 18px; box-shadow: 0 4px 12px rgba(255, 82, 82, 0.25); z-index: 10; }
     .top-bar .cart-count { font-size: 18px; display: flex; align-items: center; gap: 6px; }
     .top-bar .total-sum { font-size: 20px; text-align: right; }
-    .top-bar .tax-info { font-size: 11px; opacity: 0.85; text-align: right; font-weight: normal; }
+    .top-bar .tax-info { font-size: 11px; opacity: 0.9; text-align: right; font-weight: normal; }
 
-    /* カメラ映像エリア */
-    .scanner-viewport { flex-grow: 1; position: relative; background: #000; overflow: hidden; }
-    .scanner-viewport video { width: 100%; height: 100%; object-fit: cover; }
-    .scan-overlay-btn { position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); background-color: #ffcc00; color: #111; font-size: 18px; font-weight: 800; padding: 14px 44px; border-radius: 30px; border: none; cursor: pointer; box-shadow: 0 6px 20px rgba(0,0,0,0.4); z-index: 10; }
+    /* カート商品リスト表示エリア（メイン画面の中央） */
+    .cart-content-area { flex-grow: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+    .cart-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.04); display: flex; justify-content: space-between; align-items: center; position: relative; }
+    .cart-card-info { display: flex; flex-direction: column; }
+    .cart-card-name { font-size: 18px; font-weight: 800; color: #1e293b; margin-bottom: 4px; }
+    .cart-card-price { font-size: 16px; font-weight: 700; color: #0f172a; }
+    
+    .cart-card-right { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+    .delete-item-btn { background: none; border: none; font-size: 16px; cursor: pointer; color: #94a3b8; }
+    .delete-item-btn:hover { color: #ef4444; }
+    
+    .quantity-box { display: flex; align-items: center; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 10px; padding: 2px 8px; gap: 10px; }
+    .quantity-box button { background: none; border: none; font-size: 16px; font-weight: bold; cursor: pointer; color: #ff5252; }
+    .quantity-box span { font-size: 16px; font-weight: 700; color: #1e293b; min-width: 16px; text-align: center; }
 
-    /* フッターアクションバー */
-    .action-bar { display: flex; background: #ffffff; border-top: 1px solid #e2e8f0; height: 76px; z-index: 30; }
-    .action-btn { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; background: none; border: none; cursor: pointer; font-size: 12px; font-weight: 600; color: #475569; gap: 4px; transition: background 0.1s; }
-    .action-btn:active { background: #f1f5f9; }
-    .action-btn:first-child { border-right: 1px solid #e2e8f0; }
-    .action-btn span.icon { font-size: 20px; }
+    /* 下部アクションエリア（スキャンボタン ＆ フッターボタン） */
+    .bottom-action-container { padding: 15px 20px 20px 20px; background: #ffffff; border-top: 1px solid #f1f5f9; display: flex; flex-direction: column; gap: 12px; }
+    .scan-trigger-btn { width: 100%; background-color: #ffd54f; color: #111; font-size: 20px; font-weight: 800; padding: 16px 0; border-radius: 30px; border: none; cursor: pointer; box-shadow: 0 6px 16px rgba(255, 213, 79, 0.4); text-align: center; transition: transform 0.1s; }
+    .scan-trigger-btn:active { transform: scale(0.98); }
 
-    /* カート商品リスト引き出しパネル */
-    .cart-drawer { position: absolute; top: 70px; left: 0; width: 100%; background: white; border-bottom-left-radius: 24px; border-bottom-right-radius: 24px; box-shadow: 0 16px 32px rgba(0,0,0,0.2); padding: 20px; z-index: 40; max-height: 65vh; overflow-y: auto; display: none; }
-    .cart-item-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f1f5f9; }
-    .cart-item-info { display: flex; flex-direction: column; }
-    .cart-item-name { font-weight: 700; font-size: 15px; color: #1e293b; }
-    .cart-item-price { color: #64748b; font-size: 12px; margin-top: 2px; }
-    .quantity-control { display: flex; align-items: center; gap: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 4px 10px; }
-    .quantity-control button { background: none; border: none; font-size: 16px; cursor: pointer; font-weight: bold; color: #3b82f6; }
-    .close-drawer { position: absolute; top: 16px; right: 20px; background: #f1f5f9; border: none; width: 32px; height: 32px; border-radius: 50%; font-weight: bold; cursor: pointer; color: #64748b; display: flex; justify-content: center; align-items: center; }
+    .action-bar { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #eee; padding-top: 10px; }
+    .action-sub-btn { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; background: none; border: none; cursor: pointer; font-size: 12px; font-weight: 600; color: #475569; gap: 2px; }
+    .action-sub-btn span.icon { font-size: 20px; }
+    .action-divider { width: 1px; height: 30px; background: #e2e8f0; }
 
     /* モーダル共通 */
-    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(4px); justify-content: center; align-items: center; z-index: 100; }
-    .modal-content { background: white; width: 90%; max-width: 360px; border-radius: 24px; padding: 28px 24px; text-align: center; position: relative; box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(4px); justify-content: center; align-items: center; z-index: 100; }
+    .modal-content { background: white; width: 90%; max-width: 360px; border-radius: 24px; padding: 24px; text-align: center; position: relative; box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
     .modal-content h3 { margin-bottom: 16px; font-size: 20px; font-weight: 800; color: #1e293b; }
     .btn-primary { width: 100%; background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%); color: white; border: none; padding: 14px; border-radius: 14px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 16px; box-shadow: 0 8px 20px rgba(79, 70, 229, 0.3); }
     .btn-secondary { width: 100%; background: #f1f5f9; color: #475569; border: none; padding: 12px; border-radius: 14px; font-size: 14px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+
+    /* カメラモーダル専用スタイル */
+    #scanner-modal-content { width: 94%; max-width: 420px; height: 75vh; display: flex; flex-direction: column; padding: 16px; background: #000; border-radius: 24px; position: relative; overflow: hidden; }
+    #interactive { flex-grow: 1; width: 100%; background: #000; border-radius: 16px; overflow: hidden; position: relative; }
+    #interactive video { width: 100%; height: 100%; object-fit: cover; }
+    .close-scanner-btn { position: absolute; top: 20px; right: 20px; background: rgba(0,0,0,0.6); color: white; border: none; width: 36px; height: 36px; border-radius: 50%; font-size: 18px; font-weight: bold; cursor: pointer; z-index: 50; display: flex; justify-content: center; align-items: center; }
 
     /* バーコードの無い商品モーダルリスト */
     .no-barcode-list { max-height: 260px; overflow-y: auto; text-align: left; margin-bottom: 10px; }
@@ -73,14 +80,14 @@
 
     /* お会計QRモーダル */
     #qrcode-box { display: flex; justify-content: center; margin: 16px 0; background: #fff; padding: 12px; border-radius: 16px; border: 1px solid #e2e8f0; display: inline-block; }
-    .qr-text-label { font-size: 16px; font-weight: 800; color: #4f46e5; margin-bottom: 4px; background: #e0e7ff; display: inline-block; padding: 4px 12px; border-radius: 20px; }
+    .qr-text-label { font-size: 16px; font-weight: 800; color: #4f46e5; margin-bottom: 4px; background: #e0e7ff; display: inline-block; padding: 4px 14px; border-radius: 20px; }
   </style>
 </head>
 <body>
 
 <div class="container">
 
-  <!-- ================= おしゃれなスタート画面 ================= -->
+  <!-- ================= スタート画面 ================= -->
   <div id="start-screen">
     <button class="settings-icon" onclick="openSettings()">⚙️</button>
     
@@ -89,7 +96,6 @@
       <div class="start-subtitle">Smart Shopping System</div>
       
       <div class="start-illustration-card">
-        <!-- SVGの可愛いお買い物イラスト -->
         <svg viewBox="0 0 200 200" width="120px" height="120px">
           <path d="M25,110 L50,110 L65,150 L145,150 L165,95 L70,95" fill="none" stroke="#1e293b" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
           <circle cx="75" cy="165" r="10" fill="#4f46e5"/>
@@ -105,10 +111,10 @@
     <button class="start-btn" onclick="startShopping()">始める</button>
   </div>
 
-  <!-- ================= メイン画面（スキャン中） ================= -->
+  <!-- ================= メイン画面（カート一覧） ================= -->
   <div id="main-screen">
     <!-- ヘッダー -->
-    <div class="top-bar" onclick="toggleCartDrawer()">
+    <div class="top-bar">
       <div class="cart-count">🛒 <span id="header-count">0</span>点</div>
       <div>
         <div class="total-sum">¥ <span id="header-total">0</span></div>
@@ -116,32 +122,39 @@
       </div>
     </div>
 
-    <!-- カメラプレビュー -->
-    <div id="interactive" class="scanner-viewport"></div>
-    <button class="scan-overlay-btn" onclick="simulateScanTrigger()">スキャン</button>
-
-    <!-- フッターボタン -->
-    <div class="action-bar">
-      <button class="action-btn" onclick="openNoBarcodeModal()">
-        <span class="icon">🏷️</span>
-        <span>バーコードの無い商品</span>
-      </button>
-      <button class="action-btn" onclick="openCheckoutModal()">
-        <span class="icon">💳</span>
-        <span>お会計</span>
-      </button>
+    <!-- カートに追加された商品カードの一覧エリア -->
+    <div class="cart-content-area" id="cart-content-area">
+      <p style="color: #94a3b8; text-align:center; margin-top: 40px; font-size: 14px;">スキャンボタンを押して商品を追加してください</p>
     </div>
 
-    <!-- カート内商品詳細引き出しパネル -->
-    <div class="cart-drawer" id="cart-drawer">
-      <button class="close-drawer" onclick="toggleCartDrawer()">×</button>
-      <h3 style="margin-bottom: 14px; font-size:18px; color:#1e293b;">購入リスト</h3>
-      <div id="cart-items-container">
-        <p style="color: #94a3b8; text-align:center; padding: 20px; font-size: 14px;">商品がありません</p>
+    <!-- 下部ボタンエリア -->
+    <div class="bottom-action-container">
+      <button class="scan-trigger-btn" onclick="openScannerModal()">スキャン</button>
+      
+      <div class="action-bar">
+        <button class="action-sub-btn" onclick="openNoBarcodeModal()">
+          <span class="icon">🏷️</span>
+          <span>バーコードの無い商品</span>
+        </button>
+        <div class="action-divider"></div>
+        <button class="action-sub-btn" onclick="openCheckoutModal()">
+          <span class="icon">💳</span>
+          <span>お会計</span>
+        </button>
       </div>
     </div>
   </div>
 
+</div>
+
+<!-- ================= カメラ・スキャンモーダル ================= -->
+<div class="modal" id="scanner-modal">
+  <div id="scanner-modal-content">
+    <button class="close-scanner-btn" onclick="closeScannerModal()">✕</button>
+    <div style="color:white; text-align:center; padding: 10px 0 15px 0; font-weight:bold; font-size:16px;">バーコードを読み取ってください</div>
+    <div id="interactive"></div>
+    <button class="btn-primary" style="margin-top:12px; background:#ffd54f; color:#111;" onclick="simulateScanTrigger()">テスト用スキャン</button>
+  </div>
 </div>
 
 <!-- ================= バーコードの無い商品選択モーダル ================= -->
@@ -158,7 +171,7 @@
   <div class="modal-content">
     <h3>お会計</h3>
     <div class="qr-text-label" id="money-code-label">MONEY_0</div>
-    <div style="margin: 12px 0;">
+    <div style="margin: 16px 0;">
       <div id="qrcode-box"></div>
     </div>
     <p style="font-size: 12px; color: #64748b; margin-bottom: 12px;">レジの読み取り機にかざしてください</p>
@@ -214,7 +227,7 @@
   const ADMIN_PASSWORD = "4869";
   let cart = {}; 
   let salesHistory = JSON.parse(localStorage.getItem('myPosSalesHistory')) || [];
-  let isCameraRunning = false;
+  let isQuaggaInitialized = false;
 
   const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   function playBeep() {
@@ -231,12 +244,26 @@
   function startShopping() {
     document.getElementById('start-screen').style.display = 'none';
     document.getElementById('main-screen').style.display = 'flex';
+  }
+
+  // カメラモーダルを開く
+  function openScannerModal() {
+    document.getElementById('scanner-modal').style.display = 'flex';
     initCamera();
+  }
+
+  // カメラモーダルを閉じる
+  function closeScannerModal() {
+    document.getElementById('scanner-modal').style.display = 'none';
+    if (isQuaggaInitialized) {
+      Quagga.stop();
+      isQuaggaInitialized = false;
+    }
   }
 
   // カメラ初期化
   function initCamera() {
-    if (isCameraRunning) return;
+    if (isQuaggaInitialized) return;
     Quagga.init({
       inputStream: {
         type: "LiveStream",
@@ -247,7 +274,7 @@
     }, (err) => {
       if (!err) {
         Quagga.start();
-        isCameraRunning = true;
+        isQuaggaInitialized = true;
       }
     });
 
@@ -266,6 +293,7 @@
           }
         }
       }
+      closeScannerModal(); // スキャン成功したら自動でカメラを閉じる
     });
   }
 
@@ -276,6 +304,7 @@
     const randomKey = keys[Math.floor(Math.random() * keys.length)];
     const item = itemDatabase[randomKey];
     addItemToCart(randomKey, item.name, item.price);
+    closeScannerModal();
   }
 
   // カートに商品を追加
@@ -288,7 +317,7 @@
     updateCartUI();
   }
 
-  // 数量変更
+  // 数量変更・削除
   function changeCount(id, delta) {
     if (cart[id]) {
       cart[id].count += delta;
@@ -299,16 +328,23 @@
     }
   }
 
+  function removeItem(id) {
+    if (cart[id]) {
+      delete cart[id];
+      updateCartUI();
+    }
+  }
+
   // カートUIと合計金額の更新
   function updateCartUI() {
     let totalCount = 0;
     let totalPriceTaxExcluded = 0;
-    let container = document.getElementById('cart-items-container');
+    let container = document.getElementById('cart-content-area');
     container.innerHTML = "";
 
     const keys = Object.keys(cart);
     if (keys.length === 0) {
-      container.innerHTML = `<p style="color: #94a3b8; text-align:center; padding: 20px; font-size: 14px;">商品がありません</p>`;
+      container.innerHTML = `<p style="color: #94a3b8; text-align:center; margin-top: 40px; font-size: 14px;">スキャンボタンを押して商品を追加してください</p>`;
     } else {
       keys.forEach(id => {
         let item = cart[id];
@@ -317,15 +353,18 @@
         totalPriceTaxExcluded += subtotalTaxExcluded;
 
         container.innerHTML += `
-          <div class="cart-item-row">
-            <div class="cart-item-info">
-              <span class="cart-item-name">${item.name}</span>
-              <span class="cart-item-price">¥${item.price} × ${item.count}</span>
+          <div class="cart-card">
+            <div class="cart-card-info">
+              <span class="cart-card-name">${item.name}</span>
+              <span class="cart-card-price">¥${item.price}</span>
             </div>
-            <div class="quantity-control">
-              <button onclick="changeCount('${id}', -1)">-</button>
-              <span>${item.count}</span>
-              <button onclick="changeCount('${id}', 1)">+</button>
+            <div class="cart-card-right">
+              <button class="delete-item-btn" onclick="removeItem('${id}')">✕</button>
+              <div class="quantity-box">
+                <button onclick="changeCount('${id}', -1)">-</button>
+                <span>${item.count}</span>
+                <button onclick="changeCount('${id}', 1)">+</button>
+              </div>
             </div>
           </div>
         `;
@@ -337,12 +376,6 @@
     document.getElementById('header-count').textContent = totalCount;
     document.getElementById('header-total').textContent = totalPriceTaxExcluded;
     document.getElementById('header-tax-total').textContent = totalPriceTaxIncluded;
-  }
-
-  // カートリスト引き出しトグル
-  function toggleCartDrawer() {
-    const drawer = document.getElementById('cart-drawer');
-    drawer.style.display = drawer.style.display === 'block' ? 'none' : 'block';
   }
 
   // バーコードの無い商品モーダル
@@ -368,7 +401,7 @@
     closeNoBarcodeModal();
   }
 
-  // お会計モーダル & QRコード生成 (MONEY_◯◯◯形式)
+  // お会計モーダル & QRコード生成
   let qrcodeInstance = null;
   function openCheckoutModal() {
     let totalTaxIncluded = calculateTotalTaxIncluded();
@@ -387,9 +420,6 @@
       height: 170
     });
 
-    document.getElementById('checkout-modal').style.display = 'flex';
-  }
-  function closeCheckoutModal() {
     document.getElementById('checkout-modal').style.display = 'none';
   }
 
@@ -401,7 +431,7 @@
     return Math.round(totalTaxExcluded * 1.1);
   }
 
-  // お会計完了ボタン
+  // お会計完了ボタン（ホーム画面に戻る）
   function completePayment() {
     let totalTaxIncluded = calculateTotalTaxIncluded();
     let itemSummary = Object.values(cart).map(i => `${i.name}x${i.count}`).join(', ');
@@ -414,7 +444,13 @@
     localStorage.setItem('myPosSalesHistory', JSON.stringify(salesHistory));
 
     alert("お会計が完了しました！ご利用ありがとうございました。");
-    location.reload(); 
+    
+    // モーダルを閉じてメイン画面とカートをリセットし、スタート（ホーム）画面に戻る
+    closeCheckoutModal();
+    cart = {};
+    updateCartUI();
+    document.getElementById('main-screen').style.display = 'none';
+    document.getElementById('start-screen').style.display = 'flex';
   }
 
   // 設定画面

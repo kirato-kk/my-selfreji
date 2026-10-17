@@ -155,7 +155,7 @@
     </div>
     
     <div class="cart" id="cart-list"><p style="color: #888; font-family: 'Segoe UI', sans-serif; text-align: center;">スキャンした商品がここに表示されます</p></div>
-    <div class="total">合計 (<span id="total-count">0</span>点): <span id="total-price">0</span> 円</div>
+    <div class="total">合計: <span id="total-count">0</span>点 <span id="total-price">0</span> 円</div>
 
     <button class="btn pay-btn" onclick="openPaymentModal()">お会計</button>
   </div>
@@ -398,7 +398,7 @@
         return; 
       }
       
-   const switchBtn = document.getElementById('settings-switch-btn');
+     const switchBtn = document.getElementById('settings-switch-btn');
       if (currentMode === 'customer') {
         switchBtn.textContent = "スタッフモードへ切替";
       } else {
@@ -576,12 +576,11 @@
         </div>
       `).join('');
       
-      document.getElementById('receipt-total').textContent = `点数 : ${totalItemsCount}点\n合 計 : ${scannedCartDataForRegister.total} 円`;
+      document.getElementById('receipt-total').textContent = `${totalItemsCount}点 合計 : ${scannedCartDataForRegister.total} 円`;
       document.getElementById('receipt-modal').style.display = 'flex';
       
       const itemsPurchased = groupedItems.map(i => `${i.name}${i.count > 1 ? '×' + i.count : ''} (${i.totalTaxPrice}円)`).join(', ');
       
-      // 売上履歴に「点数」を含めて保存
       salesHistory.push({ 
         date: currentDate, 
         count: totalItemsCount, 
@@ -613,7 +612,8 @@
         });
       });
     }
-function showSalesHistory() {
+
+    function showSalesHistory() {
       document.getElementById('history-search-input').value = '';
       renderHistoryList(salesHistory);
       document.getElementById('settings-modal').style.display = 'none';
@@ -627,10 +627,10 @@ function showSalesHistory() {
       } else {
         historyContainer.innerHTML = data.map(s => {
           const itemList = s.items ? `<br><small style="color:#666;">内訳: ${s.items}</small>` : '';
-          const countInfo = s.count ? `(${s.count}点)` : '';
+          const countInfo = s.count ? `${s.count}点 ` : '';
           return `<div style="margin-bottom: 10px; border-bottom: 1px dashed #ccc; padding-bottom: 5px;">
                     <strong>${s.date}</strong><br>
-                    合計: ${s.total}円 ${countInfo} ${itemList}
+                    合計: ${countInfo}${s.total}円 ${itemList}
                   </div>`;
         }).join('');
       }
@@ -774,7 +774,7 @@ function showSalesHistory() {
           </div>
         `).join('');
 
-        document.getElementById('register-confirm-total').innerHTML = `点数: ${totalCountVal}点<br>合計: ${totalPriceVal}円`;
+        document.getElementById('register-confirm-total').textContent = `${totalCountVal}点 合計: ${totalPriceVal}円`;
         document.getElementById('register-confirm-modal').style.display = 'flex';
       }
     }

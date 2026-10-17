@@ -12,6 +12,8 @@
   <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
   <!-- HTMLを画像化するライブラリ（html2canvas） -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <!-- バーコード生成ライブラリ（JsBarcode） -->
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
   <style>
     body { font-family: 'Segoe UI', sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; background-color: #f7f9fc; color: #333333; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
     .header-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
@@ -125,7 +127,14 @@
     .receipt-items-container { border-bottom: 1px dashed #333; padding-bottom: 12px; margin-bottom: 12px; min-height: 100px; }
     .receipt-item-row { display: flex; justify-content: space-between; font-size: 12px; margin: 6px 0; }
     .receipt-total-section { font-size: 14px; font-weight: bold; text-align: right; margin-bottom: 15px; line-height: 1.6; }
-    .receipt-message { text-align: center; font-size: 11px; color: #444; margin-top: 15px; line-height: 1.5; }
+    
+    /* レシート内バーコードのデザイン */
+    .receipt-barcode-wrapper { text-align: center; margin-top: 10px; margin-bottom: 5px; }
+    .receipt-barcode-svg { max-width: 100%; height: 50px; }
+
+    .receipt-message { text-align: center; font-size: 11px; color: #444; margin-top: 10px; line-height: 1.5; }
+    .receipt-custom-msg { text-align: center; font-size: 11px; color: #2575fc; margin-top: 5px; font-weight: bold; word-break: break-all; }
+    .receipt-single-msg { text-align: center; font-size: 11px; color: #e67e22; margin-top: 5px; font-weight: bold; word-break: break-all; }
 
     .close-btn { width: 100%; padding: 12px; background: #e0e0e0; color: #333; border: none; font-weight: bold; cursor: pointer; border-radius: 10px; font-family: 'Segoe UI', sans-serif; margin-top: 5px; }
     .staff-box { background: #ff4757; color: white; padding: 15px; border-radius: 10px; margin-bottom: 15px; font-family: 'Segoe UI', sans-serif; }
@@ -213,11 +222,11 @@
     </div>
   </div>
 
-  <!-- レジ側：お会計確認画面 -->
+  <!-- レジ側：お会計確認画面（編集機能付き） -->
   <div class="modal-overlay" id="register-confirm-modal">
     <div class="modal-content-box" style="text-align: left;">
       <h2>お会計内容確認</h2>
-      <div id="register-confirm-items" style="margin: 10px 0; max-height: 150px; overflow-y:auto;"></div>
+      <div id="register-confirm-items" style="margin: 10px 0; max-height: 200px; overflow-y:auto;"></div>
       <hr style="border: none; border-top: 1px dashed #ccc; margin: 10px 0;">
       <div id="register-confirm-total" style="font-weight:bold; text-align:right; font-size: 16px; color: #ff4757;"></div>
       <button class="btn pay-btn" style="margin-top:15px; padding:10px; font-size:16px;" onclick="proceedToCashInput()">確認完了 (次へ)</button>
@@ -285,6 +294,13 @@
         <div class="receipt-message">
           <p style="margin: 4px 0;">ご来店ありがとうございました。</p>
           <p style="margin: 4px 0;">またのご利用をお待ちしております！</p>
+          <div id="receipt-custom-msg-display" class="receipt-custom-msg"></div>
+          <div id="receipt-single-msg-display" class="receipt-single-msg"></div>
+        </div>
+
+        <!-- 金額入りのバーコード表示（下部） -->
+        <div class="receipt-barcode-wrapper">
+          <svg id="receipt-barcode-element" class="receipt-barcode-svg"></svg>
         </div>
       </div>
 
@@ -300,10 +316,25 @@
       <div style="margin-top: 15px;">
         <button id="settings-switch-btn" class="btn" style="background-color: #2575fc; margin-top:5px; font-size:15px; padding:10px;" onclick="toggleModeFromSettings()">スタッフモードへ切替</button>
         <button class="btn" style="background-color: #00adb5; margin-top:10px; font-size:15px; padding:10px;" onclick="showSalesHistory()">売上履歴を見る</button>
+        <button class="btn" style="background-color: #9b59b6; margin-top:10px; font-size:15px; padding:10px;" onclick="generateUniqueBarcode()">未使用のバーコードを生成</button>
+        <button class="btn" style="background-color: #e67e22; margin-top:10px; font-size:15px; padding:10px;" onclick="setCustomReceiptMessage()">共通レシートメッセージ設定</button>
         <button class="btn" style="background-color: #ffa502; margin-top:10px; font-size:15px; padding:10px;" onclick="resetSalesOnly()">売上記録のみリセット</button>
         <button class="btn" style="background-color: #ff4757; margin-top:10px; font-size:15px; padding:10px;" onclick="resetAllData()">すべてのデータをリセット</button>
       </div>
       <button class="close-btn" onclick="closeSettings()" style="margin-top: 20px;">閉じる</button>
+    </div>
+  </div>
+
+  <!-- バーコード生成ダイアログ -->
+  <div class="modal-overlay" id="barcode-modal">
+    <div class="modal-content-box" style="text-align: center;">
+      <h2>新規バーコード生成</h2>
+      <p style="font-size:12px; color:#666;">重複のない13桁のバーコードです</p>
+      <div style="margin: 15px 0;">
+        <svg id="generated-barcode-svg" style="max-width:100%; height:70px;"></svg>
+      </div>
+      <p style="font-size:18px; font-weight:bold; color:#2575fc; letter-spacing:1px;" id="generated-barcode-number"></p>
+      <button class="close-btn" onclick="closeBarcodeModal()">閉じる</button>
     </div>
   </div>
 
@@ -369,17 +400,16 @@
     const SALES_PASSWORD = "4869"; 
     let canScan = true, totalPrice = 0, totalCount = 0, cartItems = []; 
     let salesHistory = JSON.parse(localStorage.getItem('myPosSalesHistory')) || [];
-    let scannedCartDataForRegister = null; 
+    let customReceiptMessage = localStorage.getItem('myPosReceiptMsg') || "";
+    let registerParsedCartItems = []; 
 
     let registerStream = null;
     let registerScanInterval = null;
     let currentMode = 'customer'; 
 
-    // 設定ボタン用タップ判定変数
     let settingsClickCount = 0;
     let settingsClickTimer = null;
 
-    // 音声読み上げ関数 (Web Speech API)
     function speakText(text) {
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
@@ -401,18 +431,14 @@
       osc.start(); osc.stop(audioCtx.currentTime + duration);
     }
 
-    // 設定ボタンのクリック制御（1回でパスコード入力、3回で音声アナウンスのみ）
     function handleSettingsClick() {
       settingsClickCount++;
-      
       if (settingsClickCount === 1) {
         settingsClickTimer = setTimeout(() => {
-          // 1回タップ判定（500ms以内に後続のタップがなかった場合）
           settingsClickCount = 0;
           openSettings();
         }, 400);
       } else if (settingsClickCount === 3) {
-        // 3回連続タップ判定
         clearTimeout(settingsClickTimer);
         settingsClickCount = 0;
         speakText("係員をお呼びください。");
@@ -518,6 +544,56 @@
         switchView('register');
       } else {
         switchView('customer');
+      }
+    }
+
+    function generateUniqueBarcode() {
+      let code = "";
+      let isDuplicate = true;
+
+      while (isDuplicate) {
+        let randomDigits = "";
+        for (let i = 0; i < 11; i++) {
+          randomDigits += Math.floor(Math.random() * 10);
+        }
+        code = "49" + randomDigits;
+
+        if (!itemDatabase[code]) {
+          isDuplicate = false;
+        }
+      }
+
+      document.getElementById('generated-barcode-number').textContent = code;
+      
+      try {
+        JsBarcode("#generated-barcode-svg", code, {
+          format: "EAN13",
+          width: 2,
+          height: 60,
+          displayValue: true
+        });
+      } catch (e) {
+        JsBarcode("#generated-barcode-svg", code, {
+          format: "CODE128",
+          width: 2,
+          height: 60,
+          displayValue: true
+        });
+      }
+
+      document.getElementById('barcode-modal').style.display = 'flex';
+    }
+
+    function closeBarcodeModal() {
+      document.getElementById('barcode-modal').style.display = 'none';
+    }
+
+    function setCustomReceiptMessage() {
+      const input = prompt("「またのご利用をお待ちしております！」の下に表示する共通テキストを入力してください（空欄で表示なし）", customReceiptMessage);
+      if (input !== null) {
+        customReceiptMessage = input.trim();
+        localStorage.setItem('myPosReceiptMsg', customReceiptMessage);
+        alert(customReceiptMessage === "" ? "共通メッセージを削除しました。" : "共通メッセージを保存しました！");
       }
     }
 
@@ -642,9 +718,79 @@
       return Object.values(map);
     }
 
+    function changeRegisterItemQuantity(index, newQty) {
+      let qty = parseInt(newQty);
+      if (qty <= 0) {
+        registerParsedCartItems.splice(index, 1);
+      } else {
+        registerParsedCartItems[index].quantity = qty;
+      }
+      speakText("数量を変更しました。");
+      renderRegisterConfirmList();
+    }
+
+    function removeRegisterItem(index) {
+      registerParsedCartItems.splice(index, 1);
+      speakText("商品を削除しました。");
+      renderRegisterConfirmList();
+    }
+
+    function renderRegisterConfirmList() {
+      const container = document.getElementById('register-confirm-items');
+      if (registerParsedCartItems.length === 0) {
+        container.innerHTML = '<p style="color:#888; text-align:center;">商品がありません</p>';
+        document.getElementById('register-confirm-total').textContent = "0点 合計: 0円";
+        scannedCartDataForRegister = { items: [], total: 0 };
+        return;
+      }
+
+      let regTotal = 0;
+      let regCount = 0;
+      let allExpandedItems = [];
+
+      container.innerHTML = registerParsedCartItems.map((item, index) => {
+        const itemTotal = item.taxPrice * item.quantity;
+        regTotal += itemTotal;
+        regCount += item.quantity;
+
+        for (let k = 0; k < item.quantity; k++) {
+          allExpandedItems.push({ name: item.name, taxPrice: item.taxPrice });
+        }
+
+        let optionsHtml = '';
+        for (let q = 1; q <= 10; q++) {
+          optionsHtml += `<option value="${q}" ${item.quantity === q ? 'selected' : ''}>${q}</option>`;
+        }
+
+        return `
+          <div class="cart-item-row">
+            <div class="cart-item-left">
+              <span>▶ ${item.name}</span>
+              <small style="color:#666;">税込${item.taxPrice}円</small>
+            </div>
+            <div class="cart-item-right">
+              <div class="qty-select-wrapper">
+                <select class="qty-select" onchange="changeRegisterItemQuantity(${index}, this.value)">
+                  ${optionsHtml}
+                </select>
+                <div class="qty-badge-icon">▼</div>
+              </div>
+              <button class="delete-item-btn" onclick="removeRegisterItem(${index})" title="削除">✕</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('register-confirm-total').textContent = `${regCount}点 合計: ${regTotal}円`;
+      scannedCartDataForRegister = { items: allExpandedItems, total: regTotal };
+    }
+
     function proceedToCashInput() {
+      if (!scannedCartDataForRegister || scannedCartDataForRegister.items.length === 0) {
+        alert("商品が入っていません。");
+        return;
+      }
       document.getElementById('register-confirm-modal').style.display = 'none';
-      if (!scannedCartDataForRegister) return;
 
       document.getElementById('cash-modal-total').textContent = scannedCartDataForRegister.total;
       document.getElementById('cash-input-display').textContent = "0";
@@ -704,6 +850,9 @@
     }
 
     function openReceiptModalFromChange() {
+      // このお会計専用のレシート個別メッセージを入力プロンプトで取得
+      const singleMsgInput = prompt("このレシートに追加する個別メッセージを入力してください（不要な場合は空欄のままOK）", "");
+
       document.getElementById('change-modal').style.display = 'none';
 
       const currentDate = new Date().toLocaleString();
@@ -723,6 +872,43 @@
       document.getElementById('receipt-total-text').textContent = `${totalItemsCount}点 合計 : ${scannedCartDataForRegister.total} 円`;
       document.getElementById('receipt-cash-text').textContent = `お預かり: ${lastReceivedCash}円 / お釣り: ${lastChangeCash}円`;
       
+      // 共通カスタムメッセージの表示設定
+      const customMsgContainer = document.getElementById('receipt-custom-msg-display');
+      if (customReceiptMessage && customReceiptMessage !== "") {
+        customMsgContainer.textContent = customReceiptMessage;
+        customMsgContainer.style.display = "block";
+      } else {
+        customMsgContainer.textContent = "";
+        customMsgContainer.style.display = "none";
+      }
+
+      // レシート個別の単発メッセージ表示設定
+      const singleMsgContainer = document.getElementById('receipt-single-msg-display');
+      if (singleMsgInput && singleMsgInput.trim() !== "") {
+        singleMsgContainer.textContent = singleMsgInput.trim();
+        singleMsgContainer.style.display = "block";
+      } else {
+        singleMsgContainer.textContent = "";
+        singleMsgContainer.style.display = "none";
+      }
+
+      // レシート下部の金額コード入りバーコード生成
+      const amountStr = String(scannedCartDataForRegister.total).padStart(10, '0');
+      const receiptBarcodeCode = `20${amountStr}`;
+
+      try {
+        JsBarcode("#receipt-barcode-element", receiptBarcodeCode, {
+          format: "CODE128",
+          width: 1.5,
+          height: 40,
+          displayValue: true,
+          fontSize: 12,
+          margin: 0
+        });
+      } catch (e) {
+        console.error("JsBarcode Rendering Error", e);
+      }
+
       document.getElementById('receipt-modal').style.display = 'flex';
       
       const itemsPurchased = groupedItems.map(i => `${i.name}${i.count > 1 ? '×' + i.count : ''} (${i.totalTaxPrice}円)`).join(', ');
@@ -880,7 +1066,8 @@
         alert("カメラを起動できませんでした。ブラウザのカメラ権限を確認してください。");
       });
     }
-function stopRegisterScanner() {
+
+    function stopRegisterScanner() {
       if (registerScanInterval) {
         clearInterval(registerScanInterval);
         registerScanInterval = null;
@@ -900,26 +1087,20 @@ function stopRegisterScanner() {
         const totalPriceVal = parts[parts.length - 1];
         const itemCodes = parts.slice(1, parts.length - 1);
 
-        let parsedItems = [];
+        let parsedItemsMap = {};
         itemCodes.forEach(c => {
           if (itemDatabase[c]) {
-            parsedItems.push({ name: itemDatabase[c].name, taxPrice: Math.round(itemDatabase[c].price * 1.1) });
+            const name = itemDatabase[c].name;
+            const taxPrice = Math.round(itemDatabase[c].price * 1.1);
+            if (!parsedItemsMap[name]) {
+              parsedItemsMap[name] = { name: name, taxPrice: taxPrice, quantity: 0 };
+            }
+            parsedItemsMap[name].quantity += 1;
           }
         });
 
-        scannedCartDataForRegister = { items: parsedItems, total: totalPriceVal };
-
-        const groupedParsedItems = getGroupedItems(parsedItems);
-        let totalCountVal = parsedItems.length;
-
-        document.getElementById('register-confirm-items').innerHTML = groupedParsedItems.map(i => `
-          <div class="receipt-item-row">
-            <span>${i.name} ${i.count > 1 ? '×' + i.count : ''}</span>
-            <span>${i.totalTaxPrice}円</span>
-          </div>
-        `).join('');
-
-        document.getElementById('register-confirm-total').textContent = `${totalCountVal}点 合計: ${totalPriceVal}円`;
+        registerParsedCartItems = Object.values(parsedItemsMap);
+        renderRegisterConfirmList();
         document.getElementById('register-confirm-modal').style.display = 'flex';
       }
     }

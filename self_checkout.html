@@ -32,49 +32,73 @@
     .btn:active { opacity: 0.8; }
     .pay-btn { background-color: #ff4757; }
     .undo-btn { background-color: #ffa502; }
-    .share-btn { background-color: #00b894; margin-bottom: 15px; } /* 間隔を開けるためのマージン */
+    .share-btn { background-color: #00b894; margin-bottom: 15px; } 
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); justify-content: center; align-items: center; z-index: 100; }
     
     .modal-content-box { background: #ffffff; padding: 25px; width: 340px; max-height: 90vh; overflow-y: auto; border-radius: 10px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
     
     /* ==========================================
-       🧾 シンプル＆すっきりしたレシートデザイン
+       🧾 本格的な縦長レシートのデザイン
        ========================================== */
     .receipt-paper {
       background: #fffdf9;
-      color: #222222;
+      color: #111111;
       font-family: 'Courier New', Courier, monospace;
-      padding: 20px;
-      border: 1px dashed #dcd6cd;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      padding: 30px 20px;
+      border: 1px dashed #cccccc;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
       text-align: left;
       position: relative;
-      margin-bottom: 20px; /* 間隔を確保 */
+      margin-bottom: 20px;
+      width: 280px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .receipt-store-title {
+      text-align: center;
+      font-size: 16px;
+      font-weight: bold;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .receipt-store-sub {
+      text-align: center;
+      font-size: 10px;
+      color: #666;
+      margin-bottom: 15px;
     }
     .receipt-info {
-      font-size: 12px;
-      color: #444;
+      font-size: 11px;
+      color: #333;
       margin-bottom: 15px;
-      border-bottom: 2px dotted #333;
+      border-bottom: 1px dashed #333;
       padding-bottom: 8px;
     }
     .receipt-items-container {
-      border-bottom: 1px dashed #bbb;
-      padding-bottom: 10px;
+      border-bottom: 1px dashed #333;
+      padding-bottom: 12px;
       margin-bottom: 12px;
-      max-height: 180px;
-      overflow-y: auto;
+      min-height: 120px;
     }
     .receipt-item-row {
       display: flex;
       justify-content: space-between;
-      font-size: 13px;
+      font-size: 12px;
       margin: 6px 0;
     }
     .receipt-total-section {
-      font-size: 16px;
+      font-size: 15px;
       font-weight: bold;
       text-align: right;
+      margin-bottom: 20px;
+    }
+    .receipt-message {
+      text-align: center;
+      font-size: 11px;
+      color: #444;
+      margin-top: 10px;
+      line-height: 1.5;
     }
 
     .close-btn { width: 100%; padding: 12px; background: #e0e0e0; color: #333; border: none; font-weight: bold; cursor: pointer; border-radius: 10px; font-family: 'Segoe UI', sans-serif; margin-top: 5px; }
@@ -148,26 +172,32 @@
     </div>
   </div>
 
-  <!-- レジ側：レシート表示画面（ロゴ・下部文字なし・間隔調整版） -->
+  <!-- レジ側：レシート表示画面（縦長・メッセージ・高画質対応） -->
   <div class="modal-overlay" id="receipt-modal">
     <div class="modal-content-box">
       
-      <!-- レシート（日付と時間、商品、金額のみ） -->
+      <!-- 本格的な縦長レシート -->
       <div id="receipt-target" class="receipt-paper">
+        <div class="receipt-store-title">LUCKY MART</div>
+        <div class="receipt-store-sub">セルフチェックアウト店</div>
         <div class="receipt-info" id="receipt-date">
-          2026/03/30 12:00
+          日時: 2026/03/30 12:00
         </div>
         <div class="receipt-items-container" id="receipt-items">
           <!-- 商品リストがここに入ります -->
         </div>
         <div class="receipt-total-section" id="receipt-total">
-          合計: 0円
+          合 計 : 0 円
+        </div>
+        <div class="receipt-message">
+          <p style="margin: 4px 0;">ご来店ありがとうございました。</p>
+          <p style="margin: 4px 0;">またのご利用をお待ちしております！</p>
         </div>
       </div>
 
       <!-- 間隔をあけた共有ボタンと閉じるボタン -->
       <button class="btn share-btn" onclick="shareReceiptImage()">レシート画像を共有・保存する</button>
-      <button class="close-btn" onclick="closeReceiptToRegister()">閉じる（次の会計へ）</button>
+      <button class="btn close-btn" onclick="closeReceiptToRegister()">閉じる（次の会計へ）</button>
     </div>
   </div>
 
@@ -255,17 +285,14 @@
       startRegisterScanner(); 
     }
     
-    // レシートを閉じたとき、レジ操作画面のままにする
     function closeReceiptToRegister() { 
       document.getElementById('receipt-modal').style.display = 'none'; 
-      // お客様側のデータもリセット
       cartHistory = [];
       totalPrice = 0;
       isFirst = true;
       document.getElementById('cart-list').innerHTML = '<p style="color: #888; font-family: \'Segoe UI\', sans-serif;">スキャンした商品がここに表示されます</p>';
       document.getElementById('total-price').textContent = '0';
       
-      // レジ操作画面を維持してカメラ再開
       switchView('register');
     }
 
@@ -351,23 +378,23 @@
     }
 
     // ==========================================
-    // 📸 レシート画像共有・ダウンロード機能
+    // 📸 超高画質レシート画像共有・ダウンロード機能
     // ==========================================
     function shareReceiptImage() {
       const receiptElement = document.getElementById('receipt-target');
       
-      html2canvas(receiptElement, { scale: 2 }).then(canvas => {
+      // scale: 3に引き上げることで、じっくり見てもくっきり綺麗な高画質画像にします
+      html2canvas(receiptElement, { scale: 3, useCORS: true }).then(canvas => {
         canvas.toBlob(blob => {
           const file = new File([blob], "receipt.png", { type: "image/png" });
           
           if (navigator.canShare && navigator.canShare({ files: [file] })) {
             navigator.share({
-              title: 'レシート画像',
-              text: 'お買い上げレシート',
+              title: 'お買い上げレシート',
+              text: 'LUCKY MARTのレシート画像です',
               files: [file]
             }).catch(err => console.log('共有キャンセル'));
           } else {
-            // 共有非対応環境では自動ダウンロード
             const link = document.createElement('a');
             link.download = 'receipt.png';
             link.href = canvas.toDataURL('image/png');
@@ -472,7 +499,7 @@
           }
         }, 300);
       }).catch((err) => {
- console.error("カメラ起動エラー:", err);
+        console.error("カメラ起動エラー:", err);
         alert("カメラを起動できませんでした。権限を確認してください。");
       });
     }

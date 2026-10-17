@@ -105,7 +105,8 @@
   <div id="register-view" class="view-container">
     <div class="header-container">
       <h1>レジ操作モード</h1>
-      <button class="settings-btn" onclick="switchView('customer')" title="お客様画面へ戻る">🔙</button>
+      <!-- 右上のボタンを⚙️に変更し、押すと設定画面が開くようにしました -->
+      <button class="settings-btn" onclick="openSettings()" title="設定">⚙️</button>
     </div>
     <div class="status" style="color: #ff4757;">お客様のスマホのQRコードをカメラにかざしてください</div>
     
@@ -168,7 +169,8 @@
     <div class="modal-content-box" style="text-align: left; font-family: 'Segoe UI', sans-serif;">
       <h2>管理設定</h2>
       <div style="margin-top: 15px;">
-        <button class="btn" style="background-color: #2575fc; margin-top:5px; font-size:15px; padding:10px;" onclick="switchToRegisterMode()">レジ操作モードへ切替</button>
+        <!-- 現在の表示画面に合わせてボタンを切り替え -->
+        <button id="settings-switch-btn" class="btn" style="background-color: #2575fc; margin-top:5px; font-size:15px; padding:10px;" onclick="toggleModeFromSettings()">レジ操作モードへ切替</button>
         <button class="btn" style="background-color: #00adb5; margin-top:10px; font-size:15px; padding:10px;" onclick="showSalesHistory()">売上履歴を見る</button>
         <button class="btn" style="background-color: #ffa502; margin-top:10px; font-size:15px; padding:10px;" onclick="resetSalesOnly()">売上記録のみリセット</button>
         <button class="btn" style="background-color: #ff4757; margin-top:10px; font-size:15px; padding:10px;" onclick="resetAllData()">すべてのデータをリセット</button>
@@ -206,6 +208,7 @@
 
     let registerStream = null;
     let registerScanInterval = null;
+    let currentMode = 'customer'; // 'customer' または 'register'
 
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     
@@ -220,6 +223,7 @@
     }
 
     function switchView(viewName) {
+      currentMode = viewName;
       document.querySelectorAll('.view-container').forEach(el => el.classList.remove('active'));
       if (viewName === 'customer') {
         document.getElementById('customer-view').classList.add('active');
@@ -238,6 +242,15 @@
         if (input !== null) alert("パスワードが違います"); 
         return; 
       }
+      
+      // 現在のモードに応じて設定画面の切替ボタンのテキストを変更
+      const switchBtn = document.getElementById('settings-switch-btn');
+      if (currentMode === 'customer') {
+        switchBtn.textContent = "レジ操作モードへ切替";
+      } else {
+        switchBtn.textContent = "お客様画面へ切替";
+      }
+
       document.getElementById('settings-modal').style.display = 'flex';
     }
 
@@ -264,9 +277,13 @@
       switchView('register');
     }
 
-    function switchToRegisterMode() {
+    function toggleModeFromSettings() {
       closeSettings();
-      switchView('register');
+      if (currentMode === 'customer') {
+        switchView('register');
+      } else {
+        switchView('customer');
+      }
     }
 
     function addItem(name, price) {
@@ -462,9 +479,6 @@
       setTimeout(() => { canScan = true; }, 1500);
     }
 
-    // ==========================================
-    // 📷 修正済み：レジ側カメラの確実な起動処理
-    // ==========================================
     function startRegisterScanner() {
       const video = document.getElementById('register-video');
       const canvasElement = document.getElementById('register-canvas');
@@ -475,7 +489,6 @@
         video.srcObject = stream;
         video.setAttribute("playsinline", true);
         
-        // 映像の読み込みを待ってから再生・スキャン開始
         video.onloadedmetadata = () => {
           video.play().then(() => {
             if (registerScanInterval) clearInterval(registerScanInterval);

@@ -155,7 +155,7 @@
     </div>
     
     <div class="cart" id="cart-list"><p style="color: #888; font-family: 'Segoe UI', sans-serif; text-align: center;">スキャンした商品がここに表示されます</p></div>
-    <div class="total">合計: <span id="total-count">0</span>点 <span id="total-price">0</span> 円</div>
+    <div class="total"><span id="total-count">0</span>点 合計: <span id="total-price">0</span> 円</div>
 
     <button class="btn pay-btn" onclick="openPaymentModal()">お会計</button>
   </div>
@@ -398,7 +398,7 @@
         return; 
       }
       
-     const switchBtn = document.getElementById('settings-switch-btn');
+       const switchBtn = document.getElementById('settings-switch-btn');
       if (currentMode === 'customer') {
         switchBtn.textContent = "スタッフモードへ切替";
       } else {
@@ -576,7 +576,7 @@
         </div>
       `).join('');
       
-      document.getElementById('receipt-total').textContent = `${totalItemsCount}点 合計 : ${scannedCartDataForRegister.total} 円`;
+      document.getElementById('receipt-total').textContent = `${totalItemsCount}点 合計: ${scannedCartDataForRegister.total} 円`;
       document.getElementById('receipt-modal').style.display = 'flex';
       
       const itemsPurchased = groupedItems.map(i => `${i.name}${i.count > 1 ? '×' + i.count : ''} (${i.totalTaxPrice}円)`).join(', ');
@@ -630,7 +630,7 @@
           const countInfo = s.count ? `${s.count}点 ` : '';
           return `<div style="margin-bottom: 10px; border-bottom: 1px dashed #ccc; padding-bottom: 5px;">
                     <strong>${s.date}</strong><br>
-                    合計: ${countInfo}${s.total}円 ${itemList}
+                    ${countInfo}合計: ${s.total}円 ${itemList}
                   </div>`;
         }).join('');
       }

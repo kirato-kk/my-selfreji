@@ -28,7 +28,7 @@
     .section-header { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; margin-bottom: 5px; }
     h2 { font-size: 18px; color: #444; margin: 0; }
     
-    /* ボタンの色を黄色に変更（文字は黒で見やすく） */
+    /* バーコードの無い商品を追加ボタン（黄色） */
     .add-nobarcode-btn { background-color: #f1c40f; color: #2d3436; border: none; padding: 7px 12px; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
     .add-nobarcode-btn:active { opacity: 0.8; }
 
@@ -233,7 +233,10 @@
   </div>
 
   <script>
-    let itemDatabase = JSON.parse(localStorage.getItem('myPosDatabase')) || {
+    // ==========================================
+    // 🛒 商品データベース（最新データを常に強制反映）
+    // ==========================================
+    let defaultDatabase = {
       "4901330502880": { name: "ポテトチップス", price: 160 },
       "4902105001569": { name: "カップヌードル", price: 210 },
       "4586921456321": { name: "とんがりCORN", price: 150 },
@@ -261,6 +264,10 @@
       "400002": { name: "手巻きおにぎり(梅)", price: 130, category: "sonota" }
     };
 
+    // 常に最新のデータベースを強制上書きして読み込む
+    let itemDatabase = defaultDatabase;
+    localStorage.setItem('myPosDatabase', JSON.stringify(defaultDatabase));
+
     const SALES_PASSWORD = "4869"; 
     let canScan = true, totalPrice = 0, cartItems = []; 
     let salesHistory = JSON.parse(localStorage.getItem('myPosSalesHistory')) || [];
@@ -287,7 +294,6 @@
     // ==========================================
     function openNoBarcodeModal() {
       document.getElementById('nobarcode-modal').style.display = 'flex';
-      // モーダルを開いた時に最初から「野菜・果物」のリストを表示する
       const firstTab = document.querySelector('.tab-btn');
       switchCategory('yasai', firstTab);
     }
@@ -622,6 +628,7 @@
         alert("カメラを起動できませんでした。ブラウザのカメラ権限を確認してください。");
       });
     }
+
     function stopRegisterScanner() {
       if (registerScanInterval) {
         clearInterval(registerScanInterval);

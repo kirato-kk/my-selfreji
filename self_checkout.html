@@ -420,6 +420,7 @@
     let salesHistory = JSON.parse(localStorage.getItem('myPosSalesHistory')) || [];
     let customReceiptMessage = localStorage.getItem('myPosReceiptMsg') || "";
     let registerParsedCartItems = []; 
+    let scannedCartDataForRegister = { items: [], total: 0 };
 
     let registerStream = null;
     let registerScanInterval = null;
@@ -429,7 +430,6 @@
     let settingsClickCount = 0;
     let settingsClickTimer = null;
 
-    // タイトル2回連続タップ用変数
     let titleClickCount = 0;
     let titleClickTimer = null;
 
@@ -452,12 +452,10 @@
       } else if (titleClickCount === 2) {
         clearTimeout(titleClickTimer);
         titleClickCount = 0;
-        // 画像読み取りを開く
         document.getElementById('customer-file-input').click();
       }
     }
 
-    // お客様用：画像ファイルからのバーコード読み取り
     function handleCustomerImageFile(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -491,7 +489,6 @@
       event.target.value = '';
     }
 
-    // スタッフ用：画像ファイルからのQRコード読み取り
     function handleRegisterImageFile(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -631,6 +628,8 @@
     
     function closePaymentModal() { 
       document.getElementById('payment-modal').style.display = 'none'; 
+      // QRコード画面の完了ボタンを押したタイミングでカートをクリア
+      clearCartFromStorage();
     }
     
     function closeHistory() { document.getElementById('history-modal').style.display = 'none'; }
@@ -641,7 +640,6 @@
     
     function closeReceiptToRegister() { 
       document.getElementById('receipt-modal').style.display = 'none'; 
-      // お会計完了後にカートを全削除
       clearCartFromStorage();
       switchView('register');
     }
@@ -928,7 +926,7 @@
       document.getElementById('register-confirm-modal').style.display = 'none';
 
       document.getElementById('cash-modal-total').textContent = scannedCartDataForRegister.total;
-      documen.getElementById('cash-input-display').textContent = "0";
+      document.getElementById('cash-input-display').textContent = "0";
       document.getElementById('cash-input-modal').style.display = 'flex';
     }
 
@@ -1236,7 +1234,6 @@
       }
     }
 
-    // 初期起動時にカートを描画（保存データの復元）
     renderCart();
     startCustomerScanner();
   </script>

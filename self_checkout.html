@@ -17,7 +17,7 @@
   <style>
     body { font-family: 'Segoe UI', sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; background-color: #f7f9fc; color: #333333; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
     .header-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
-    h1 { color: #2575fc; margin: 0; font-size: 24px; }
+    h1 { color: #2575fc; margin: 0; font-size: 24px; cursor: pointer; user-select: none; }
     .settings-btn { background: none; border: none; font-size: 24px; cursor: pointer; padding: 0; color: #555; }
     .status { text-align: center; color: #2575fc; margin-bottom: 10px; font-weight: bold; }
     #interactive.viewport { width: 100%; height: 250px; background-color: #000; border: 2px solid #2575fc; border-radius: 10px; overflow: hidden; margin-bottom: 20px; position: relative; }
@@ -128,7 +128,6 @@
     .receipt-item-row { display: flex; justify-content: space-between; font-size: 12px; margin: 6px 0; }
     .receipt-total-section { font-size: 14px; font-weight: bold; text-align: right; margin-bottom: 15px; line-height: 1.6; }
     
-    /* レシート内バーコードのデザイン */
     .receipt-barcode-wrapper { text-align: center; margin-top: 10px; margin-bottom: 5px; }
     .receipt-barcode-svg { max-width: 100%; height: 50px; }
 
@@ -142,7 +141,6 @@
 
     .staff-box { background: #ff4757; color: white; padding: 15px; border-radius: 10px; margin-bottom: 15px; font-family: 'Segoe UI', sans-serif; }
 
-    /* 電卓風キーボード */
     .calculator-pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 15px 0; }
     .calc-key { background: #f1f2f6; border: 1px solid #dfe4ea; padding: 12px; font-size: 18px; font-weight: bold; border-radius: 8px; cursor: pointer; color: #2f3542; }
     .calc-key:active { background: #ced6e0; }
@@ -157,10 +155,14 @@
 </head>
 <body>
 
+  <!-- 非表示の画像読み取り用input -->
+  <input type="file" id="customer-file-input" accept="image/*" style="display: none;" onchange="handleCustomerImageFile(event)">
+  <input type="file" id="register-file-input" accept="image/*" style="display: none;" onchange="handleRegisterImageFile(event)">
+
   <!-- ================= お客様画面 ================= -->
   <div id="customer-view" class="view-container active">
     <div class="header-container">
-      <h1>ピピッとカート 🛒</h1>
+      <h1 id="app-title-header" onclick="handleTitleClick()">ピピッとカート 🛒</h1>
       <button class="settings-btn" onclick="handleSettingsClick()" title="設定">⚙️</button>
     </div>
     
@@ -191,6 +193,8 @@
       <canvas id="register-canvas"></canvas>
     </div>
 
+    <!-- 画像から読み取りボタン -->
+    <button class="btn" style="background-color: #00adb5; margin-bottom: 10px;" onclick="document.getElementById('register-file-input').click()">📁 画像からQR読み取り</button>
     <button class="btn" style="background-color: #555;" onclick="switchView('customer')">お客様モードに戻る</button>
   </div>
 
@@ -408,7 +412,11 @@
     localStorage.setItem('myPosDatabase', JSON.stringify(defaultDatabase));
 
     const SALES_PASSWORD = "4869"; 
-    let canScan = true, totalPrice = 0, totalCount = 0, cartItems = []; 
+    let canScan = true, totalPrice = 0, totalCount = 0; 
+    
+    // カートをローカルストレージから復元（リロード対策）
+    let cartItems = JSON.parse(localStorage.getItem('myPosCartItems')) || [];
+    
     let salesHistory = JSON.parse(localStorage.getItem('myPosSalesHistory')) || [];
     let customReceiptMessage = localStorage.getItem('myPosReceiptMsg') || "";
     let registerParsedCartItems = []; 
@@ -420,6 +428,97 @@
 
     let settingsClickCount = 0;
     let settingsClickTimer = null;
+
+    // タイトル2回連続タップ用変数
+    let titleClickCount = 0;
+    let titleClickTimer = null;
+
+    function saveCartToStorage() {
+      localStorage.setItem('myPosCartItems', JSON.stringify(cartItems));
+    }
+
+    function clearCartFromStorage() {
+      cartItems = [];
+      localStorage.removeItem('myPosCartItems');
+      renderCart();
+    }
+
+    function handleTitleClick() {
+      titleClickCount++;
+      if (titleClickCount === 1) {
+        titleClickTimer = setTimeout(() => {
+          titleClickCount = 0;
+        }, 400);
+      } else if (titleClickCount === 2) {
+        clearTimeout(titleClickTimer);
+        titleClickCount = 0;
+        // 画像読み取りを開く
+        document.getElementById('customer-file-input').click();
+      }
+    }
+
+    // お客様用：画像ファイルからのバーコード読み取り
+    function handleCustomerImageFile(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          Quagga.decodeSingle({
+            src: e.target.result,
+            numOfWorkers: 0,
+            decoder: { readers: ["ean_reader", "ean_8_reader", "code_128_reader", "code_39_reader"] }
+          }, function(result) {
+            if (result && result.codeResult) {
+              const code = result.codeResult.code;
+              if (itemDatabase[code]) {
+                addItem(itemDatabase[code].name, itemDatabase[code].price);
+                alert(`「${itemDatabase[code].name}」を追加しました！`);
+              } else {
+                playSound(300, 0.2, 'sawtooth');
+                alert(`未登録のバーコードです: ${code}`);
+              }
+            } else {
+              alert("画像からバーコードを読み取れませんでした。");
+            }
+          });
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+      event.target.value = '';
+    }
+
+    // スタッフ用：画像ファイルからのQRコード読み取り
+    function handleRegisterImageFile(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, img.width, img.height);
+          const imageData = ctx.getImageData(0, 0, img.width, img.height);
+
+          const code = jsQR(imageData.data, imageData.width, imageData.height);
+          if (code) {
+            handleRegisterQRCode(code.data);
+          } else {
+            alert("画像からQRコードを読み取れませんでした。");
+          }
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+      event.target.value = '';
+    }
 
     function speakText(text) {
       if ('speechSynthesis' in window) {
@@ -532,8 +631,6 @@
     
     function closePaymentModal() { 
       document.getElementById('payment-modal').style.display = 'none'; 
-      cartItems = [];
-      renderCart();
     }
     
     function closeHistory() { document.getElementById('history-modal').style.display = 'none'; }
@@ -544,8 +641,8 @@
     
     function closeReceiptToRegister() { 
       document.getElementById('receipt-modal').style.display = 'none'; 
-      cartItems = [];
-      renderCart();
+      // お会計完了後にカートを全削除
+      clearCartFromStorage();
       switchView('register');
     }
 
@@ -558,7 +655,6 @@
       }
     }
 
-     // バーコードを生成する関数（画質を最適化）
     function generateUniqueBarcode() {
       let code = "";
       let isDuplicate = true;
@@ -578,7 +674,6 @@
       currentGeneratedCode = code;
       
       try {
-        // バーコードの描画サイズを少し小さくして描画負荷を軽減
         JsBarcode("#generated-barcode-svg", code, {
           format: "EAN13",
           width: 1.8,
@@ -599,11 +694,8 @@
       document.getElementById('barcode-modal').style.display = 'flex';
     }
 
-    // バーコード画像を爆速で共有する関数
     function shareBarcodeImage() {
       const targetArea = document.getElementById('barcode-target-area');
-      
-      // scaleを1.0にし、画質をJPEG形式にすることで処理を大幅に高速化
       html2canvas(targetArea, { scale: 1.0, backgroundColor: '#ffffff', logging: false }).then(canvas => {
         canvas.toBlob(blob => {
           const file = new File([blob], `barcode_${currentGeneratedCode}.jpg`, { type: "image/jpeg" });
@@ -623,8 +715,6 @@
         }, 'image/jpeg', 0.85);
       });
     }
-
- 
 
     function closeBarcodeModal() {
       document.getElementById('barcode-modal').style.display = 'none';
@@ -649,6 +739,7 @@
       } else {
         cartItems.unshift({ name: name, price: price, taxPrice: taxPrice, quantity: 1 });
       }
+      saveCartToStorage();
       renderCart();
     }
 
@@ -660,12 +751,14 @@
         cartItems[index].quantity = qty;
       }
       speakText("数量を変更しました。");
+      saveCartToStorage();
       renderCart();
     }
 
     function removeCartItem(index) {
       cartItems.splice(index, 1);
       speakText("商品を削除しました。商品は元の棚にお戻しください。");
+      saveCartToStorage();
       renderCart();
     }
 
@@ -835,7 +928,7 @@
       document.getElementById('register-confirm-modal').style.display = 'none';
 
       document.getElementById('cash-modal-total').textContent = scannedCartDataForRegister.total;
-      document.getElementById('cash-input-display').textContent = "0";
+      documen.getElementById('cash-input-display').textContent = "0";
       document.getElementById('cash-input-modal').style.display = 'flex';
     }
 
@@ -868,7 +961,7 @@
       document.getElementById('cash-input-display').textContent = currentInputAmount;
     }
 
-      let lastReceivedCash = 0;
+    let lastReceivedCash = 0;
     let lastChangeCash = 0;
     function completeCashPayment() {
       const received = parseInt(currentInputAmount);
@@ -963,9 +1056,9 @@
     function shareReceiptImage() {
       const receiptElement = document.getElementById('receipt-target');
       
-      html2canvas(receiptElement, { scale: 3, useCORS: true }).then(canvas => {
+      html2canvas(receiptElement, { scale: 1.0, useCORS: true, logging: false }).then(canvas => {
         canvas.toBlob(blob => {
-          const file = new File([blob], "receipt.png", { type: "image/png" });
+          const file = new File([blob], "receipt.jpg", { type: "image/jpeg" });
           
           if (navigator.canShare && navigator.canShare({ files: [file] })) {
             navigator.share({
@@ -975,11 +1068,11 @@
             }).catch(err => console.log('共有キャンセル'));
           } else {
             const link = document.createElement('a');
-            link.download = 'receipt.png';
-            link.href = canvas.toDataURL('image/png');
+            link.download = 'receipt.jpg';
+            link.href = canvas.toDataURL('image/jpeg', 0.85);
             link.click();
           }
-        });
+        }, 'image/jpeg', 0.85);
       });
     }
 
@@ -1143,6 +1236,8 @@
       }
     }
 
+    // 初期起動時にカートを描画（保存データの復元）
+    renderCart();
     startCustomerScanner();
   </script>
 </body>

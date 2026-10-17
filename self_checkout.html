@@ -10,6 +10,8 @@
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
   <!-- QRコード生成ライブラリ -->
   <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+  <!-- HTMLを画像化するライブラリ（html2canvas） -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
     body { font-family: 'Segoe UI', sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; background-color: #f7f9fc; color: #333333; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
     .header-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
@@ -19,7 +21,6 @@
     #interactive.viewport { width: 100%; height: 250px; background-color: #000; border: 2px solid #2575fc; border-radius: 10px; overflow: hidden; margin-bottom: 20px; position: relative; }
     #interactive.viewport video { width: 100%; height: 100%; object-fit: cover; }
     
-    /* レジ用カメラのビューポート */
     #register-viewport-container { width: 100%; height: 250px; background-color: #000; border: 2px solid #ff4757; border-radius: 10px; overflow: hidden; margin-bottom: 20px; position: relative; }
     #register-video { width: 100%; height: 100%; object-fit: cover; }
     #register-canvas { display: none; }
@@ -33,10 +34,83 @@
     .undo-btn { background-color: #ffa502; }
     .share-btn { background-color: #00b894; }
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); justify-content: center; align-items: center; z-index: 100; }
-    .receipt { background: #ffffff; color: #333333; font-family: 'Courier New', monospace; padding: 25px; width: 320px; max-height: 80vh; overflow-y: auto; border-radius: 10px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
-    .receipt h2 { text-align: center; margin: 0 0 10px 0; font-size: 20px; font-family: 'Segoe UI', sans-serif; color: #333; }
-    .receipt-item { display: flex; justify-content: space-between; margin: 5px 0; font-size: 14px; }
-    .close-btn { width: 100%; padding: 10px; margin-top: 15px; background: #e0e0e0; color: #333; border: none; font-weight: bold; cursor: pointer; border-radius: 5px; font-family: 'Segoe UI', sans-serif; }
+    
+    .modal-content-box { background: #ffffff; padding: 25px; width: 340px; max-height: 90vh; overflow-y: auto; border-radius: 10px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+    
+    /* ==========================================
+       🧾 凝ったレシートのデザイン
+       ========================================== */
+    .receipt-paper {
+      background: #fffdf9;
+      color: #222222;
+      font-family: 'Courier New', Courier, monospace;
+      padding: 20px;
+      border: 1px dashed #dcd6cd;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      text-align: left;
+      position: relative;
+      margin-bottom: 15px;
+    }
+    .receipt-header {
+      text-align: center;
+      border-bottom: 2px dotted #333;
+      padding-bottom: 10px;
+      margin-bottom: 12px;
+    }
+    .receipt-title {
+      font-size: 18px;
+      font-weight: bold;
+      letter-spacing: 2px;
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .receipt-subtitle {
+      font-size: 10px;
+      color: #666;
+      margin-top: 2px;
+    }
+    .receipt-info {
+      font-size: 11px;
+      color: #555;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .receipt-items-container {
+      border-bottom: 1px dashed #bbb;
+      padding-bottom: 10px;
+      margin-bottom: 10px;
+      max-height: 180px;
+      overflow-y: auto;
+    }
+    .receipt-item-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      margin: 4px 0;
+    }
+    .receipt-total-section {
+      font-size: 15px;
+      font-weight: bold;
+      text-align: right;
+      margin-bottom: 15px;
+    }
+    .receipt-footer {
+      text-align: center;
+      font-size: 10px;
+      color: #777;
+      border-top: 2px dotted #333;
+      padding-top: 10px;
+    }
+    .receipt-barcode {
+      font-family: 'Libre Barcode 39', cursive, monospace;
+      font-size: 32px;
+      letter-spacing: 3px;
+      margin-top: 5px;
+      color: #111;
+    }
+
+    .close-btn { width: 100%; padding: 10px; background: #e0e0e0; color: #333; border: none; font-weight: bold; cursor: pointer; border-radius: 5px; font-family: 'Segoe UI', sans-serif; }
     .staff-box { background: #ff4757; color: white; padding: 15px; border-radius: 10px; margin-bottom: 15px; font-family: 'Segoe UI', sans-serif; }
     
     #qrcode { display: flex; justify-content: center; margin: 15px 0; }
@@ -66,7 +140,7 @@
     <button class="btn pay-btn" onclick="openPaymentModal()">お会計</button>
   </div>
 
-  <!-- ================= レジ操作画面（QRコード読み取り） ================= -->
+  <!-- ================= レジ操作画面 ================= -->
   <div id="register-view" class="view-container">
     <div class="header-container">
       <h1>レジ操作モード</h1>
@@ -84,7 +158,7 @@
 
   <!-- お会計・QRコード画面（お客様用） -->
   <div class="modal-overlay" id="payment-modal">
-    <div class="receipt">
+    <div class="modal-content-box">
       <div class="staff-box">
         <h2 style="color: white; margin: 0; font-size: 18px;">お会計QRコード</h2>
       </div>
@@ -97,7 +171,7 @@
 
   <!-- レジ側：お会計確認画面 -->
   <div class="modal-overlay" id="register-confirm-modal">
-    <div class="receipt" style="text-align: left;">
+    <div class="modal-content-box" style="text-align: left;">
       <h2>お会計内容確認</h2>
       <div id="register-confirm-items" style="margin: 10px 0; max-height: 150px; overflow-y:auto;"></div>
       <hr style="border: none; border-top: 1px dashed #ccc; margin: 10px 0;">
@@ -107,22 +181,42 @@
     </div>
   </div>
 
-  <!-- レジ側：レシート表示画面 -->
+  <!-- レジ側：レシート表示画面（デザイン凝った版） -->
   <div class="modal-overlay" id="receipt-modal">
-    <div class="receipt">
-      <h2>レシート</h2>
-      <div id="receipt-items"></div>
-      <hr style="border: none; border-top: 1px dashed #ccc; margin: 10px 0;">
-      <div id="receipt-total" style="font-weight:bold; text-align:right;"></div>
+    <div class="modal-content-box">
       
-      <button class="btn share-btn" style="padding:10px; font-size:16px; margin-top:15px;" onclick="shareReceipt()">レシートを共有する</button>
+      <!-- 凝ったレシートデザインのエリア -->
+      <div id="receipt-target" class="receipt-paper">
+        <div class="receipt-header">
+          <p class="receipt-title">★ LUCKY MART ★</p>
+          <div class="receipt-subtitle">セルフチェックアウト専門店</div>
+        </div>
+        <div class="receipt-info">
+          <span id="receipt-date">2026/03/30 12:00</span>
+          <span>No. 0089</span>
+        </div>
+        <div class="receipt-items-container" id="receipt-items">
+          <!-- 商品リストがここに入ります -->
+        </div>
+        <div class="receipt-total-section" id="receipt-total">
+          合計: 0円
+        </div>
+        <div class="receipt-footer">
+          <div>ご利用ありがとうございました！</div>
+          <div style="margin-top: 5px; font-size: 9px;">又のご来店をお待ちしております</div>
+          <div class="receipt-barcode">*LUCKY-POS-2026*</div>
+        </div>
+      </div>
+
+      <!-- レシート下の画像共有ボタン -->
+      <button class="btn share-btn" style="padding:12px; font-size:16px; margin-top:10px;" onclick="shareReceiptImage()">レシートを画像で共有する</button>
       <button class="close-btn" onclick="closeReceipt()">閉じる</button>
     </div>
   </div>
 
   <!-- 設定・管理画面（パスワード保護） -->
   <div class="modal-overlay" id="settings-modal">
-    <div class="receipt" style="text-align: left; font-family: 'Segoe UI', sans-serif;">
+    <div class="modal-content-box" style="text-align: left; font-family: 'Segoe UI', sans-serif;">
       <h2>管理設定</h2>
       <div style="margin-top: 15px;">
         <button class="btn" style="background-color: #2575fc; margin-top:5px; font-size:15px; padding:10px;" onclick="switchToRegisterMode()">レジ操作モードへ切替</button>
@@ -136,7 +230,7 @@
 
   <!-- 売上履歴画面 -->
   <div class="modal-overlay" id="history-modal">
-    <div class="receipt" style="text-align: left; font-family: 'Segoe UI', sans-serif;">
+    <div class="modal-content-box" style="text-align: left; font-family: 'Segoe UI', sans-serif;">
       <h2>売上履歴</h2>
       <div id="history-list" style="max-height: 250px; overflow-y: auto; margin-top: 10px; font-size: 13px;"></div>
       <button class="close-btn" onclick="closeHistory()">戻る</button>
@@ -159,7 +253,6 @@
     let salesHistory = JSON.parse(localStorage.getItem('myPosSalesHistory')) || [];
     let scannedCartDataForRegister = null; 
 
-    // レジ側カメラ制御用変数
     let registerStream = null;
     let registerScanInterval = null;
 
@@ -175,7 +268,6 @@
       osc.start(); osc.stop(audioCtx.currentTime + duration);
     }
 
-    // 画面切り替え管理
     function switchView(viewName) {
       document.querySelectorAll('.view-container').forEach(el => el.classList.remove('active'));
       if (viewName === 'customer') {
@@ -203,7 +295,7 @@
     function closeHistory() { document.getElementById('history-modal').style.display = 'none'; }
     function closeRegisterConfirm() { 
       document.getElementById('register-confirm-modal').style.display = 'none'; 
-      startRegisterScanner(); // 確認画面を閉じたらレジカメラを再開
+      startRegisterScanner(); 
     }
     
     function closeReceipt() { 
@@ -278,25 +370,52 @@
       
       if (!scannedCartDataForRegister) return;
 
+      const currentDate = new Date().toLocaleString();
+      document.getElementById('receipt-date').textContent = currentDate;
+      
       const container = document.getElementById('receipt-items');
-      container.innerHTML = scannedCartDataForRegister.items.map(i => `<div class="receipt-item"><span>${i.name}</span><span>${i.taxPrice}円</span></div>`).join('');
-      document.getElementById('receipt-total').textContent = `合計: ${scannedCartDataForRegister.total}円`;
+      container.innerHTML = scannedCartDataForRegister.items.map(i => `
+        <div class="receipt-item-row">
+          <span>${i.name}</span>
+          <span>${i.taxPrice}円</span>
+        </div>
+      `).join('');
+      
+      document.getElementById('receipt-total').textContent = `合 計 : ${scannedCartDataForRegister.total} 円`;
       document.getElementById('receipt-modal').style.display = 'flex';
       
       const itemsPurchased = scannedCartDataForRegister.items.map(i => `${i.name} (${i.taxPrice}円)`).join(', ');
-      salesHistory.push({ date: new Date().toLocaleString(), total: scannedCartDataForRegister.total, items: itemsPurchased });
+      salesHistory.push({ date: currentDate, total: scannedCartDataForRegister.total, items: itemsPurchased });
       localStorage.setItem('myPosSalesHistory', JSON.stringify(salesHistory));
     }
 
-    function shareReceipt() {
-      if (navigator.share) {
-        navigator.share({
-          title: 'レシート',
-          text: `お買い上げ合計: ${document.getElementById('receipt-total').textContent}`
-        }).catch(err => console.log('共有キャンセル'));
-      } else {
-        alert("お使いのブラウザは共有機能に対応していません。");
-      }
+    // ==========================================
+    // 📸 レシートを画像にして共有・ダウンロード
+    // ==========================================
+    function shareReceiptImage() {
+      const receiptElement = document.getElementById('receipt-target');
+      
+      // html2canvasを使ってレシート部分を画像に変換
+      html2canvas(receiptElement, { scale: 2 }).then(canvas => {
+        canvas.toBlob(blob => {
+          const file = new File([blob], "receipt.png", { type: "png" });
+          
+          // Web Share API（画像共有対応ブラウザ）
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            navigator.share({
+              title: 'レシート画像',
+              text: 'LUCKY MARTのお買い上げレシートです',
+              files: [file]
+            }).catch(err => console.log('共有キャンセル'));
+          } else {
+            // 共有非対応ブラウザの場合は画像を自動ダウンロードさせる
+            const link = document.createElement('a');
+            link.download = 'receipt.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+          }
+        });
+      });
     }
 
     function showSalesHistory() {
@@ -332,9 +451,6 @@
       } 
     }
 
-    // ==========================================
-    // 📷 お客様画面カメラ（QuaggaJSでバーコード読み取り）
-    // ==========================================
     function startCustomerScanner() {
       Quagga.init({
         inputStream: { 
@@ -369,9 +485,6 @@
       setTimeout(() => { canScan = true; }, 1500);
     }
 
-    // ==========================================
-    // 📷 レジ側カメラ（jsQRでQRコードを確実に読み取り）
-    // ==========================================
     function startRegisterScanner() {
       const video = document.getElementById('register-video');
       const canvasElement = document.getElementById('register-canvas');
@@ -398,7 +511,7 @@
               handleRegisterQRCode(code.data);
             }
           }
-        }, 300); // 0.3秒ごとにスキャン
+        }, 300);
       }).catch((err) => {
         console.error("カメラ起動エラー:", err);
         alert("カメラを起動できませんでした。権限を確認してください。");
@@ -418,7 +531,6 @@
 
     function handleRegisterQRCode(codeData) {
       if (codeData && codeData.startsWith("LUCKY_")) {
-        // 読み取ったら一旦スキャナーを止めて音が鳴るようにする
         stopRegisterScanner();
         playSound(1200, 0.1);
 
@@ -435,13 +547,12 @@
 
         scannedCartDataForRegister = { items: parsedItems, total: totalPriceVal };
 
-        document.getElementById('register-confirm-items').innerHTML = parsedItems.map(i => `<div class="receipt-item"><span>${i.name}</span><span>${i.taxPrice}円</span></div>`).join('');
+        document.getElementById('register-confirm-items').innerHTML = parsedItems.map(i => `<div class="receipt-item-row"><span>${i.name}</span><span>${i.taxPrice}円</span></div>`).join('');
         document.getElementById('register-confirm-total').textContent = `合計: ${totalPriceVal}円`;
         document.getElementById('register-confirm-modal').style.display = 'flex';
       }
     }
 
-    // 初期起動はお客様画面
     startCustomerScanner();
   </script>
 </body>

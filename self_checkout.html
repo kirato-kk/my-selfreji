@@ -28,7 +28,6 @@
     .section-header { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; margin-bottom: 5px; }
     h2 { font-size: 18px; color: #444; margin: 0; }
     
-    /* バーコードの無い商品を追加ボタン（黄色） */
     .add-nobarcode-btn { background-color: #f1c40f; color: #2d3436; border: none; padding: 7px 12px; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
     .add-nobarcode-btn:active { opacity: 0.8; }
 
@@ -233,13 +232,10 @@
   </div>
 
   <script>
-    // ==========================================
-    // 🛒 商品データベース（最新データを常に強制反映）
-    // ==========================================
     let defaultDatabase = {
       "4901330502880": { name: "ポテトチップス", price: 160 },
       "4902105001569": { name: "カップヌードル", price: 210 },
-      "4902402928837": { name: "とんがりCORN", price: 150 },
+      "4586921456321": { name: "とんがりCORN", price: 150 },
       "958412687453": { name: "コーラ", price: 350 },
 
       "100001": { name: "葉しょうが", price: 158, category: "yasai" },
@@ -264,7 +260,6 @@
       "400002": { name: "手巻きおにぎり(梅)", price: 130, category: "sonota" }
     };
 
-    // 常に最新のデータベースを強制上書きして読み込む
     let itemDatabase = defaultDatabase;
     localStorage.setItem('myPosDatabase', JSON.stringify(defaultDatabase));
 
@@ -289,9 +284,6 @@
       osc.start(); osc.stop(audioCtx.currentTime + duration);
     }
 
-    // ==========================================
-    // 🏷️ バーコードの無い商品モーダル操作
-    // ==========================================
     function openNoBarcodeModal() {
       document.getElementById('nobarcode-modal').style.display = 'flex';
       const firstTab = document.querySelector('.tab-btn');
@@ -333,9 +325,6 @@
       }
     }
 
-    // ==========================================
-    // 画面・レジ・設定管理
-    // ==========================================
     function switchView(viewName) {
       currentMode = viewName;
       document.querySelectorAll('.view-container').forEach(el => el.classList.remove('active'));
@@ -462,6 +451,19 @@
       document.getElementById('payment-modal').style.display = 'flex';
     }
 
+    // 商品をグループ化して「×個数」形式の配列を作るヘルパー関数
+    function getGroupedItems(items) {
+      let map = {};
+      items.forEach(i => {
+        if (!map[i.name]) {
+          map[i.name] = { name: i.name, count: 0, totalTaxPrice: 0 };
+        }
+        map[i.name].count += 1;
+        map[i.name].totalTaxPrice += i.taxPrice;
+      });
+      return Object.values(map);
+    }
+
     function completeRegisterPayment() {
       document.getElementById('register-confirm-modal').style.display = 'none';
       
@@ -470,18 +472,20 @@
       const currentDate = new Date().toLocaleString();
       document.getElementById('receipt-date').textContent = `日時: ${currentDate}`;
       
+      const groupedItems = getGroupedItems(scannedCartDataForRegister.items);
+
       const container = document.getElementById('receipt-items');
-      container.innerHTML = scannedCartDataForRegister.items.map(i => `
+      container.innerHTML = groupedItems.map(i => `
         <div class="receipt-item-row">
-          <span>${i.name}</span>
-          <span>${i.taxPrice}円</span>
+          <span>${i.name} ${i.count > 1 ? '×' + i.count : ''}</span>
+          <span>${i.totalTaxPrice}円</span>
         </div>
       `).join('');
       
       document.getElementById('receipt-total').textContent = `合 計 : ${scannedCartDataForRegister.total} 円`;
       document.getElementById('receipt-modal').style.display = 'flex';
       
-      const itemsPurchased = scannedCartDataForRegister.items.map(i => `${i.name} (${i.taxPrice}円)`).join(', ');
+      const itemsPurchased = groupedItems.map(i => `${i.name}${i.count > 1 ? '×' + i.count : ''} (${i.totalTaxPrice}円)`).join(', ');
       salesHistory.push({ date: currentDate, total: scannedCartDataForRegister.total, items: itemsPurchased });
       localStorage.setItem('myPosSalesHistory', JSON.stringify(salesHistory));
     }
@@ -658,7 +662,15 @@
 
         scannedCartDataForRegister = { items: parsedItems, total: totalPriceVal };
 
-        document.getElementById('register-confirm-items').innerHTML = parsedItems.map(i => `<div class="receipt-item-row"><span>${i.name}</span><span>${i.taxPrice}円</span></div>`).join('');
+        const groupedParsedItems = getGroupedItems(parsedItems);
+
+        document.getElementById('register-confirm-items').innerHTML = groupedParsedItems.map(i => `
+          <div class="receipt-item-row">
+            <span>${i.name} ${i.count > 1 ? '×' + i.count : ''}</span>
+            <span>${i.totalTaxPrice}円</span>
+          </div>
+        `).join('');
+
         document.getElementById('register-confirm-total').textContent = `合計: ${totalPriceVal}円`;
         document.getElementById('register-confirm-modal').style.display = 'flex';
       }

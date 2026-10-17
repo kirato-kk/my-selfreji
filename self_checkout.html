@@ -122,14 +122,25 @@
     .receipt-store-title { text-align: center; font-size: 16px; font-weight: bold; letter-spacing: 1px; margin-bottom: 4px; font-family: 'Segoe UI', sans-serif; }
     .receipt-store-sub { text-align: center; font-size: 10px; color: #666; margin-bottom: 15px; }
     .receipt-info { font-size: 11px; color: #333; margin-bottom: 15px; border-bottom: 1px dashed #333; padding-bottom: 8px; }
-    .receipt-items-container { border-bottom: 1px dashed #333; padding-bottom: 12px; margin-bottom: 12px; min-height: 120px; }
+    .receipt-items-container { border-bottom: 1px dashed #333; padding-bottom: 12px; margin-bottom: 12px; min-height: 100px; }
     .receipt-item-row { display: flex; justify-content: space-between; font-size: 12px; margin: 6px 0; }
-    .receipt-total-section { font-size: 14px; font-weight: bold; text-align: right; margin-bottom: 20px; line-height: 1.6; }
+    .receipt-total-section { font-size: 14px; font-weight: bold; text-align: right; margin-bottom: 15px; line-height: 1.6; }
+    
+    /* レシート内バーコードのデザイン */
+    .receipt-barcode-container { text-align: center; margin: 15px 0 10px 0; }
+    .receipt-barcode { font-family: 'Libre Barcode 39', cursive, monospace; font-size: 32px; letter-spacing: 2px; }
+
     .receipt-message { text-align: center; font-size: 11px; color: #444; margin-top: 10px; line-height: 1.5; }
 
     .close-btn { width: 100%; padding: 12px; background: #e0e0e0; color: #333; border: none; font-weight: bold; cursor: pointer; border-radius: 10px; font-family: 'Segoe UI', sans-serif; margin-top: 5px; }
     .staff-box { background: #ff4757; color: white; padding: 15px; border-radius: 10px; margin-bottom: 15px; font-family: 'Segoe UI', sans-serif; }
-    
+
+    /* 電卓風キーボード */
+    .calculator-pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 15px 0; }
+    .calc-key { background: #f1f2f6; border: 1px solid #dfe4ea; padding: 12px; font-size: 18px; font-weight: bold; border-radius: 8px; cursor: pointer; color: #2f3542; }
+    .calc-key:active { background: #ced6e0; }
+    .calc-display { font-size: 24px; font-weight: bold; background: #f8f9fa; border: 1px solid #ccc; padding: 10px; border-radius: 8px; text-align: right; margin-bottom: 10px; color: #333; }
+
     #qrcode { display: flex; justify-content: center; margin: 15px 0; }
     #qrcode img { border: 5px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); width: 220px; height: 220px; }
 
@@ -143,7 +154,7 @@
   <div id="customer-view" class="view-container active">
     <div class="header-container">
       <h1>ピピッとカート 🛒</h1>
-      <button class="settings-btn" onclick="openSettings()" title="設定">⚙️</button>
+      <button class="settings-btn" onclick="handleSettingsClick()" title="設定">⚙️</button>
     </div>
     
     <div class="status" id="status-msg">枠内にバーコードをかざしてください</div>
@@ -164,7 +175,7 @@
   <div id="register-view" class="view-container">
     <div class="header-container">
       <h1>スタッフモード</h1>
-      <button class="settings-btn" onclick="openSettings()" title="設定">⚙️</button>
+      <button class="settings-btn" onclick="handleSettingsClick()" title="設定">⚙️</button>
     </div>
     <div class="status" style="color: #ff4757;">QRコードを枠内にかざしてください</div>
     
@@ -183,14 +194,12 @@
         <h3 style="margin:0; font-size:16px; color:#333;">商品を選択</h3>
         <button onclick="closeNoBarcodeModal()" style="background:none; border:none; font-size:18px; cursor:pointer; color:#888;">✕</button>
       </div>
-      <!-- カテゴリー絞り込みタブ -->
       <div class="tab-container">
         <button class="tab-btn active" onclick="switchCategory('yasai', this)">野菜・果物</button>
         <button class="tab-btn" onclick="switchCategory('niku', this)">肉・魚</button>
         <button class="tab-btn" onclick="switchCategory('sozai', this)">惣菜</button>
         <button class="tab-btn" onclick="switchCategory('sonota', this)">その他</button>
       </div>
-      <!-- 商品一覧グリッド -->
       <div class="product-grid" id="nobarcode-product-grid"></div>
       <button class="close-btn" onclick="closeNoBarcodeModal()" style="margin-top:15px;">閉じる</button>
     </div>
@@ -216,8 +225,51 @@
       <div id="register-confirm-items" style="margin: 10px 0; max-height: 150px; overflow-y:auto;"></div>
       <hr style="border: none; border-top: 1px dashed #ccc; margin: 10px 0;">
       <div id="register-confirm-total" style="font-weight:bold; text-align:right; font-size: 16px; color: #ff4757;"></div>
-      <button class="btn pay-btn" style="margin-top:15px; padding:10px; font-size:16px;" onclick="completeRegisterPayment()">確認完了</button>
+      <button class="btn pay-btn" style="margin-top:15px; padding:10px; font-size:16px;" onclick="proceedToCashInput()">確認完了 (次へ)</button>
       <button class="close-btn" onclick="closeRegisterConfirm()">キャンセル</button>
+    </div>
+  </div>
+
+  <!-- レジ側：お預かり金額入力画面（電卓風） -->
+  <div class="modal-overlay" id="cash-input-modal">
+    <div class="modal-content-box" style="text-align: center;">
+      <h2>お預かり金額入力</h2>
+      <p style="font-size: 14px; color: #666; margin: 5px 0;">合計金額: <span id="cash-modal-total" style="font-weight:bold; color:#ff4757;">0</span> 円</p>
+      <div class="calc-display" id="cash-input-display">0</div>
+      
+      <div class="calculator-pad">
+        <button class="calc-key" onclick="appendCalc(1)">1</button>
+        <button class="calc-key" onclick="appendCalc(2)">2</button>
+        <button class="calc-key" onclick="appendCalc(3)">3</button>
+        <button class="calc-key" onclick="appendCalc(4)">4</button>
+        <button class="calc-key" onclick="appendCalc(5)">5</button>
+        <button class="calc-key" onclick="appendCalc(6)">6</button>
+        <button class="calc-key" onclick="appendCalc(7)">7</button>
+        <button class="calc-key" onclick="appendCalc(8)">8</button>
+        <button class="calc-key" onclick="appendCalc(9)">9</button>
+        <button class="calc-key" onclick="clearCalc()">C</button>
+        <button class="calc-key" onclick="appendCalc(0)">0</button>
+        <button class="calc-key" onclick="backspaceCalc()">←</button>
+      </div>
+
+      <button class="btn pay-btn" style="margin-top:5px; padding:12px; font-size:16px;" onclick="completeCashPayment()">お会計完了 (お釣り計算)</button>
+      <button class="close-btn" onclick="closeCashInput()">キャンセル</button>
+    </div>
+  </div>
+
+  <!-- レジ側：お釣り表示画面 -->
+  <div class="modal-overlay" id="change-modal">
+    <div class="modal-content-box" style="text-align: center;">
+      <h2 style="color: #2575fc; margin-bottom: 10px;">お会計完了</h2>
+      <div style="font-size: 16px; margin: 10px 0;">
+        お預かり: <span id="change-received">0</span> 円<br>
+        合計金額: <span id="change-total">0</span> 円
+      </div>
+      <hr style="border: none; border-top: 1px dashed #ccc; margin: 15px 0;">
+      <div style="font-size: 14px; color: #555;">お釣り</div>
+      <div style="font-size: 32px; font-weight: bold; color: #ff4757; margin: 10px 0;"><span id="change-amount">0</span> 円</div>
+      
+      <button class="btn pay-btn" style="margin-top:20px; padding:12px; font-size:16px;" onclick="openReceiptModalFromChange()">レシートを表示する</button>
     </div>
   </div>
 
@@ -230,14 +282,23 @@
         <div class="receipt-store-sub">名古屋東 店</div>
         <div class="receipt-info" id="receipt-date">日時: 2026/01/01 00:00</div>
         <div class="receipt-items-container" id="receipt-items"></div>
-        <div class="receipt-total-section" id="receipt-total">合 計 : 0 円</div>
+        <div class="receipt-total-section" id="receipt-total">
+          <span id="receipt-total-text">0点 合計 : 0 円</span><br>
+          <span id="receipt-cash-text" style="font-size: 12px; font-weight: normal;">お預かり: 0円 / お釣り: 0円</span>
+        </div>
+        
+        <!-- レシート下部のバーコード -->
+        <div class="receipt-barcode-container">
+          <div class="receipt-barcode">*KKMART2026*</div>
+        </div>
+
         <div class="receipt-message">
           <p style="margin: 4px 0;">ご来店ありがとうございました。</p>
           <p style="margin: 4px 0;">またのご利用をお待ちしております！</p>
         </div>
       </div>
 
-      <button class="btn share-btn" onclick="shareReceiptImage()">レシート印刷</button>
+      <button class="btn share-btn" onclick="shareReceiptImage()">レシート印刷 (共有)</button>
       <button class="btn close-btn" onclick="closeReceiptToRegister()">閉じる</button>
     </div>
   </div>
@@ -324,8 +385,22 @@
     let registerScanInterval = null;
     let currentMode = 'customer'; 
 
+    // 設定ボタン3回タップ用変数
+    let settingsClickCount = 0;
+    let settingsClickTimer = null;
+
+    // 音声読み上げ関数 (Web Speech API)
+    function speakText(text) {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel(); // 連続発話防止
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.lang = 'ja-JP';
+        utter.rate = 1.0;
+        window.speechSynthesis.speak(utter);
+      }
+    }
+
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    
     function playSound(freq, duration, type = 'sine') {
       if (audioCtx.state === 'suspended') audioCtx.resume();
       const osc = audioCtx.createOscillator();
@@ -334,6 +409,21 @@
       gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
       osc.connect(gain); gain.connect(audioCtx.destination);
       osc.start(); osc.stop(audioCtx.currentTime + duration);
+    }
+
+    // 設定ボタン3回連続タップの処理
+    function handleSettingsClick() {
+      settingsClickCount++;
+      if (settingsClickCount === 1) {
+        settingsClickTimer = setTimeout(() => {
+          settingsClickCount = 0;
+        }, 1000); // 1秒以内に3回
+      } else if (settingsClickCount === 3) {
+        clearTimeout(settingsClickTimer);
+        settingsClickCount = 0;
+        speakText("係員をお呼びください。");
+        openSettings();
+      }
     }
 
     function openNoBarcodeModal() {
@@ -398,7 +488,7 @@
         return; 
       }
       
-       const switchBtn = document.getElementById('settings-switch-btn');
+      const switchBtn = document.getElementById('settings-switch-btn');
       if (currentMode === 'customer') {
         switchBtn.textContent = "スタッフモードへ切替";
       } else {
@@ -458,11 +548,13 @@
       } else {
         cartItems[index].quantity = qty;
       }
+      speakText("数量を変更しました。");
       renderCart();
     }
 
     function removeCartItem(index) {
       cartItems.splice(index, 1);
+      speakText("商品を削除しました。商品は元の棚にお戻しください。");
       renderCart();
     }
 
@@ -557,10 +649,73 @@
       return Object.values(map);
     }
 
-    function completeRegisterPayment() {
+    // レジ側ステップ1: 確認画面からお預かり金額入力画面へ
+    function proceedToCashInput() {
       document.getElementById('register-confirm-modal').style.display = 'none';
-      
       if (!scannedCartDataForRegister) return;
+
+      document.getElementById('cash-modal-total').textContent = scannedCartDataForRegister.total;
+      document.getElementById('cash-input-display').textContent = "0";
+      document.getElementById('cash-input-modal').style.display = 'flex';
+    }
+
+    function closeCashInput() {
+      document.getElementById('cash-input-modal').style.display = 'none';
+      startRegisterScanner();
+    }
+
+    // 電卓風キー操作
+    let currentInputAmount = "0";
+    function appendCalc(num) {
+      if (currentInputAmount === "0") {
+        currentInputAmount = String(num);
+      } else {
+        currentInputAmount += String(num);
+      }
+      document.getElementById('cash-input-display').textContent = currentInputAmount;
+    }
+
+    function clearCalc() {
+      currentInputAmount = "0";
+      document.getElementById('cash-input-display').textContent = currentInputAmount;
+    }
+
+    function backspaceCalc() {
+      if (currentInputAmount.length > 1) {
+        currentInputAmount = currentInputAmount.slice(0, -1);
+      } else {
+        currentInputAmount = "0";
+      }
+      document.getElementById('cash-input-display').textContent = currentInputAmount;
+    }
+
+    // お預かり金額確定＆お釣り計算画面へ
+    let lastReceivedCash = 0;
+    let lastChangeCash = 0;
+    function completeCashPayment() {
+      const received = parseInt(currentInputAmount);
+      const total = parseInt(scannedCartDataForRegister.total);
+
+      if (received < total) {
+        alert("お預かり金額が合計金額より少ないです。");
+        return;
+      }
+
+      lastReceivedCash = received;
+      lastChangeCash = received - total;
+
+      document.getElementById('change-received').textContent = received;
+      document.getElementById('change-total').textContent = total;
+      document.getElementById('change-amount').textContent = lastChangeCash;
+
+      document.getElementById('cash-input-modal').style.display = 'none';
+      document.getElementById('change-modal').style.display = 'flex';
+      currentInputAmount = "0";
+    }
+
+       // お釣り画面からレシート画面へ進む
+    function openReceiptModalFromChange() {
+      document.getElementById('change-modal').style.display = 'none';
 
       const currentDate = new Date().toLocaleString();
       document.getElementById('receipt-date').textContent = `日時: ${currentDate}`;
@@ -576,7 +731,9 @@
         </div>
       `).join('');
       
-      document.getElementById('receipt-total').textContent = `${totalItemsCount}点 合計: ${scannedCartDataForRegister.total} 円`;
+      document.getElementById('receipt-total-text').textContent = `${totalItemsCount}点 合計 : ${scannedCartDataForRegister.total} 円`;
+      document.getElementById('receipt-cash-text').textContent = `お預かり: ${lastReceivedCash}円 / お釣り: ${lastChangeCash}円`;
+      
       document.getElementById('receipt-modal').style.display = 'flex';
       
       const itemsPurchased = groupedItems.map(i => `${i.name}${i.count > 1 ? '×' + i.count : ''} (${i.totalTaxPrice}円)`).join(', ');

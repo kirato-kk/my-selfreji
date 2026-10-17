@@ -30,8 +30,11 @@
     .receipt-item { display: flex; justify-content: space-between; margin: 5px 0; font-size: 14px; }
     .close-btn { width: 100%; padding: 10px; margin-top: 15px; background: #e0e0e0; color: #333; border: none; font-weight: bold; cursor: pointer; border-radius: 5px; font-family: 'Segoe UI', sans-serif; }
     .staff-box { background: #ff4757; color: white; padding: 15px; border-radius: 10px; margin-bottom: 15px; font-family: 'Segoe UI', sans-serif; }
+    
+    /* QRコードを大きく表示する調整 */
     #qrcode { display: flex; justify-content: center; margin: 15px 0; }
-    #qrcode img { border: 5px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    #qrcode img { border: 5px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); width: 220px; height: 220px; }
+
     .view-container { display: none; }
     .view-container.active { display: block; }
   </style>
@@ -136,7 +139,7 @@
     let itemDatabase = JSON.parse(localStorage.getItem('myPosDatabase')) || {
       "4901330502880": { name: "ポテトチップス", price: 160 },
       "4902105001569": { name: "カップヌードル", price: 210 },
-      "4902402928837": { name: "とんがりCORN", price: 150 },
+      "4586921456321": { name: "とんがりCORN", price: 150 },
       "958412687453": { name: "コーラ", price: 350 }
     };
 
@@ -185,13 +188,18 @@
     function closePaymentModal() { document.getElementById('payment-modal').style.display = 'none'; }
     function closeHistory() { document.getElementById('history-modal').style.display = 'none'; }
     function closeRegisterConfirm() { document.getElementById('register-confirm-modal').style.display = 'none'; }
+    
+    // レシートを閉じたときにお客さん側の購入リストや金額をリセットして画面を戻す
     function closeReceipt() { 
       document.getElementById('receipt-modal').style.display = 'none'; 
+      
+      // カート・合計のリセット処理
       cartHistory = [];
       totalPrice = 0;
       isFirst = true;
       document.getElementById('cart-list').innerHTML = '<p style="color: #888; font-family: \'Segoe UI\', sans-serif;">スキャンした商品がここに表示されます</p>';
       document.getElementById('total-price').textContent = '0';
+      
       switchView('customer');
     }
 
@@ -230,8 +238,6 @@
       }
       document.getElementById('pay-amount').textContent = totalPrice;
       
-      // 購入した商品のバーコード一覧を抽出して連結
-      // カート内にはバーコード保持していないため、itemDatabaseから逆引きまたはコード配列を生成
       let codes = cartHistory.map(item => {
         for (let code in itemDatabase) {
           if (itemDatabase[code].name === item.name) return code;
@@ -247,7 +253,7 @@
         const qr = qrcode(0, 'M');
         qr.addData(qrData);
         qr.make();
-        qrContainer.innerHTML = qr.createImgTag(4);
+        qrContainer.innerHTML = qr.createImgTag(5); // 大きさを調整
       } catch (e) {
         qrContainer.innerHTML = "QRコード生成エラー";
       }
@@ -355,10 +361,9 @@
     }
 
     // ==========================================
-    // 📷 カメラ（QuaggaJS）制御：レジ操作画面用（QRコード用またはバーコード用）
+    // 📷 カメラ（QuaggaJS）制御：レジ操作画面用
     // ==========================================
     function startRegisterScanner() {
-      // レジ側でのカメラ起動（簡易的に通常のストリームとして初期化）
       Quagga.init({
         inputStream: { 
           type: "LiveStream", 
@@ -378,7 +383,6 @@
 
     function registerScanHandler(res) {
       const code = res.codeResult.code;
-      // お客様画面のQRコードフォーマット（LUCKY_...）を検知したと仮定したシミュレーション処理
       if (code && code.startsWith("LUCKY_")) {
         playSound(1200, 0.1);
         const parts = code.split("_");
@@ -394,7 +398,6 @@
 
         scannedCartDataForRegister = { items: parsedItems, total: totalPriceVal };
 
-        // 確認画面に反映
         document.getElementById('register-confirm-items').innerHTML = parsedItems.map(i => `<div class="receipt-item"><span>${i.name}</span><span>${i.taxPrice}円</span></div>`).join('');
         document.getElementById('register-confirm-total').textContent = `合計: ${totalPriceVal}円`;
         document.getElementById('register-confirm-modal').style.display = 'flex';
@@ -405,4 +408,4 @@
     startCustomerScanner();
   </script>
 </body>
-  </html>
+</html>

@@ -4,8 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SELF-CHECKOUT</title>
-  <!-- バーコードリーダーライブラリ -->
+  <!-- バーコードリーダーライブラリ（お客様用） -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
+  <!-- QRコードリーダーライブラリ（レジ用） -->
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
   <!-- QRコード生成ライブラリ -->
   <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
   <style>
@@ -14,8 +16,14 @@
     h1 { color: #2575fc; margin: 0; font-size: 24px; }
     .settings-btn { background: none; border: none; font-size: 24px; cursor: pointer; padding: 0; color: #555; }
     .status { text-align: center; color: #2575fc; margin-bottom: 10px; font-weight: bold; }
-    #interactive.viewport, #register-viewport.viewport { width: 100%; height: 250px; background-color: #000; border: 2px solid #2575fc; border-radius: 10px; overflow: hidden; margin-bottom: 20px; position: relative; }
-    #interactive.viewport video, #register-viewport.viewport video { width: 100%; height: 100%; object-fit: cover; }
+    #interactive.viewport { width: 100%; height: 250px; background-color: #000; border: 2px solid #2575fc; border-radius: 10px; overflow: hidden; margin-bottom: 20px; position: relative; }
+    #interactive.viewport video { width: 100%; height: 100%; object-fit: cover; }
+    
+    /* レジ用カメラのビューポート */
+    #register-viewport-container { width: 100%; height: 250px; background-color: #000; border: 2px solid #ff4757; border-radius: 10px; overflow: hidden; margin-bottom: 20px; position: relative; }
+    #register-video { width: 100%; height: 100%; object-fit: cover; }
+    #register-canvas { display: none; }
+
     h2 { font-size: 18px; color: #444; margin-top: 20px; }
     .cart { background: #ffffff; padding: 15px; border-radius: 10px; min-height: 120px; border: 1px solid #e0e0e0; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); }
     .total { font-size: 22px; font-weight: bold; text-align: right; margin-top: 15px; color: #ff4757; }
@@ -31,7 +39,6 @@
     .close-btn { width: 100%; padding: 10px; margin-top: 15px; background: #e0e0e0; color: #333; border: none; font-weight: bold; cursor: pointer; border-radius: 5px; font-family: 'Segoe UI', sans-serif; }
     .staff-box { background: #ff4757; color: white; padding: 15px; border-radius: 10px; margin-bottom: 15px; font-family: 'Segoe UI', sans-serif; }
     
-    /* QRコードを大きく表示する調整 */
     #qrcode { display: flex; justify-content: center; margin: 15px 0; }
     #qrcode img { border: 5px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); width: 220px; height: 220px; }
 
@@ -59,14 +66,19 @@
     <button class="btn pay-btn" onclick="openPaymentModal()">お会計</button>
   </div>
 
-  <!-- ================= レジ操作画面（別ページ風） ================= -->
+  <!-- ================= レジ操作画面（QRコード読み取り） ================= -->
   <div id="register-view" class="view-container">
     <div class="header-container">
       <h1>レジ操作モード</h1>
       <button class="settings-btn" onclick="switchView('customer')" title="お客様画面へ戻る">🔙</button>
     </div>
-    <div class="status">お客様のスマホに表示されたQRコードを読み取ってください</div>
-    <div id="register-viewport" class="viewport"></div>
+    <div class="status" style="color: #ff4757;">お客様のスマホのQRコードをカメラにかざしてください</div>
+    
+    <div id="register-viewport-container">
+      <video id="register-video" playsinline></video>
+      <canvas id="register-canvas"></canvas>
+    </div>
+
     <button class="btn" style="background-color: #555;" onclick="switchView('customer')">お客様画面に戻る</button>
   </div>
 
@@ -103,7 +115,6 @@
       <hr style="border: none; border-top: 1px dashed #ccc; margin: 10px 0;">
       <div id="receipt-total" style="font-weight:bold; text-align:right;"></div>
       
-      <!-- レシート下の共有ボタン -->
       <button class="btn share-btn" style="padding:10px; font-size:16px; margin-top:15px;" onclick="shareReceipt()">レシートを共有する</button>
       <button class="close-btn" onclick="closeReceipt()">閉じる</button>
     </div>
@@ -146,7 +157,11 @@
     const SALES_PASSWORD = "4869"; // 管理用パスワード
     let canScan = true, totalPrice = 0, isFirst = true, cartHistory = []; 
     let salesHistory = JSON.parse(localStorage.getItem('myPosSalesHistory')) || [];
-    let scannedCartDataForRegister = null; // レジ側で読み取った一時データ
+    let scannedCartDataForRegister = null; 
+
+    // レジ側カメラ制御用変数
+    let registerStream = null;
+    let registerScanInterval = null;
 
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     
@@ -174,7 +189,6 @@
       }
     }
 
-    // 設定ボタン（⚙️）押下時
     function openSettings() {
       const input = prompt("管理用パスワードを入力してください");
       if (input !== SALES_PASSWORD) { 
@@ -187,19 +201,18 @@
     function closeSettings() { document.getElementById('settings-modal').style.display = 'none'; }
     function closePaymentModal() { document.getElementById('payment-modal').style.display = 'none'; }
     function closeHistory() { document.getElementById('history-modal').style.display = 'none'; }
-    function closeRegisterConfirm() { document.getElementById('register-confirm-modal').style.display = 'none'; }
+    function closeRegisterConfirm() { 
+      document.getElementById('register-confirm-modal').style.display = 'none'; 
+      startRegisterScanner(); // 確認画面を閉じたらレジカメラを再開
+    }
     
-    // レシートを閉じたときにお客さん側の購入リストや金額をリセットして画面を戻す
     function closeReceipt() { 
       document.getElementById('receipt-modal').style.display = 'none'; 
-      
-      // カート・合計のリセット処理
       cartHistory = [];
       totalPrice = 0;
       isFirst = true;
       document.getElementById('cart-list').innerHTML = '<p style="color: #888; font-family: \'Segoe UI\', sans-serif;">スキャンした商品がここに表示されます</p>';
       document.getElementById('total-price').textContent = '0';
-      
       switchView('customer');
     }
 
@@ -230,7 +243,6 @@
       }
     }
 
-    // お会計ボタン押下時（QRコード生成：LUCKY_バーコード_金額 形式）
     function openPaymentModal() {
       if (cartHistory.length === 0) {
         alert("商品がスキャンされていません。");
@@ -253,7 +265,7 @@
         const qr = qrcode(0, 'M');
         qr.addData(qrData);
         qr.make();
-        qrContainer.innerHTML = qr.createImgTag(5); // 大きさを調整
+        qrContainer.innerHTML = qr.createImgTag(5);
       } catch (e) {
         qrContainer.innerHTML = "QRコード生成エラー";
       }
@@ -261,7 +273,6 @@
       document.getElementById('payment-modal').style.display = 'flex';
     }
 
-    // レジ側での決済完了処理
     function completeRegisterPayment() {
       document.getElementById('register-confirm-modal').style.display = 'none';
       
@@ -277,7 +288,6 @@
       localStorage.setItem('myPosSalesHistory', JSON.stringify(salesHistory));
     }
 
-    // レシート共有機能
     function shareReceipt() {
       if (navigator.share) {
         navigator.share({
@@ -289,7 +299,6 @@
       }
     }
 
-    // 売上履歴表示
     function showSalesHistory() {
       const historyContainer = document.getElementById('history-list');
       if (salesHistory.length === 0) {
@@ -324,7 +333,7 @@
     }
 
     // ==========================================
-    // 📷 カメラ（QuaggaJS）制御：お客様画面用
+    // 📷 お客様画面カメラ（QuaggaJSでバーコード読み取り）
     // ==========================================
     function startCustomerScanner() {
       Quagga.init({
@@ -361,31 +370,59 @@
     }
 
     // ==========================================
-    // 📷 カメラ（QuaggaJS）制御：レジ操作画面用
+    // 📷 レジ側カメラ（jsQRでQRコードを確実に読み取り）
     // ==========================================
     function startRegisterScanner() {
-      Quagga.init({
-        inputStream: { 
-          type: "LiveStream", 
-          target: document.querySelector('#register-viewport'), 
-          constraints: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } } 
-        },
-        decoder: { readers: ["ean_reader", "code_128_reader"], multiple: false }
-      }, (err) => { 
-        if (!err) Quagga.start(); 
+      const video = document.getElementById('register-video');
+      const canvasElement = document.getElementById('register-canvas');
+      const canvas = canvasElement.getContext('2d');
+
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }).then((stream) => {
+        registerStream = stream;
+        video.srcObject = stream;
+        video.setAttribute("playsinline", true);
+        video.play();
+        
+        registerScanInterval = setInterval(() => {
+          if (video.readyState === video.HAVE_ENOUGH_DATA) {
+            canvasElement.height = video.videoHeight;
+            canvasElement.width = video.videoWidth;
+            canvas.drawImage(video, 0, 0, canvasElement.width, canvasElement.height);
+            var imageData = canvas.getImageData(0, 0, canvasElement.width, canvasElement.height);
+            
+            var code = jsQR(imageData.data, imageData.width, imageData.height, {
+              inversionAttempts: "dontInvert",
+            });
+            
+            if (code) {
+              handleRegisterQRCode(code.data);
+            }
+          }
+        }, 300); // 0.3秒ごとにスキャン
+      }).catch((err) => {
+        console.error("カメラ起動エラー:", err);
+        alert("カメラを起動できませんでした。権限を確認してください。");
       });
-      Quagga.onDetected(registerScanHandler);
     }
 
     function stopRegisterScanner() {
-      try { Quagga.offDetected(registerScanHandler); Quagga.stop(); } catch(e){}
+      if (registerScanInterval) {
+        clearInterval(registerScanInterval);
+        registerScanInterval = null;
+      }
+      if (registerStream) {
+        registerStream.getTracks().forEach(track => track.stop());
+        registerStream = null;
+      }
     }
 
-    function registerScanHandler(res) {
-      const code = res.codeResult.code;
-      if (code && code.startsWith("LUCKY_")) {
+    function handleRegisterQRCode(codeData) {
+      if (codeData && codeData.startsWith("LUCKY_")) {
+        // 読み取ったら一旦スキャナーを止めて音が鳴るようにする
+        stopRegisterScanner();
         playSound(1200, 0.1);
-        const parts = code.split("_");
+
+        const parts = codeData.split("_");
         const totalPriceVal = parts[parts.length - 1];
         const itemCodes = parts.slice(1, parts.length - 1);
 

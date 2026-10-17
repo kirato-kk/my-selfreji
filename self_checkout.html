@@ -27,15 +27,12 @@
 
     h2 { font-size: 18px; color: #444; margin-top: 20px; }
     
-    /* ==========================================
-       🛒 購入リスト（約4個表示でスクロールするように調整）
-       ========================================== */
     .cart { 
       background: #ffffff; 
       padding: 15px; 
       border-radius: 10px; 
-      max-height: 180px; /* 商品約4つ分で固定 */
-      overflow-y: auto;  /* はみ出したらスクロール */
+      max-height: 180px; 
+      overflow-y: auto;  
       border: 1px solid #e0e0e0; 
       box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); 
     }
@@ -53,7 +50,6 @@
     
     .modal-content-box { background: #ffffff; padding: 25px; width: 340px; max-height: 90vh; overflow-y: auto; border-radius: 10px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
     
-    /* レシートデザイン */
     .receipt-paper {
       background: #fffdf9;
       color: #111111;
@@ -114,7 +110,7 @@
     <div class="status" style="color: #ff4757;">お客様のスマホのQRコードをカメラにかざしてください</div>
     
     <div id="register-viewport-container">
-      <video id="register-video" playsinline></video>
+      <video id="register-video" playsinline autoplay muted></video>
       <canvas id="register-canvas"></canvas>
     </div>
 
@@ -247,7 +243,6 @@
 
     function closeSettings() { document.getElementById('settings-modal').style.display = 'none'; }
     
-    // ★修正: お会計QRコードモーダルの閉じるボタンで購入リスト・合計を自動リセット
     function closePaymentModal() { 
       document.getElementById('payment-modal').style.display = 'none'; 
       cartItems = [];
@@ -449,7 +444,7 @@
       Quagga.onDetected(customerScanHandler);
     }
 
-    function stopCustomerScanne() {
+    function stopCustomerScanner() {
       try { Quagga.offDetected(customerScanHandler); Quagga.stop(); } catch(e){}
     }
 
@@ -467,6 +462,9 @@
       setTimeout(() => { canScan = true; }, 1500);
     }
 
+    // ==========================================
+    // 📷 修正済み：レジ側カメラの確実な起動処理
+    // ==========================================
     function startRegisterScanner() {
       const video = document.getElementById('register-video');
       const canvasElement = document.getElementById('register-canvas');
@@ -476,27 +474,32 @@
         registerStream = stream;
         video.srcObject = stream;
         video.setAttribute("playsinline", true);
-        video.play();
         
-        registerScanInterval = setInterval(() => {
-          if (video.readyState === video.HAVE_ENOUGH_DATA) {
-            canvasElement.height = video.videoHeight;
-            canvasElement.width = video.videoWidth;
-            canvas.drawImage(video, 0, 0, canvasElement.width, canvasElement.height);
-            var imageData = canvas.getImageData(0, 0, canvasElement.width, canvasElement.height);
-            
-            var code = jsQR(imageData.data, imageData.width, imageData.height, {
-              inversionAttempts: "dontInvert",
-            });
-            
-            if (code) {
-              handleRegisterQRCode(code.data);
-            }
-          }
-        }, 300);
+        // 映像の読み込みを待ってから再生・スキャン開始
+        video.onloadedmetadata = () => {
+          video.play().then(() => {
+            if (registerScanInterval) clearInterval(registerScanInterval);
+            registerScanInterval = setInterval(() => {
+              if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                canvasElement.height = video.videoHeight;
+                canvasElement.width = video.videoWidth;
+                canvas.drawImage(video, 0, 0, canvasElement.width, canvasElement.height);
+                var imageData = canvas.getImageData(0, 0, canvasElement.width, canvasElement.height);
+                
+                var code = jsQR(imageData.data, imageData.width, imageData.height, {
+                  inversionAttempts: "dontInvert",
+                });
+                
+                if (code) {
+                  handleRegisterQRCode(code.data);
+                }
+              }
+            }, 300);
+          }).catch(e => console.error("video.play() エラー:", e));
+        };
       }).catch((err) => {
         console.error("カメラ起動エラー:", err);
-        alert("カメラを起動できませんでした。権限を確認してください。");
+        alert("カメラを起動できませんでした。ブラウザのカメラ権限を確認してください。");
       });
     }
 

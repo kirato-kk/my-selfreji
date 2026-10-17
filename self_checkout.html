@@ -598,7 +598,7 @@
 
     function shareBarcodeImage() {
       const targetArea = document.getElementById('barcode-target-area');
-      html2canvas(targetArea, { scale: 3, backgroundColor: '#ffffff' }).then(canvas => {
+      html2canvas(targetArea, { scale: 1.5, backgroundColor: '#ffffff' }).then(canvas => {
         canvas.toBlob(blob => {
           const file = new File([blob], `barcode_${currentGeneratedCode}.png`, { type: "image/png" });
           

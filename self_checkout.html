@@ -25,8 +25,12 @@
     #register-video { width: 100%; height: 100%; object-fit: cover; }
     #register-canvas { display: none; }
 
-    h2 { font-size: 18px; color: #444; margin-top: 20px; }
+    .section-header { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; margin-bottom: 5px; }
+    h2 { font-size: 18px; color: #444; margin: 0; }
     
+    .add-nobarcode-btn { background-color: #6c5ce7; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .add-nobarcode-btn:active { opacity: 0.8; }
+
     .cart { 
       background: #ffffff; 
       padding: 15px; 
@@ -49,6 +53,18 @@
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); justify-content: center; align-items: center; z-index: 100; }
     
     .modal-content-box { background: #ffffff; padding: 25px; width: 340px; max-height: 90vh; overflow-y: auto; border-radius: 10px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+
+    .nobarcode-modal { width: 380px; max-height: 85vh; display: flex; flex-direction: column; padding: 20px; }
+    .tab-container { display: flex; background: #f1f2f6; border-radius: 8px; padding: 4px; margin-bottom: 15px; }
+    .tab-btn { flex: 1; background: none; border: none; padding: 8px 4px; font-size: 12px; font-weight: bold; cursor: pointer; border-radius: 6px; color: #57606f; }
+    .tab-btn.active { background: #ffffff; color: #2f3542; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    .product-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; max-height: 300px; overflow-y: auto; text-align: left; padding-right: 4px; }
+    .product-card { background: #f8f9fa; border: 1px solid #dfe4ea; border-radius: 8px; padding: 10px; display: flex; flex-direction: column; justify-content: space-between; cursor: pointer; transition: background 0.2s; }
+    .product-card:hover { background: #f1f2f6; }
+    .product-card-name { font-size: 13px; font-weight: bold; color: #2f3542; margin-bottom: 5px; }
+    .product-card-bottom { display: flex; justify-content: space-between; align-items: center; }
+    .product-card-price { font-size: 13px; color: #ff4757; font-weight: bold; }
+    .product-add-badge { background: #2ed573; color: white; border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; }
     
     .receipt-paper {
       background: #fffdf9;
@@ -94,7 +110,11 @@
     <div class="status" id="status-msg">カメラにバーコードにかざしてください</div>
     <div id="interactive" class="viewport"></div>
 
-    <h2>購入リスト</h2>
+    <div class="section-header">
+      <h2>購入リスト</h2>
+      <button class="add-nobarcode-btn" onclick="openNoBarcodeModal()">＋ バーコードの無い商品を追加</button>
+    </div>
+    
     <div class="cart" id="cart-list"><p style="color: #888; font-family: 'Segoe UI', sans-serif; text-align: center;">スキャンした商品がここに表示されます</p></div>
     <div class="total">合計 (税込): <span id="total-price">0</span> 円</div>
 
@@ -105,7 +125,6 @@
   <div id="register-view" class="view-container">
     <div class="header-container">
       <h1>レジ操作モード</h1>
-      <!-- 右上のボタンを⚙️に変更し、押すと設定画面が開くようにしました -->
       <button class="settings-btn" onclick="openSettings()" title="設定">⚙️</button>
     </div>
     <div class="status" style="color: #ff4757;">お客様のスマホのQRコードをカメラにかざしてください</div>
@@ -116,6 +135,26 @@
     </div>
 
     <button class="btn" style="background-color: #555;" onclick="switchView('customer')">お客様画面に戻る</button>
+  </div>
+
+  <!-- バーコードの無い商品選択モーダル -->
+  <div class="modal-overlay" id="nobarcode-modal">
+    <div class="modal-content-box nobarcode-modal">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <h3 style="margin:0; font-size:16px; color:#333;">商品を選択</h3>
+        <button onclick="closeNoBarcodeModal()" style="background:none; border:none; font-size:18px; cursor:pointer; color:#888;">✕</button>
+      </div>
+      <!-- カテゴリー絞り込みタブ -->
+      <div class="tab-container">
+        <button class="tab-btn active" onclick="switchCategory('yasai', this)">野菜・果物</button>
+        <button class="tab-btn" onclick="switchCategory('niku', this)">肉・魚</button>
+        <button class="tab-btn" onclick="switchCategory('sozai', this)">惣菜・寿司</button>
+        <button class="tab-btn" onclick="switchCategory('sonota', this)">その他</button>
+      </div>
+      <!-- 商品一覧グリッド -->
+      <div class="product-grid" id="nobarcode-product-grid"></div>
+      <button class="close-btn" onclick="closeNoBarcodeModal()" style="margin-top:15px;">閉じる</button>
+    </div>
   </div>
 
   <!-- お会計・QRコード画面（お客様用） -->
@@ -169,7 +208,6 @@
     <div class="modal-content-box" style="text-align: left; font-family: 'Segoe UI', sans-serif;">
       <h2>管理設定</h2>
       <div style="margin-top: 15px;">
-        <!-- 現在の表示画面に合わせてボタンを切り替え -->
         <button id="settings-switch-btn" class="btn" style="background-color: #2575fc; margin-top:5px; font-size:15px; padding:10px;" onclick="toggleModeFromSettings()">レジ操作モードへ切替</button>
         <button class="btn" style="background-color: #00adb5; margin-top:10px; font-size:15px; padding:10px;" onclick="showSalesHistory()">売上履歴を見る</button>
         <button class="btn" style="background-color: #ffa502; margin-top:10px; font-size:15px; padding:10px;" onclick="resetSalesOnly()">売上記録のみリセット</button>
@@ -194,11 +232,37 @@
   </div>
 
   <script>
+    // ==========================================
+    // 🛒 商品データベース（バーコード有 ＆ バーコード無しの6桁コード商品）
+    // ==========================================
     let itemDatabase = JSON.parse(localStorage.getItem('myPosDatabase')) || {
+      // 通常のバーコード商品
       "4901330502880": { name: "ポテトチップス", price: 160 },
       "4902105001569": { name: "カップヌードル", price: 210 },
       "4586921456321": { name: "とんがりCORN", price: 150 },
-      "958412687453": { name: "コーラ", price: 350 }
+      "958412687453": { name: "コーラ", price: 350 },
+
+      // バーコードの無い商品（6桁の固有番号に設定）
+      "100001": { name: "葉しょうが", price: 158, category: "yasai" },
+      "100002": { name: "ズッキーニ", price: 198, category: "yasai" },
+      "100003": { name: "なす", price: 78, category: "yasai" },
+      "100004": { name: "ピーマン", price: 38, category: "yasai" },
+      "100005": { name: "さつまいも", price: 198, category: "yasai" },
+      "100006": { name: "ジャガイモ", price: 58, category: "yasai" },
+      "100007": { name: "たまねぎ", price: 48, category: "yasai" },
+      "100008": { name: "にんじん", price: 58, category: "yasai" },
+
+      "200001": { name: "国産牛ステーキ用", price: 980, category: "niku" },
+      "200002": { name: "豚ロース薄切り", price: 398, category: "niku" },
+      "200003": { name: "鶏もも肉(カット)", price: 298, category: "niku" },
+      "200004": { name: "生鮭切り身", price: 450, category: "niku" },
+
+      "300001": { name: "特製から揚げ弁当", price: 550, category: "sozai" },
+      "300002": { name: "ロースカツサンド", price: 380, category: "sozai" },
+      "300003": { name: "お寿司盛り合わせ", price: 880, category: "sozai" },
+
+      "400001": { name: "ペットボトル緑茶", price: 120, category: "sonota" },
+      "400002": { name: "手巻きおにぎり(梅)", price: 130, category: "sonota" }
     };
 
     const SALES_PASSWORD = "4869"; 
@@ -208,7 +272,7 @@
 
     let registerStream = null;
     let registerScanInterval = null;
-    let currentMode = 'customer'; // 'customer' または 'register'
+    let currentMode = 'customer'; 
 
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     
@@ -222,6 +286,52 @@
       osc.start(); osc.stop(audioCtx.currentTime + duration);
     }
 
+    // ==========================================
+    // 🏷️ バーコードの無い商品モーダル操作
+    // ==========================================
+    function openNoBarcodeModal() {
+      switchCategory('yasai', document.querySelector('.tab-btn'));
+      document.getElementById('nobarcode-modal').style.display = 'flex';
+    }
+
+    function closeNoBarcodeModal() {
+      document.getElementById('nobarcode-modal').style.display = 'none';
+    }
+
+    function switchCategory(categoryKey, btnElement) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btnElement.classList.add('active');
+
+      const grid = document.getElementById('nobarcode-product-grid');
+      grid.innerHTML = '';
+
+      for (let code in itemDatabase) {
+        let item = itemDatabase[code];
+        if (item.category === categoryKey) {
+          grid.innerHTML += `
+            <div class="product-card" onclick="addNoBarcodeItem('${code}')">
+              <div class="product-card-name">${item.name}</div>
+              <div class="product-card-bottom">
+                <span class="product-card-price">¥${item.price}</span>
+                <div class="product-add-badge">＋</div>
+              </div>
+            </div>
+          `;
+        }
+      }
+    }
+
+    function addNoBarcodeItem(code) {
+      const item = itemDatabase[code];
+      if (item) {
+        addItem(item.name, item.price);
+        playSound(1200, 0.08);
+      }
+    }
+
+    // ==========================================
+    // 画面・レジ・設定管理
+    // ==========================================
     function switchView(viewName) {
       currentMode = viewName;
       document.querySelectorAll('.view-container').forEach(el => el.classList.remove('active'));
@@ -243,7 +353,6 @@
         return; 
       }
       
-      // 現在のモードに応じて設定画面の切替ボタンのテキストを変更
       const switchBtn = document.getElementById('settings-switch-btn');
       if (currentMode === 'customer') {
         switchBtn.textContent = "レジ操作モードへ切替";

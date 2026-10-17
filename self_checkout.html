@@ -28,7 +28,8 @@
     .section-header { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; margin-bottom: 5px; }
     h2 { font-size: 18px; color: #444; margin: 0; }
     
-    .add-nobarcode-btn { background-color: #6c5ce7; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    /* ボタンの色を黄色に変更（文字は黒で見やすく） */
+    .add-nobarcode-btn { background-color: #f1c40f; color: #2d3436; border: none; padding: 7px 12px; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
     .add-nobarcode-btn:active { opacity: 0.8; }
 
     .cart { 
@@ -232,17 +233,12 @@
   </div>
 
   <script>
-    // ==========================================
-    // 🛒 商品データベース（バーコード有 ＆ バーコード無しの6桁コード商品）
-    // ==========================================
     let itemDatabase = JSON.parse(localStorage.getItem('myPosDatabase')) || {
-      // 通常のバーコード商品
       "4901330502880": { name: "ポテトチップス", price: 160 },
       "4902105001569": { name: "カップヌードル", price: 210 },
       "4586921456321": { name: "とんがりCORN", price: 150 },
       "958412687453": { name: "コーラ", price: 350 },
 
-      // バーコードの無い商品（6桁の固有番号に設定）
       "100001": { name: "葉しょうが", price: 158, category: "yasai" },
       "100002": { name: "ズッキーニ", price: 198, category: "yasai" },
       "100003": { name: "なす", price: 78, category: "yasai" },
@@ -290,8 +286,10 @@
     // 🏷️ バーコードの無い商品モーダル操作
     // ==========================================
     function openNoBarcodeModal() {
-      switchCategory('yasai', document.querySelector('.tab-btn'));
       document.getElementById('nobarcode-modal').style.display = 'flex';
+      // モーダルを開いた時に最初から「野菜・果物」のリストを表示する
+      const firstTab = document.querySelector('.tab-btn');
+      switchCategory('yasai', firstTab);
     }
 
     function closeNoBarcodeModal() {
@@ -300,7 +298,7 @@
 
     function switchCategory(categoryKey, btnElement) {
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      btnElement.classList.add('active');
+      if (btnElement) btnElement.classList.add('active');
 
       const grid = document.getElementById('nobarcode-product-grid');
       grid.innerHTML = '';
@@ -624,7 +622,6 @@
         alert("カメラを起動できませんでした。ブラウザのカメラ権限を確認してください。");
       });
     }
-
     function stopRegisterScanner() {
       if (registerScanInterval) {
         clearInterval(registerScanInterval);

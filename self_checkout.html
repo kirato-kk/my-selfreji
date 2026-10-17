@@ -14,8 +14,8 @@
     h1 { color: #2575fc; margin: 0; font-size: 24px; }
     .settings-btn { background: none; border: none; font-size: 24px; cursor: pointer; padding: 0; color: #555; }
     .status { text-align: center; color: #2575fc; margin-bottom: 10px; font-weight: bold; }
-    #interactive.viewport { width: 100%; height: 250px; background-color: #000; border: 2px solid #2575fc; border-radius: 10px; overflow: hidden; margin-bottom: 20px; position: relative; }
-    #interactive.viewport video { width: 100%; height: 100%; object-fit: cover; }
+    #interactive.viewport, #register-viewport.viewport { width: 100%; height: 250px; background-color: #000; border: 2px solid #2575fc; border-radius: 10px; overflow: hidden; margin-bottom: 20px; position: relative; }
+    #interactive.viewport video, #register-viewport.viewport video { width: 100%; height: 100%; object-fit: cover; }
     h2 { font-size: 18px; color: #444; margin-top: 20px; }
     .cart { background: #ffffff; padding: 15px; border-radius: 10px; min-height: 120px; border: 1px solid #e0e0e0; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); }
     .total { font-size: 22px; font-weight: bold; text-align: right; margin-top: 15px; color: #ff4757; }
@@ -23,6 +23,7 @@
     .btn:active { opacity: 0.8; }
     .pay-btn { background-color: #ff4757; }
     .undo-btn { background-color: #ffa502; }
+    .share-btn { background-color: #00b894; }
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); justify-content: center; align-items: center; z-index: 100; }
     .receipt { background: #ffffff; color: #333333; font-family: 'Courier New', monospace; padding: 25px; width: 320px; max-height: 80vh; overflow-y: auto; border-radius: 10px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
     .receipt h2 { text-align: center; margin: 0 0 10px 0; font-size: 20px; font-family: 'Segoe UI', sans-serif; color: #333; }
@@ -31,46 +32,76 @@
     .staff-box { background: #ff4757; color: white; padding: 15px; border-radius: 10px; margin-bottom: 15px; font-family: 'Segoe UI', sans-serif; }
     #qrcode { display: flex; justify-content: center; margin: 15px 0; }
     #qrcode img { border: 5px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .view-container { display: none; }
+    .view-container.active { display: block; }
   </style>
 </head>
 <body>
 
-  <div class="header-container">
-    <h1>SELF-CHECKOUT</h1>
-    <button class="settings-btn" onclick="openSettings()" title="設定">⚙️</button>
+  <!-- ================= お客様画面 ================= -->
+  <div id="customer-view" class="view-container active">
+    <div class="header-container">
+      <h1>SELF-CHECKOUT</h1>
+      <button class="settings-btn" onclick="openSettings()" title="設定">⚙️</button>
+    </div>
+    
+    <div class="status" id="status-msg">カメラにバーコードにかざしてください</div>
+    <div id="interactive" class="viewport"></div>
+
+    <h2>購入リスト</h2>
+    <div class="cart" id="cart-list"><p style="color: #888; font-family: 'Segoe UI', sans-serif;">スキャンした商品がここに表示されます</p></div>
+    <div class="total">合計 (税込): <span id="total-price">0</span> 円</div>
+
+    <button class="btn undo-btn" onclick="removeLastItem()">直前のスキャンを取り消す</button>
+    <button class="btn pay-btn" onclick="openPaymentModal()">お会計</button>
   </div>
-  
-  <div class="status" id="status-msg">カメラにバーコードにかざしてください</div>
-  <div id="interactive" class="viewport"></div>
 
-  <h2>購入リスト</h2>
-  <div class="cart" id="cart-list"><p style="color: #888; font-family: 'Segoe UI', sans-serif;">スキャンした商品がここに表示されます</p></div>
-  <div class="total">合計 (税込): <span id="total-price">0</span> 円</div>
+  <!-- ================= レジ操作画面（別ページ風） ================= -->
+  <div id="register-view" class="view-container">
+    <div class="header-container">
+      <h1>レジ操作モード</h1>
+      <button class="settings-btn" onclick="switchView('customer')" title="お客様画面へ戻る">🔙</button>
+    </div>
+    <div class="status">お客様のスマホに表示されたQRコードを読み取ってください</div>
+    <div id="register-viewport" class="viewport"></div>
+    <button class="btn" style="background-color: #555;" onclick="switchView('customer')">お客様画面に戻る</button>
+  </div>
 
-  <button class="btn undo-btn" onclick="removeLastItem()">直前のスキャンを取り消す</button>
-  <button class="btn pay-btn" onclick="openPaymentModal()">お会計</button>
-
-  <!-- お会計・QRコード画面 -->
+  <!-- お会計・QRコード画面（お客様用） -->
   <div class="modal-overlay" id="payment-modal">
     <div class="receipt">
       <div class="staff-box">
-        <h2 style="color: white; margin: 0; font-size: 18px;">お会計</h2>
+        <h2 style="color: white; margin: 0; font-size: 18px;">お会計QRコード</h2>
       </div>
       <p style="font-size: 22px; font-weight: bold; margin: 10px 0; color: #ff4757; font-family: 'Segoe UI', sans-serif;"><span id="pay-amount">0</span> 円</p>
       <div id="qrcode"></div>
-      <p style="font-size: 12px; color: #666; margin: 5px 0; font-family: 'Segoe UI', sans-serif;">このQRコードを読み取ってお支払いください</p>
-      <button class="btn pay-btn" style="margin-top:10px; padding:10px; font-size:16px;" onclick="completePayment()">支払い完了・レシートへ</button>
-      <button class="close-btn" onclick="closePaymentModal()">戻る</button>
+      <p style="font-size: 12px; color: #666; margin: 5px 0; font-family: 'Segoe UI', sans-serif;">このQRコードをレジカメラにかざしてください</p>
+      <button class="close-btn" onclick="closePaymentModal()">閉じる</button>
     </div>
   </div>
 
-  <!-- レシート表示画面 -->
+  <!-- レジ側：お会計確認画面 -->
+  <div class="modal-overlay" id="register-confirm-modal">
+    <div class="receipt" style="text-align: left;">
+      <h2>お会計内容確認</h2>
+      <div id="register-confirm-items" style="margin: 10px 0; max-height: 150px; overflow-y:auto;"></div>
+      <hr style="border: none; border-top: 1px dashed #ccc; margin: 10px 0;">
+      <div id="register-confirm-total" style="font-weight:bold; text-align:right; font-size: 18px; color: #ff4757;"></div>
+      <button class="btn pay-btn" style="margin-top:15px; padding:10px; font-size:16px;" onclick="completeRegisterPayment()">完了してレシート表示</button>
+      <button class="close-btn" onclick="closeRegisterConfirm()">キャンセル</button>
+    </div>
+  </div>
+
+  <!-- レジ側：レシート表示画面 -->
   <div class="modal-overlay" id="receipt-modal">
     <div class="receipt">
       <h2>レシート</h2>
       <div id="receipt-items"></div>
       <hr style="border: none; border-top: 1px dashed #ccc; margin: 10px 0;">
       <div id="receipt-total" style="font-weight:bold; text-align:right;"></div>
+      
+      <!-- レシート下の共有ボタン -->
+      <button class="btn share-btn" style="padding:10px; font-size:16px; margin-top:15px;" onclick="shareReceipt()">レシートを共有する</button>
       <button class="close-btn" onclick="closeReceipt()">閉じる</button>
     </div>
   </div>
@@ -80,7 +111,8 @@
     <div class="receipt" style="text-align: left; font-family: 'Segoe UI', sans-serif;">
       <h2>管理設定</h2>
       <div style="margin-top: 15px;">
-        <button class="btn" style="background-color: #2575fc; margin-top:5px; font-size:15px; padding:10px;" onclick="showSalesHistory()">売上履歴を見る</button>
+        <button class="btn" style="background-color: #2575fc; margin-top:5px; font-size:15px; padding:10px;" onclick="switchToRegisterMode()">レジ操作モードへ切替</button>
+        <button class="btn" style="background-color: #00adb5; margin-top:10px; font-size:15px; padding:10px;" onclick="showSalesHistory()">売上履歴を見る</button>
         <button class="btn" style="background-color: #ffa502; margin-top:10px; font-size:15px; padding:10px;" onclick="resetSalesOnly()">売上記録のみリセット</button>
         <button class="btn" style="background-color: #ff4757; margin-top:10px; font-size:15px; padding:10px;" onclick="resetAllData()">すべてのデータをリセット</button>
       </div>
@@ -99,18 +131,19 @@
 
   <script>
     // ==========================================
-    // 🛒 【商品データの追加・編集はこちらから簡単に行えます】
+    // 🛒 商品データ
     // ==========================================
     let itemDatabase = JSON.parse(localStorage.getItem('myPosDatabase')) || {
       "4901330502880": { name: "ポテトチップス", price: 160 },
       "4902105001569": { name: "カップヌードル", price: 210 },
-      // 新しい商品を追加したい場合はここに書き足してください
-      // 例: "バーコード番号": { name: "商品名", price: 価格 },
+      "4586921456321": { name: "とんがりCORN", price: 150 },
+      "958412687453": { name: "コーラ", price: 350 }
     };
 
     const SALES_PASSWORD = "4869"; // 管理用パスワード
     let canScan = true, totalPrice = 0, isFirst = true, cartHistory = []; 
     let salesHistory = JSON.parse(localStorage.getItem('myPosSalesHistory')) || [];
+    let scannedCartDataForRegister = null; // レジ側で読み取った一時データ
 
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     
@@ -122,6 +155,20 @@
       gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
       osc.connect(gain); gain.connect(audioCtx.destination);
       osc.start(); osc.stop(audioCtx.currentTime + duration);
+    }
+
+    // 画面切り替え管理
+    function switchView(viewName) {
+      document.querySelectorAll('.view-container').forEach(el => el.classList.remove('active'));
+      if (viewName === 'customer') {
+        document.getElementById('customer-view').classList.add('active');
+        stopRegisterScanner();
+        startCustomerScanner();
+      } else if (viewName === 'register') {
+        document.getElementById('register-view').classList.add('active');
+        stopCustomerScanner();
+        startRegisterScanner();
+      }
     }
 
     // 設定ボタン（⚙️）押下時
@@ -137,7 +184,21 @@
     function closeSettings() { document.getElementById('settings-modal').style.display = 'none'; }
     function closePaymentModal() { document.getElementById('payment-modal').style.display = 'none'; }
     function closeHistory() { document.getElementById('history-modal').style.display = 'none'; }
-    function closeReceipt() { document.getElementById('receipt-modal').style.display = 'none'; location.reload(); }
+    function closeRegisterConfirm() { document.getElementById('register-confirm-modal').style.display = 'none'; }
+    function closeReceipt() { 
+      document.getElementById('receipt-modal').style.display = 'none'; 
+      cartHistory = [];
+      totalPrice = 0;
+      isFirst = true;
+      document.getElementById('cart-list').innerHTML = '<p style="color: #888; font-family: \'Segoe UI\', sans-serif;">スキャンした商品がここに表示されます</p>';
+      document.getElementById('total-price').textContent = '0';
+      switchView('customer');
+    }
+
+    function switchToRegisterMode() {
+      closeSettings();
+      switchView('register');
+    }
 
     function addItem(name, price) {
       playSound(1200, 0.08);
@@ -161,7 +222,7 @@
       }
     }
 
-    // お会計ボタン押下時（QRコード生成）
+    // お会計ボタン押下時（QRコード生成：LUCKY_バーコード_金額 形式）
     function openPaymentModal() {
       if (cartHistory.length === 0) {
         alert("商品がスキャンされていません。");
@@ -169,12 +230,22 @@
       }
       document.getElementById('pay-amount').textContent = totalPrice;
       
-      // お支払い用ダミーURLや金額情報からQRコードを生成
+      // 購入した商品のバーコード一覧を抽出して連結
+      // カート内にはバーコード保持していないため、itemDatabaseから逆引きまたはコード配列を生成
+      let codes = cartHistory.map(item => {
+        for (let code in itemDatabase) {
+          if (itemDatabase[code].name === item.name) return code;
+        }
+        return "00000";
+      });
+
+      const qrData = `LUCKY_${codes.join('_')}_${totalPrice}`;
+      
       const qrContainer = document.getElementById('qrcode');
       qrContainer.innerHTML = "";
       try {
         const qr = qrcode(0, 'M');
-        qr.addData(`SELF-CHECKOUT:PAYMENT:${totalPrice}YEN`);
+        qr.addData(qrData);
         qr.make();
         qrContainer.innerHTML = qr.createImgTag(4);
       } catch (e) {
@@ -184,18 +255,32 @@
       document.getElementById('payment-modal').style.display = 'flex';
     }
 
-    // 支払い完了時
-    function completePayment() {
-      closePaymentModal();
+    // レジ側での決済完了処理
+    function completeRegisterPayment() {
+      document.getElementById('register-confirm-modal').style.display = 'none';
       
+      if (!scannedCartDataForRegister) return;
+
       const container = document.getElementById('receipt-items');
-      container.innerHTML = cartHistory.map(i => `<div class="receipt-item"><span>${i.name}</span><span>${i.taxPrice}円</span></div>`).join('');
-      document.getElementById('receipt-total').textContent = `合計: ${totalPrice}円`;
+      container.innerHTML = scannedCartDataForRegister.items.map(i => `<div class="receipt-item"><span>${i.name}</span><span>${i.taxPrice}円</span></div>`).join('');
+      document.getElementById('receipt-total').textContent = `合計: ${scannedCartDataForRegister.total}円`;
       document.getElementById('receipt-modal').style.display = 'flex';
       
-      const itemsPurchased = cartHistory.map(i => `${i.name} (${i.taxPrice}円)`).join(', ');
-      salesHistory.push({ date: new Date().toLocaleString(), total: totalPrice, items: itemsPurchased });
+      const itemsPurchased = scannedCartDataForRegister.items.map(i => `${i.name} (${i.taxPrice}円)`).join(', ');
+      salesHistory.push({ date: new Date().toLocaleString(), total: scannedCartDataForRegister.total, items: itemsPurchased });
       localStorage.setItem('myPosSalesHistory', JSON.stringify(salesHistory));
+    }
+
+    // レシート共有機能
+    function shareReceipt() {
+      if (navigator.share) {
+        navigator.share({
+          title: 'レシート',
+          text: `お買い上げ合計: ${document.getElementById('receipt-total').textContent}`
+        }).catch(err => console.log('共有キャンセル'));
+      } else {
+        alert("お使いのブラウザは共有機能に対応していません。");
+      }
     }
 
     // 売上履歴表示
@@ -233,60 +318,91 @@
     }
 
     // ==========================================
-    // 📷 【読み取り性能の向上設定（QuaggaJS）】
+    // 📷 カメラ（QuaggaJS）制御：お客様画面用
     // ==========================================
-    Quagga.init({
-      inputStream: { 
-        type: "LiveStream", 
-        target: document.querySelector('#interactive'), 
-        constraints: { 
-          facingMode: "environment",
-          // 解像度を上げてバーコードの読み取り精度を向上
-          width: { ideal: 1280 },
-          height: { ideal: 720 }
-        } 
-      },
-      // 複数タイプのバーコード規格に対応して認識率をアップ
-      decoder: { 
-        readers: [
-          "ean_reader", 
-          "ean_8_reader",
-          "code_128_reader",
-          "code_39_reader"
-        ],
-        multiple: false
-      },
-      locate: true,
-      locator: {
-        patchSize: "medium",
-        halfSample: true
-      }
-    }, (err) => { 
-      if (err) {
-        console.error(err);
-        alert("カメラの起動に失敗しました。カメラの権限を確認してください。");
-        return;
-      }
-      Quagga.start(); 
-    });
+    function startCustomerScanner() {
+      Quagga.init({
+        inputStream: { 
+          type: "LiveStream", 
+          target: document.querySelector('#interactive'), 
+          constraints: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } } 
+        },
+        decoder: { readers: ["ean_reader", "ean_8_reader", "code_128_reader", "code_39_reader"], multiple: false },
+        locate: true
+      }, (err) => { 
+        if (!err) Quagga.start(); 
+      });
 
-    Quagga.onDetected((res) => {
+      Quagga.onDetected(customerScanHandler);
+    }
+
+    function stopCustomerScanner() {
+      try { Quagga.offDetected(customerScanHandler); Quagga.stop(); } catch(e){}
+    }
+
+    function customerScanHandler(res) {
       if (!canScan) return;
       const code = res.codeResult.code;
       canScan = false;
 
       if (itemDatabase[code]) {
-        // 登録されている商品なら追加
         addItem(itemDatabase[code].name, itemDatabase[code].price);
       } else {
-        // ★未登録バーコードの場合はエラー音を鳴らし、エラーメッセージを表示
         playSound(300, 0.2, 'sawtooth');
-        alert(`❌ エラー: 未登録のバーコードです\n番号: ${code}\n\n※コード内の商品データベースに追加してください。`);
+        alert(`❌ エラー: 未登録のバーコードです\n番号: ${code}`);
       }
-
-      // 連続読み取り防止インターバル
       setTimeout(() => { canScan = true; }, 1500);
-    });
+    }
+
+    // ==========================================
+    // 📷 カメラ（QuaggaJS）制御：レジ操作画面用（QRコード用またはバーコード用）
+    // ==========================================
+    function startRegisterScanner() {
+      // レジ側でのカメラ起動（簡易的に通常のストリームとして初期化）
+      Quagga.init({
+        inputStream: { 
+          type: "LiveStream", 
+          target: document.querySelector('#register-viewport'), 
+          constraints: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } } 
+        },
+        decoder: { readers: ["ean_reader", "code_128_reader"], multiple: false }
+      }, (err) => { 
+        if (!err) Quagga.start(); 
+      });
+      Quagga.onDetected(registerScanHandler);
+    }
+
+    function stopRegisterScanner() {
+      try { Quagga.offDetected(registerScanHandler); Quagga.stop(); } catch(e){}
+    }
+
+    function registerScanHandler(res) {
+      const code = res.codeResult.code;
+      // お客様画面のQRコードフォーマット（LUCKY_...）を検知したと仮定したシミュレーション処理
+      if (code && code.startsWith("LUCKY_")) {
+        playSound(1200, 0.1);
+        const parts = code.split("_");
+        const totalPriceVal = parts[parts.length - 1];
+        const itemCodes = parts.slice(1, parts.length - 1);
+
+        let parsedItems = [];
+        itemCodes.forEach(c => {
+          if (itemDatabase[c]) {
+            parsedItems.push({ name: itemDatabase[c].name, taxPrice: Math.round(itemDatabase[c].price * 1.1) });
+          }
+        });
+
+        scannedCartDataForRegister = { items: parsedItems, total: totalPriceVal };
+
+        // 確認画面に反映
+        document.getElementById('register-confirm-items').innerHTML = parsedItems.map(i => `<div class="receipt-item"><span>${i.name}</span><span>${i.taxPrice}円</span></div>`).join('');
+        document.getElementById('register-confirm-total').textContent = `合計: ${totalPriceVal}円`;
+        document.getElementById('register-confirm-modal').style.display = 'flex';
+      }
+    }
+
+    // 初期起動はお客様画面
+    startCustomerScanner();
   </script>
 </body>
-</html>
+  </html>

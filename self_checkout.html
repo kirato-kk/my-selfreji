@@ -28,14 +28,14 @@
     h2 { font-size: 18px; color: #444; margin-top: 20px; }
     
     /* ==========================================
-       🛒 購入リスト（約5行分でスクロール固定）
+       🛒 購入リスト（約4個表示でスクロールするように調整）
        ========================================== */
     .cart { 
       background: #ffffff; 
       padding: 15px; 
       border-radius: 10px; 
-      max-height: 220px; /* 約5行分が入る高さに制限 */
-      overflow-y: auto;  /* はみ出したら縦スクロール */
+      max-height: 180px; /* 商品約4つ分で固定 */
+      overflow-y: auto;  /* はみ出したらスクロール */
       border: 1px solid #e0e0e0; 
       box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); 
     }
@@ -246,7 +246,15 @@
     }
 
     function closeSettings() { document.getElementById('settings-modal').style.display = 'none'; }
-    function closePaymentModal() { document.getElementById('payment-modal').style.display = 'none'; }
+    
+    // ★修正: お会計QRコードモーダルの閉じるボタンで購入リスト・合計を自動リセット
+    function closePaymentModal() { 
+      document.getElementById('payment-modal').style.display = 'none'; 
+      cartItems = [];
+      totalPrice = 0;
+      renderCart();
+    }
+    
     function closeHistory() { document.getElementById('history-modal').style.display = 'none'; }
     function closeRegisterConfirm() { 
       document.getElementById('register-confirm-modal').style.display = 'none'; 
@@ -441,12 +449,12 @@
       Quagga.onDetected(customerScanHandler);
     }
 
-    function stopCustomerScanner() {
+    function stopCustomerScanne() {
       try { Quagga.offDetected(customerScanHandler); Quagga.stop(); } catch(e){}
     }
 
     function customerScanHandler(res) {
-  if (!canScan) return;
+      if (!canScan) return;
       const code = res.codeResult.code;
       canScan = false;
 

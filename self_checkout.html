@@ -558,7 +558,7 @@
       }
     }
 
-    // 重複のない13桁バーコードを生成する関数
+     // バーコードを生成する関数（画質を最適化）
     function generateUniqueBarcode() {
       let code = "";
       let isDuplicate = true;
@@ -578,29 +578,35 @@
       currentGeneratedCode = code;
       
       try {
+        // バーコードの描画サイズを少し小さくして描画負荷を軽減
         JsBarcode("#generated-barcode-svg", code, {
           format: "EAN13",
-          width: 2,
-          height: 60,
-          displayValue: true
+          width: 1.8,
+          height: 50,
+          displayValue: true,
+          fontSize: 12
         });
       } catch (e) {
         JsBarcode("#generated-barcode-svg", code, {
           format: "CODE128",
-          width: 2,
-          height: 60,
-          displayValue: true
+          width: 1.8,
+          height: 50,
+          displayValue: true,
+          fontSize: 12
         });
       }
 
       document.getElementById('barcode-modal').style.display = 'flex';
     }
 
+    // バーコード画像を爆速で共有する関数
     function shareBarcodeImage() {
       const targetArea = document.getElementById('barcode-target-area');
-      html2canvas(targetArea, { scale: 1.5, backgroundColor: '#ffffff' }).then(canvas => {
+      
+      // scaleを1.0にし、画質をJPEG形式にすることで処理を大幅に高速化
+      html2canvas(targetArea, { scale: 1.0, backgroundColor: '#ffffff', logging: false }).then(canvas => {
         canvas.toBlob(blob => {
-          const file = new File([blob], `barcode_${currentGeneratedCode}.png`, { type: "image/png" });
+          const file = new File([blob], `barcode_${currentGeneratedCode}.jpg`, { type: "image/jpeg" });
           
           if (navigator.canShare && navigator.canShare({ files: [file] })) {
             navigator.share({
@@ -610,13 +616,15 @@
             }).catch(err => console.log('共有キャンセル'));
           } else {
             const link = document.createElement('a');
-            link.download = `barcode_${currentGeneratedCode}.png`;
-            link.href = canvas.toDataURL('image/png');
+            link.download = `barcode_${currentGeneratedCode}.jpg`;
+            link.href = canvas.toDataURL('image/jpeg', 0.85);
             link.click();
           }
-        });
+        }, 'image/jpeg', 0.85);
       });
     }
+
+ 
 
     function closeBarcodeModal() {
       document.getElementById('barcode-modal').style.display = 'none';

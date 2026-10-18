@@ -414,9 +414,7 @@
     const SALES_PASSWORD = "4869"; 
     let canScan = true, totalPrice = 0, totalCount = 0; 
     
-    // カートをローカルストレージから復元（リロード対策）
     let cartItems = JSON.parse(localStorage.getItem('myPosCartItems')) || [];
-    
     let salesHistory = JSON.parse(localStorage.getItem('myPosSalesHistory')) || [];
     let customReceiptMessage = localStorage.getItem('myPosReceiptMsg') || "";
     let registerParsedCartItems = []; 
@@ -476,7 +474,7 @@
                 alert(`「${itemDatabase[code].name}」を追加しました！`);
               } else {
                 playSound(300, 0.2, 'sawtooth');
-                alert(`未登録のバーコードです: ${code}`);
+                alert(`エラー: 未登録のバーコード番号です\n番号: ${code}`);
               }
             } else {
               alert("画像からバーコードを読み取れませんでした。");
@@ -489,7 +487,7 @@
       event.target.value = '';
     }
 
-        function handleCustomerImageFile(event) {
+    function handleRegisterImageFile(event) {
       const file = event.target.files[0];
       if (!file) return;
 
@@ -497,24 +495,19 @@
       reader.onload = function(e) {
         const img = new Image();
         img.onload = function() {
-          Quagga.decodeSingle({
-            src: e.target.result,
-            numOfWorkers: 0,
-            decoder: { readers: ["ean_reader", "ean_8_reader", "code_128_reader", "code_39_reader"] }
-          }, function(result) {
-            if (result && result.codeResult) {
-              const code = result.codeResult.code;
-              if (itemDatabase[code]) {
-                addItem(itemDatabase[code].name, itemDatabase[code].price);
-                alert(`「${itemDatabase[code].name}」を追加しました！`);
-              } else {
-                playSound(300, 0.2, 'sawtooth');
-                alert(`エラー: 未登録のバーコード番号です\n番号: ${code}`); // ★ここをカメラ側と同じ表記に統一
-              }
-            } else {
-              alert("画像からバーコードを読み取れませんでした。");
-            }
-          });
+          const canvas = document.createElement('canvas');
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, img.width, img.height);
+          const imageData = ctx.getImageData(0, 0, img.width, img.height);
+
+          const code = jsQR(imageData.data, imageData.width, imageData.height);
+          if (code) {
+            handleRegisterQRCode(code.data);
+          } else {
+            alert("画像からQRコードを読み取れませんでした。");
+          }
         };
         img.src = e.target.result;
       };
@@ -633,7 +626,6 @@
     
     function closePaymentModal() { 
       document.getElementById('payment-modal').style.display = 'none'; 
-      // QRコード画面の完了ボタンを押したタイミングでカートをクリア
       clearCartFromStorage();
     }
     
@@ -1150,20 +1142,29 @@
       try { Quagga.offDetected(customerScanHandler); Quagga.stop(); } catch(e){}
     }
 
-        function customerScanHandler(res) {
+    function customerScanHandler(res) {
       if (!canScan) return;
       const code = res.codeResult.code;
       canScan = false;
 
+      const statusMsg = document.getElementById('status-msg');
+
       if (itemDatabase[code]) {
         addItem(itemDatabase[code].name, itemDatabase[code].price);
+        statusMsg.style.color = '#2575fc';
+        statusMsg.textContent = `「${itemDatabase[code].name}」を追加しました！`;
       } else {
         playSound(300, 0.2, 'sawtooth');
-        alert(`エラー: 未登録のバーコード番号です\n番号: ${code}`);
+        statusMsg.style.color = '#ff4757';
+        statusMsg.textContent = `エラー: 未登録のバーコード (${code})`;
       }
-      setTimeout(() => { canScan = true; }, 1500); // 1.5秒のまま
-    }
 
+      setTimeout(() => { 
+        statusMsg.style.color = '#2575fc';
+        statusMsg.textContent = "枠内にバーコードをかざしてください";
+        canScan = true; 
+      }, 1500);
+    }
 
     function startRegisterScanner() {
       const video = document.getElementById('register-video');

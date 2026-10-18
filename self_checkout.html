@@ -1395,21 +1395,26 @@
 
 
     
-        // 起動時の初期化
-    renderCart();
+            renderCart();
 
-    // 保存された設定を読み込んでお客様画面の初期状態を決定
     const savedCustomerState = localStorage.getItem('customerCameraOn');
     const initialCustomerIsOn = savedCustomerState === null ? true : JSON.parse(savedCustomerState);
     document.getElementById('customer-camera-toggle').checked = initialCustomerIsOn;
 
+    const statusMsg = document.getElementById('status-msg');
+
     if (initialCustomerIsOn) {
       document.getElementById('customer-camera-off-overlay').style.display = 'none';
       startCustomerScanner();
+      statusMsg.style.color = '#2575fc';
+      statusMsg.textContent = "枠内にバーコードをかざしてください";
     } else {
       document.getElementById('customer-camera-off-overlay').style.display = 'flex';
-      // 最初からOFFのときはスキャナーを起動しない
+      // ★ OFFのときはメッセージも「カメラ停止中」に設定する
+      statusMsg.style.color = '#888';
+      statusMsg.textContent = "カメラ停止中";
     }
+
 
   </script>
 </body>

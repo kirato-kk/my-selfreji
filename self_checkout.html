@@ -223,20 +223,20 @@
       <button class="settings-btn" onclick="handleSettingsClick()" title="設定">⚙️</button>
     </div>
     
-        <!-- ステータスとカメラON/OFFスイッチを横並びにするコンテナ -->
+            <!-- ステータスとカメラON/OFFスイッチを横並びにするコンテナ -->
     <div class="camera-control-bar">
       <div class="status" id="status-msg" style="margin-bottom: 0; text-align: left;">枠内にバーコードをかざしてください</div>
       
       <!-- トグルスイッチ -->
       <label class="toggle-switch">
-        <input type="checkbox" id="camera-toggle" checked onchange="toggleCameraPower(this)">
+        <input type="checkbox" id="customer-camera-toggle" onchange="toggleCustomerCamera(this)">
         <span class="toggle-slider"></span>
       </label>
     </div>
 
     <!-- カメラビューポート（OFF時はここに灰色画面を表示） -->
     <div id="interactive" class="viewport">
-      <div id="camera-off-overlay" style="display: none; width: 100%; height: 100%; background-color: #2f3542; color: #fff; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; position: absolute; top: 0; left: 0; z-index: 10;">カメラはOFFです</div>
+      <div id="customer-camera-off-overlay" style="display: none; width: 100%; height: 100%; background-color: #2f3542; color: #fff; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; position: absolute; top: 0; left: 0; z-index: 10;">カメラはOFFです</div>
     </div>
 
     <div class="section-header">
@@ -256,12 +256,24 @@
       <h1>スタッフモード</h1>
       <button class="settings-btn" onclick="handleSettingsClick()" title="設定">⚙️</button>
     </div>
-    <div class="status" style="color: #ff4757;">QRコードを枠内にかざしてください</div>
+     <!-- ステータスとカメラON/OFFスイッチを横並びにするコンテナ -->
+    <div class="camera-control-bar">
+      <div class="status" style="color: #ff4757; margin-bottom: 0; text-align: left;">QRコードを枠内にかざしてください</div>
+      
+      <!-- スタッフ用トグルスイッチ -->
+      <label class="toggle-switch">
+        <input type="checkbox" id="register-camera-toggle" onchange="toggleRegisterCamera(this)">
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
     
     <div id="register-viewport-container">
       <video id="register-video" playsinline autoplay muted></video>
       <canvas id="register-canvas"></canvas>
+      <!-- スタッフ用カメラOFF時の灰色画面 -->
+      <div id="register-camera-off-overlay" style="display: none; width: 100%; height: 100%; background-color: #2f3542; color: #fff; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; position: absolute; top: 0; left: 0; z-index: 10;">カメラはOFFです</div>
     </div>
+
 
     <!-- 画像から読み取りボタン -->
     <button class="btn" style="background-color: #00adb5; margin-bottom: 10px;" onclick="document.getElementById('register-file-input').click()">📁 画像からQR読み取り</button>
@@ -661,22 +673,50 @@
       }
     }
 
-        function switchView(viewName) {
+            function switchView(viewName) {
       currentMode = viewName;
       document.querySelectorAll('.view-container').forEach(el => el.classList.remove('active'));
+      
       if (viewName === 'customer') {
         document.getElementById('customer-view').classList.add('active');
         stopRegisterScanner();
         
-        // スイッチがONの時だけカメラを起動
-        const toggle = document.getElementById('camera-toggle');
-        if (toggle && toggle.checked) {
+        // 保存された設定を読み込んでスイッチに反映
+        const savedCustomerState = localStorage.getItem('customerCameraOn');
+        const toggle = document.getElementById('customer-camera-toggle');
+        const offOverlay = document.getElementById('customer-camera-off-overlay');
+        
+        // 初回などで保存がない場合はデフォルトでON（true）
+        const isOn = savedCustomerState === null ? true : JSON.parse(savedCustomerState);
+        toggle.checked = isOn;
+
+        if (isOn) {
+          offOverlay.style.display = 'none';
           startCustomerScanner();
+        } else {
+          stopCustomerScanner();
+          offOverlay.style.display = 'flex';
         }
+
       } else if (viewName === 'register') {
         document.getElementById('register-view').classList.add('active');
         stopCustomerScanner();
-        startRegisterScanner();
+        
+        // 保存された設定を読み込んでスイッチに反映
+        const savedRegisterState = localStorage.getItem('registerCameraOn');
+        const toggle = document.getElementById('register-camera-toggle');
+        const offOverlay = document.getElementById('register-camera-off-overlay');
+        
+        const isOn = savedRegisterState === null ? true : JSON.parse(savedRegisterState);
+        toggle.checked = isOn;
+
+        if (isOn) {
+          offOverlay.style.display = 'none';
+          startRegisterScanner();
+        } else {
+          stopRegisterScanner();
+          offOverlay.style.display = 'flex';
+        }
       }
     }
 
@@ -1316,19 +1356,20 @@
       }
     }
 
-    function toggleCameraPower(checkbox) {
-      const offOverlay = document.getElementById('camera-off-overlay');
-      const interactiveViewport = document.getElementById('interactive');
+        // お客様モードのカメラ切り替え
+    function toggleCustomerCamera(checkbox) {
+      const offOverlay = document.getElementById('customer-camera-off-overlay');
       const statusMsg = document.getElementById('status-msg');
 
+      // 状態を保存
+      localStorage.setItem('customerCameraOn', checkbox.checked);
+
       if (checkbox.checked) {
-        // ONのとき
         offOverlay.style.display = 'none';
         startCustomerScanner();
         statusMsg.style.color = '#2575fc';
         statusMsg.textContent = "枠内にバーコードをかざしてください";
       } else {
-        // OFFのとき（カメラを完全に止め、灰色画面＋文字を表示）
         stopCustomerScanner();
         offOverlay.style.display = 'flex';
         statusMsg.style.color = '#888';
@@ -1336,9 +1377,40 @@
       }
     }
 
+    // スタッフモードのカメラ切り替え
+    function toggleRegisterCamera(checkbox) {
+      const offOverlay = document.getElementById('register-camera-off-overlay');
+
+      // 状態を保存
+      localStorage.setItem('registerCameraOn', checkbox.checked);
+
+      if (checkbox.checked) {
+        offOverlay.style.display = 'none';
+        startRegisterScanner();
+      } else {
+        stopRegisterScanner();
+        offOverlay.style.display = 'flex';
+      }
+    }
+
+
     
+        // 起動時の初期化
     renderCart();
-    startCustomerScanner();
+
+    // 保存された設定を読み込んでお客様画面の初期状態を決定
+    const savedCustomerState = localStorage.getItem('customerCameraOn');
+    const initialCustomerIsOn = savedCustomerState === null ? true : JSON.parse(savedCustomerState);
+    document.getElementById('customer-camera-toggle').checked = initialCustomerIsOn;
+
+    if (initialCustomerIsOn) {
+      document.getElementById('customer-camera-off-overlay').style.display = 'none';
+      startCustomerScanner();
+    } else {
+      document.getElementById('customer-camera-off-overlay').style.display = 'flex';
+      // 最初からOFFのときはスキャナーを起動しない
+    }
+
   </script>
 </body>
 </html>

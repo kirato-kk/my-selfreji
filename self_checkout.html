@@ -489,7 +489,7 @@
       event.target.value = '';
     }
 
-    function handleRegisterImageFile(event) {
+        function handleCustomerImageFile(event) {
       const file = event.target.files[0];
       if (!file) return;
 
@@ -497,19 +497,24 @@
       reader.onload = function(e) {
         const img = new Image();
         img.onload = function() {
-          const canvas = document.createElement('canvas');
-          canvas.width = img.width;
-          canvas.height = img.height;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, img.width, img.height);
-          const imageData = ctx.getImageData(0, 0, img.width, img.height);
-
-          const code = jsQR(imageData.data, imageData.width, imageData.height);
-          if (code) {
-            handleRegisterQRCode(code.data);
-          } else {
-            alert("画像からQRコードを読み取れませんでした。");
-          }
+          Quagga.decodeSingle({
+            src: e.target.result,
+            numOfWorkers: 0,
+            decoder: { readers: ["ean_reader", "ean_8_reader", "code_128_reader", "code_39_reader"] }
+          }, function(result) {
+            if (result && result.codeResult) {
+              const code = result.codeResult.code;
+              if (itemDatabase[code]) {
+                addItem(itemDatabase[code].name, itemDatabase[code].price);
+                alert(`「${itemDatabase[code].name}」を追加しました！`);
+              } else {
+                playSound(300, 0.2, 'sawtooth');
+                alert(`エラー: 未登録のバーコード番号です\n番号: ${code}`); // ★ここをカメラ側と同じ表記に統一
+              }
+            } else {
+              alert("画像からバーコードを読み取れませんでした。");
+            }
+          });
         };
         img.src = e.target.result;
       };
@@ -1145,7 +1150,7 @@
       try { Quagga.offDetected(customerScanHandler); Quagga.stop(); } catch(e){}
     }
 
-    function customerScanHandler(res) {
+        function customerScanHandler(res) {
       if (!canScan) return;
       const code = res.codeResult.code;
       canScan = false;
@@ -1156,8 +1161,9 @@
         playSound(300, 0.2, 'sawtooth');
         alert(`エラー: 未登録のバーコード番号です\n番号: ${code}`);
       }
-      setTimeout(() => { canScan = true; }, 1500);
+      setTimeout(() => { canScan = true; }, 1500); // 1.5秒のまま
     }
+
 
     function startRegisterScanner() {
       const video = document.getElementById('register-video');

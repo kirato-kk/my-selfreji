@@ -206,6 +206,28 @@
     .toggle-switch input:checked + .toggle-slider:before {
       transform: translateX(24px);
     }
+    /* 保存されたバーコードの個別カード用スタイル */
+    .saved-barcode-card {
+      background: #f8f9fa;
+      border: 1px solid #dfe4ea;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+    .saved-barcode-header {
+      font-size: 14px;
+      font-weight: bold;
+      color: #2f3542;
+      margin-bottom: 5px;
+      text-align: left;
+    }
+    .saved-barcode-svg-wrap {
+      background: #ffffff;
+      padding: 8px;
+      border-radius: 6px;
+      margin-bottom: 8px;
+    }
 
   
 </style>
@@ -405,7 +427,9 @@
       <div style="margin-top: 15px;">
         <button id="settings-switch-btn" class="btn" style="background-color: #2575fc; margin-top:5px; font-size:15px; padding:10px;" onclick="toggleModeFromSettings()">スタッフモードへ切替</button>
         <button class="btn" style="background-color: #00adb5; margin-top:10px; font-size:15px; padding:10px;" onclick="showSalesHistory()">売上履歴を見る</button>
-        <button class="btn" style="background-color: #9b59b6; margin-top:10px; font-size:15px; padding:10px;" onclick="generateUniqueBarcode()">未使用のバーコードを生成</button>
+         <button class="btn" style="background-color: #9b59b6; margin-top:10px; font-size:15px; padding:10px;" onclick="generateUniqueBarcode()">未使用のバーコードを生成</button>
+        <!-- ▼ 追加：保存したバーコードを開くボタン -->
+        <button class="btn" style="background-color: #34495e; margin-top:10px; font-size:15px; padding:10px;" onclick="openSavedBarcodesModal()">保存したバーコードを見る</button>
         <button class="btn" style="background-color: #e67e22; margin-top:10px; font-size:15px; padding:10px;" onclick="setCustomReceiptMessage()">共通レシートメッセージ設定</button>
         <button class="btn" style="background-color: #ffa502; margin-top:10px; font-size:15px; padding:10px;" onclick="resetSalesOnly()">売上記録のみリセット</button>
         <button class="btn" style="background-color: #ff4757; margin-top:10px; font-size:15px; padding:10px;" onclick="resetAllData()">すべてのデータをリセット</button>
@@ -414,11 +438,14 @@
     </div>
   </div>
 
-  <!-- バーコード生成ダイアログ -->
+    <!-- バーコード生成ダイアログ -->
   <div class="modal-overlay" id="barcode-modal">
-    <div class="modal-content-box" style="text-align: center;">
-      <!-- 右上のリロードボタン -->
-      <button class="reload-barcode-btn" onclick="generateUniqueBarcode()" title="新しいバーコードを生成">🔄</button>
+    <div class="modal-content-box" style="text-align: center; position: relative;">
+      <!-- 右上のボタン配置用コンテナ -->
+      <div style="position: absolute; top: 15px; right: 15px; display: flex; gap: 5px;">
+        <button class="reload-barcode-btn" onclick="generateUniqueBarcode()" title="新しいバーコードを生成" style="position: static;">🔄</button>
+        <button class="reload-barcode-btn" onclick="promptSaveCurrentBarcode()" title="このバーコードを保存" style="position: static; background: #2ed573; color: white;">💾</button>
+      </div>
 
       <h2>新規バーコード生成</h2>
       <p style="font-size:12px; color:#666;">重複のない13桁のバーコードです</p>
@@ -433,6 +460,19 @@
       <button class="close-btn" onclick="closeBarcodeModal()">閉じる</button>
     </div>
   </div>
+ 
+  <!-- 保存したバーコード一覧画面 -->
+  <div class="modal-overlay" id="saved-barcodes-modal">
+    <div class="modal-content-box" style="text-align: left; font-family: 'Segoe UI', sans-serif;">
+      <h2>保存したバーコード</h2>
+      
+      <!-- 最大4件表示、スクロール、上に追加されるリストコンテナ -->
+      <div id="saved-barcodes-list" style="max-height: 320px; overflow-y: auto; margin: 15px 0; padding-right: 4px;"></div>
+      
+      <button class="close-btn" onclick="closeSavedBarcodesModal()">閉じる</button>
+    </div>
+  </div>
+
 
   <!-- 売上履歴画面 -->
   <div class="modal-overlay" id="history-modal">
@@ -1393,9 +1433,119 @@
       }
     }
 
+    // 保存したバーコードのデータをLocalStorageから読み込み（なければ空配列）
+    let savedBarcodes = JSON.parse(localStorage.getItem('myPosSavedBarcodes')) || [];
+
+    // ① 現在生成されているバーコードに名前をつけて保存する処理
+    function promptSaveCurrentBarcode() {
+      if (!currentGeneratedCode) {
+        alert("保存するバーコードがありません。");
+        return;
+      }
+      const nameInput = prompt("このバーコードの名前を入力してください（例: テスト）", "テスト");
+      if (nameInput === null) return; // キャンセルされた場合
+
+      const barcodeName = nameInput.trim() === "" ? "名無し" : nameInput.trim();
+
+      // 新しいものを配列の「先頭」に追加（上に上に追加するため）
+      savedBarcodes.unshift({
+        name: barcodeName,
+        code: currentGeneratedCode
+      });
+
+      // LocalStorageに保存
+      localStorage.setItem('myPosSavedBarcodes', JSON.stringify(savedBarcodes));
+      alert("バーコードを保存しました！");
+    }
+
+    // ② 保存したバーコード一覧モーダルを開く
+    function openSavedBarcodesModal() {
+      document.getElementById('settings-modal').style.display = 'none';
+      renderSavedBarcodesList();
+      document.getElementById('saved-barcodes-modal').style.display = 'flex';
+    }
+
+    // ③ 保存したバーコード一覧モーダルを閉じる
+    function closeSavedBarcodesModal() {
+      document.getElementById('saved-barcodes-modal').style.display = 'none';
+    }
+
+    // ④ 一覧の描画（最大4件分の高さ・スクロール対応、名前とバーコード番号の表示、個別の共有ボタン）
+    function renderSavedBarcodesList() {
+      const container = document.getElementById('saved-barcodes-list');
+      if (savedBarcodes.length === 0) {
+        container.innerHTML = '<p style="color: #888; text-align: center; font-size: 13px;">保存されたバーコードはありません</p>';
+        return;
+      }
+
+      container.innerHTML = savedBarcodes.map((item, index) => `
+        <div class="saved-barcode-card" id="saved-card-${index}">
+          <div class="saved-barcode-header">名前: ${item.name}　バーコード番号: ${item.code}</div>
+          <div class="saved-barcode-svg-wrap">
+            <svg id="saved-svg-${index}" style="max-width: 100%; height: 50px;"></svg>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn share-btn" style="margin: 0; padding: 8px; font-size: 13px;" onclick="shareSavedBarcodeImage(${index})">バーコードを共有</button>
+            <button class="delete-item-btn" style="width: auto; height: auto; padding: 8px 12px; font-size: 13px;" onclick="deleteSavedBarcode(${index})">削除</button>
+          </div>
+        </div>
+      `).join('');
+
+      // 各カードのSVGバーコードを描画
+      savedBarcodes.forEach((item, index) => {
+        try {
+          JsBarcode(`#saved-svg-${index}`, item.code, {
+            format: "EAN13",
+            width: 1.5,
+            height: 40,
+            displayValue: true,
+            fontSize: 11
+          });
+        } catch (e) {
+          JsBarcode(`#saved-svg-${index}`, item.code, {
+            format: "CODE128",
+            width: 1.5,
+            height: 40,
+            displayValue: true,
+            fontSize: 11
+          });
+        }
+      });
+    }
+
+    // ⑤ 保存された特定のバーコード画像を共有（名前は含めない仕様）
+    function shareSavedBarcodeImage(index) {
+      const targetCard = document.getElementById(`saved-card-${index}`).querySelector('.saved-barcode-svg-wrap');
+      html2canvas(targetCard, { scale: 1.0, backgroundColor: '#ffffff', logging: false }).then(canvas => {
+        canvas.toBlob(blob => {
+          const file = new File([blob], `barcode_${savedBarcodes[index].code}.jpg`, { type: "image/jpeg" });
+          
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            navigator.share({
+              title: 'バーコード画像',
+              files: [file]
+            }).catch(err => console.log('共有キャンセル'));
+          } else {
+            const link = document.createElement('a');
+            link.download = `barcode_${savedBarcodes[index].code}.jpg`;
+            link.href = canvas.toDataURL('image/jpeg', 0.85);
+            link.click();
+          }
+        }, 'image/jpeg', 0.85);
+      });
+    }
+
+    // ⑥ 保存されたバーコードを削除する機能
+    function deleteSavedBarcode(index) {
+      if (confirm(`「${savedBarcodes[index].name}」を削除しますか？`)) {
+        savedBarcodes.splice(index, 1);
+        localStorage.setItem('myPosSavedBarcodes', JSON.stringify(savedBarcodes));
+        renderSavedBarcodesList();
+      }
+    }
 
     
-            renderCart();
+  　 renderCart();
 
     const savedCustomerState = localStorage.getItem('customerCameraOn');
     const initialCustomerIsOn = savedCustomerState === null ? true : JSON.parse(savedCustomerState);

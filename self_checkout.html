@@ -51,12 +51,12 @@
       position: relative;
       display: inline-flex;
       align-items: center;
-      justify-content: center; /* 中央に寄せる */
+      justify-content: center;
       border: 1px solid #333;
       border-radius: 20px;
-      padding: 2px 2px 2px 8px; /* 左右のバランスを調整 */
+      padding: 2px 2px 2px 8px;
       background: #fff;
-      min-width: 54px; /* 2桁（20など）が余裕で入る幅 */
+      min-width: 54px;
       box-sizing: border-box;
     }
     .qty-select {
@@ -71,8 +71,8 @@
       cursor: pointer;
       padding-right: 18px;
       outline: none;
-      text-align: center;      /* 文字を中央揃え */
-      text-align-last: center; /* セレクトボックス自体の文字も中央揃え */
+      text-align: center;
+      text-align-last: center;
       width: 100%;
     }
 
@@ -159,7 +159,7 @@
 
     .view-container { display: none; }
     .view-container.active { display: block; }
-     /* カメラコントロールバー（文字とスイッチの横並び） */
+
     .camera-control-bar {
       display: flex;
       justify-content: space-between;
@@ -168,7 +168,6 @@
       padding: 0 4px;
     }
 
-    /* トグルスイッチのデザイン */
     .toggle-switch {
       position: relative;
       display: inline-block;
@@ -206,7 +205,8 @@
     .toggle-switch input:checked + .toggle-slider:before {
       transform: translateX(24px);
     }
-        /* 保存されたバーコードのカードデザイン */
+
+    /* 保存されたバーコードのカードデザイン */
     .saved-barcode-card {
       background: #f8f9fa;
       border: 1px solid #dfe4ea;
@@ -222,7 +222,6 @@
       margin-bottom: 10px;
       word-break: break-all;
     }
-    /* 削除と開くボタンを同じ大きさで横並びにする */
     .saved-barcode-btn-group {
       display: flex;
       gap: 10px;
@@ -242,10 +241,7 @@
     .saved-delete-btn:hover { background-color: #d63031; }
     .saved-open-btn { background-color: #0984e3; }
     .saved-open-btn:hover { background-color: #0965b2; }
-
-
-  
-</style>
+  </style>
 </head>
 <body>
 
@@ -260,18 +256,14 @@
       <button class="settings-btn" onclick="handleSettingsClick()" title="設定">⚙️</button>
     </div>
     
-            <!-- ステータスとカメラON/OFFスイッチを横並びにするコンテナ -->
     <div class="camera-control-bar">
       <div class="status" id="status-msg" style="margin-bottom: 0; text-align: left;">枠内にバーコードをかざしてください</div>
-      
-      <!-- トグルスイッチ -->
       <label class="toggle-switch">
         <input type="checkbox" id="customer-camera-toggle" onchange="toggleCustomerCamera(this)">
         <span class="toggle-slider"></span>
       </label>
     </div>
 
-    <!-- カメラビューポート（OFF時はここに灰色画面を表示） -->
     <div id="interactive" class="viewport">
       <div id="customer-camera-off-overlay" style="display: none; width: 100%; height: 100%; background-color: #2f3542; color: #fff; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; position: absolute; top: 0; left: 0; z-index: 10;">カメラはOFFです</div>
     </div>
@@ -293,11 +285,9 @@
       <h1>スタッフモード</h1>
       <button class="settings-btn" onclick="handleSettingsClick()" title="設定">⚙️</button>
     </div>
-     <!-- ステータスとカメラON/OFFスイッチを横並びにするコンテナ -->
+    
     <div class="camera-control-bar">
       <div class="status" style="color: #ff4757; margin-bottom: 0; text-align: left;">QRコードを枠内にかざしてください</div>
-      
-      <!-- スタッフ用トグルスイッチ -->
       <label class="toggle-switch">
         <input type="checkbox" id="register-camera-toggle" onchange="toggleRegisterCamera(this)">
         <span class="toggle-slider"></span>
@@ -307,12 +297,9 @@
     <div id="register-viewport-container">
       <video id="register-video" playsinline autoplay muted></video>
       <canvas id="register-canvas"></canvas>
-      <!-- スタッフ用カメラOFF時の灰色画面 -->
       <div id="register-camera-off-overlay" style="display: none; width: 100%; height: 100%; background-color: #2f3542; color: #fff; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; position: absolute; top: 0; left: 0; z-index: 10;">カメラはOFFです</div>
     </div>
 
-
-    <!-- 画像から読み取りボタン -->
     <button class="btn" style="background-color: #00adb5; margin-bottom: 10px;" onclick="document.getElementById('register-file-input').click()">📁 画像からQR読み取り</button>
     <button class="btn" style="background-color: #555;" onclick="switchView('customer')">お客様モードに戻る</button>
   </div>
@@ -348,7 +335,7 @@
     </div>
   </div>
 
-  <!-- レジ側：お会計確認画面（編集機能付き） -->
+  <!-- レジ側：お会計確認画面 -->
   <div class="modal-overlay" id="register-confirm-modal">
     <div class="modal-content-box" style="text-align: left;">
       <h2>お会計内容確認</h2>
@@ -360,7 +347,7 @@
     </div>
   </div>
 
-  <!-- レジ側：お預かり金額入力画面（電卓風） -->
+  <!-- レジ側：お預かり金額入力画面 -->
   <div class="modal-overlay" id="cash-input-modal">
     <div class="modal-content-box" style="text-align: center;">
       <h2>お預かり金額入力</h2>
@@ -406,7 +393,6 @@
   <!-- レジ側：レシート表示画面 -->
   <div class="modal-overlay" id="receipt-modal">
     <div class="modal-content-box">
-      
       <div id="receipt-target" class="receipt-paper">
         <div class="receipt-store-title">KK MART</div>
         <div class="receipt-store-sub">名古屋東 店</div>
@@ -424,7 +410,6 @@
           <div id="receipt-single-msg-display" class="receipt-single-msg"></div>
         </div>
 
-        <!-- 金額入りのバーコード表示（下部） -->
         <div class="receipt-barcode-wrapper">
           <svg id="receipt-barcode-element" class="receipt-barcode-svg"></svg>
         </div>
@@ -442,8 +427,7 @@
       <div style="margin-top: 15px;">
         <button id="settings-switch-btn" class="btn" style="background-color: #2575fc; margin-top:5px; font-size:15px; padding:10px;" onclick="toggleModeFromSettings()">スタッフモードへ切替</button>
         <button class="btn" style="background-color: #00adb5; margin-top:10px; font-size:15px; padding:10px;" onclick="showSalesHistory()">売上履歴を見る</button>
-         <button class="btn" style="background-color: #9b59b6; margin-top:10px; font-size:15px; padding:10px;" onclick="generateUniqueBarcode()">未使用のバーコードを生成</button>
-        <!-- ▼ 追加：保存したバーコードを開くボタン -->
+        <button class="btn" style="background-color: #9b59b6; margin-top:10px; font-size:15px; padding:10px;" onclick="generateUniqueBarcode()">未使用のバーコードを生成</button>
         <button class="btn" style="background-color: #34495e; margin-top:10px; font-size:15px; padding:10px;" onclick="openSavedBarcodesModal()">保存したバーコードを見る</button>
         <button class="btn" style="background-color: #e67e22; margin-top:10px; font-size:15px; padding:10px;" onclick="setCustomReceiptMessage()">共通レシートメッセージ設定</button>
         <button class="btn" style="background-color: #ffa502; margin-top:10px; font-size:15px; padding:10px;" onclick="resetSalesOnly()">売上記録のみリセット</button>
@@ -453,10 +437,9 @@
     </div>
   </div>
 
-    <!-- バーコード生成ダイアログ -->
+  <!-- バーコード生成ダイアログ -->
   <div class="modal-overlay" id="barcode-modal">
     <div class="modal-content-box" style="text-align: center; position: relative;">
-      <!-- 右上のボタン配置用コンテナ -->
       <div style="position: absolute; top: 15px; right: 15px; display: flex; gap: 5px;">
         <button class="reload-barcode-btn" onclick="generateUniqueBarcode()" title="新しいバーコードを生成" style="position: static;">🔄</button>
         <button class="reload-barcode-btn" onclick="promptSaveCurrentBarcode()" title="このバーコードを保存" style="position: static; background: #2ed573; color: white;">💾</button>
@@ -465,12 +448,10 @@
       <h2>新規バーコード生成</h2>
       <p style="font-size:12px; color:#666;">重複のない13桁のバーコードです</p>
       
-      <!-- バーコード画像表示エリア -->
       <div id="barcode-target-area" style="background:#ffffff; padding:15px; border-radius:8px; margin: 15px 0; display:inline-block;">
         <svg id="generated-barcode-svg" style="max-width:100%; height:70px;"></svg>
       </div>
 
-      <!-- 共有ボタン（閉じるボタンの上） -->
       <button class="btn share-btn" onclick="shareBarcodeImage()" style="margin-top: 10px;">バーコードを共有</button>
       <button class="close-btn" onclick="closeBarcodeModal()">閉じる</button>
     </div>
@@ -480,24 +461,18 @@
   <div class="modal-overlay" id="saved-barcodes-modal">
     <div class="modal-content-box" style="text-align: left; font-family: 'Segoe UI', sans-serif;">
       <h2>保存したバーコード</h2>
-      
-      <!-- 最大4件表示、スクロール、上に追加されるリストコンテナ -->
       <div id="saved-barcodes-list" style="max-height: 320px; overflow-y: auto; margin: 15px 0; padding-right: 4px;"></div>
-      
       <button class="close-btn" onclick="closeSavedBarcodesModal()">閉じる</button>
     </div>
   </div>
-
 
   <!-- 売上履歴画面 -->
   <div class="modal-overlay" id="history-modal">
     <div class="modal-content-box" style="text-align: left; font-family: 'Segoe UI', sans-serif;">
       <h2>売上履歴</h2>
-      
       <div style="margin: 10px 0;">
         <input type="text" id="history-search-input" placeholder="日付や商品名で絞り込み..." oninput="filterSalesHistory()" style="width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 5px; font-size: 13px;">
       </div>
-
       <div id="history-list" style="max-height: 220px; overflow-y: auto; margin-top: 10px; font-size: 13px; border-top: 1px solid #eee; padding-top: 5px;"></div>
       <button class="close-btn" onclick="closeHistory()" style="margin-top: 15px;">戻る</button>
     </div>
@@ -594,7 +569,6 @@
     function handleCustomerImageFile(event) {
       const file = event.target.files[0];
       if (!file) return;
-
       const reader = new FileReader();
       reader.onload = function(e) {
         const img = new Image();
@@ -728,20 +702,17 @@
       }
     }
 
-            function switchView(viewName) {
+    function switchView(viewName) {
       currentMode = viewName;
       document.querySelectorAll('.view-container').forEach(el => el.classList.remove('active'));
       
       if (viewName === 'customer') {
         document.getElementById('customer-view').classList.add('active');
         stopRegisterScanner();
-        
-        // 保存された設定を読み込んでスイッチに反映
         const savedCustomerState = localStorage.getItem('customerCameraOn');
         const toggle = document.getElementById('customer-camera-toggle');
         const offOverlay = document.getElementById('customer-camera-off-overlay');
         
-        // 初回などで保存がない場合はデフォルトでON（true）
         const isOn = savedCustomerState === null ? true : JSON.parse(savedCustomerState);
         toggle.checked = isOn;
 
@@ -757,7 +728,6 @@
         document.getElementById('register-view').classList.add('active');
         stopCustomerScanner();
         
-        // 保存された設定を読み込んでスイッチに反映
         const savedRegisterState = localStorage.getItem('registerCameraOn');
         const toggle = document.getElementById('register-camera-toggle');
         const offOverlay = document.getElementById('register-camera-off-overlay');
@@ -774,8 +744,7 @@
         }
       }
     }
-
-    function openSettings() {
+function openSettings() {
       const input = prompt("パスワードを入力してください");
       if (input !== SALES_PASSWORD) { 
         if (input !== null) alert("パスワードが違います"); 
@@ -799,11 +768,12 @@
       clearCartFromStorage();
     }
     
-    // 売上履歴の「戻る」
     function closeHistory() {
       document.getElementById('history-modal').style.display = 'none';
-      document.getElementById('settings-modal').style.display = 'flex'; // 管理画面に戻す
-    }    function closeRegisterConfirm() { 
+      document.getElementById('settings-modal').style.display = 'flex';
+    }
+
+    function closeRegisterConfirm() { 
       document.getElementById('register-confirm-modal').style.display = 'none'; 
       startRegisterScanner(); 
     }
@@ -884,14 +854,11 @@
       });
     }
 
-    // バーコード生成画面の「閉じる」
     function closeBarcodeModal() {
       document.getElementById('barcode-modal').style.display = 'none';
-      // ※「未使用のバーコードを生成」から開いた場合は管理画面に戻す
-      // （保存したバーコードの「開く」から開いた場合も管理画面に戻ります）
       document.getElementById('settings-modal').style.display = 'flex';
     }
-    
+
     function setCustomReceiptMessage() {
       const input = prompt("「またのご利用をお待ちしております！」の下に表示する共通テキストを入力してください（空欄で表示なし）", customReceiptMessage);
       if (input !== null) {
@@ -1247,7 +1214,6 @@
         }, 'image/jpeg', 0.85);
       });
     }
-
     function showSalesHistory() {
       document.getElementById('history-search-input').value = '';
       renderHistoryList(salesHistory);
@@ -1418,12 +1384,10 @@
       }
     }
 
-        // お客様モードのカメラ切り替え
     function toggleCustomerCamera(checkbox) {
       const offOverlay = document.getElementById('customer-camera-off-overlay');
       const statusMsg = document.getElementById('status-msg');
 
-      // 状態を保存
       localStorage.setItem('customerCameraOn', checkbox.checked);
 
       if (checkbox.checked) {
@@ -1439,11 +1403,9 @@
       }
     }
 
-    // スタッフモードのカメラ切り替え
     function toggleRegisterCamera(checkbox) {
       const offOverlay = document.getElementById('register-camera-off-overlay');
 
-      // 状態を保存
       localStorage.setItem('registerCameraOn', checkbox.checked);
 
       if (checkbox.checked) {
@@ -1455,16 +1417,13 @@
       }
     }
 
-    // 保存したバーコードのデータをLocalStorageから読み込み（なければ空配列）
     let savedBarcodes = JSON.parse(localStorage.getItem('myPosSavedBarcodes')) || [];
 
-    // ① 現在生成されているバーコードに名前をつけて保存する処理
-        function promptSaveCurrentBarcode() {
+    function promptSaveCurrentBarcode() {
       if (!currentGeneratedCode) {
         alert("保存するバーコードがありません。");
         return;
       }
-      // 初期値を空欄（""）に変更
       const nameInput = prompt("このバーコードの名前を入力してください（例: テスト）", "");
       if (nameInput === null) return; 
 
@@ -1479,12 +1438,39 @@
       alert("バーコードを保存しました！");
     }
 
-    // ② 保存したバーコード一覧モーダルを開く
-        function openSavedBarcodeModal(index) {
+    function openSavedBarcodesModal() {
+      document.getElementById('settings-modal').style.display = 'none';
+      renderSavedBarcodesList();
+      document.getElementById('saved-barcodes-modal').style.display = 'flex';
+    }
+
+    function closeSavedBarcodesModal() {
+      document.getElementById('saved-barcodes-modal').style.display = 'none';
+      document.getElementById('settings-modal').style.display = 'flex';
+    }
+
+    function renderSavedBarcodesList() {
+      const container = document.getElementById('saved-barcodes-list');
+      if (savedBarcodes.length === 0) {
+        container.innerHTML = '<p style="color: #888; text-align: center; font-size: 13px;">保存されたバーコードはありません</p>';
+        return;
+      }
+
+      container.innerHTML = savedBarcodes.map((item, index) => `
+        <div class="saved-barcode-card">
+          <div class="saved-barcode-info">名前: ${item.name}　バーコード番号: ${item.code}</div>
+          <div class="saved-barcode-btn-group">
+            <button class="saved-action-btn saved-delete-btn" onclick="deleteSavedBarcode(${index})">削除</button>
+            <button class="saved-action-btn saved-open-btn" onclick="openSavedBarcodeModal(${index})">開く</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function openSavedBarcodeModal(index) {
       const target = savedBarcodes[index];
       currentGeneratedCode = target.code;
 
-      // 生成モーダルのSVGにバーコードを描画
       try {
         JsBarcode("#generated-barcode-svg", target.code, {
           format: "EAN13",
@@ -1503,83 +1489,10 @@
         });
       }
 
-      // 一覧モーダルを閉じて、バーコード生成モーダルを開く
       document.getElementById('saved-barcodes-modal').style.display = 'none';
       document.getElementById('barcode-modal').style.display = 'flex';
     }
 
-
-    // 保存したバーコード一覧の「閉じる」
-    function closeSavedBarcodesModal() {
-      document.getElementById('saved-barcodes-modal').style.display = 'none';
-      document.getElementById('settings-modal').style.display = 'flex'; // 管理画面に戻す
-    }
-
-    // ④ 一覧の描画（最大4件分の高さ・スクロール対応、名前とバーコード番号の表示、個別の共有ボタン）
-        function renderSavedBarcodesList() {
-      const container = document.getElementById('saved-barcodes-list');
-      if (savedBarcodes.length === 0) {
-        container.innerHTML = '<p style="color: #888; text-align: center; font-size: 13px;">保存されたバーコードはありません</p>';
-        return;
-      }
-
-      container.innerHTML = savedBarcodes.map((item, index) => `
-        <div class="saved-barcode-card">
-          <div class="saved-barcode-info">名前: ${item.name}　バーコード番号: ${item.code}</div>
-          <div class="saved-barcode-btn-group">
-            <button class="saved-action-btn saved-delete-btn" onclick="deleteSavedBarcode(${index})">削除</button>
-            <button class="saved-action-btn saved-open-btn" onclick="openSavedBarcodeModal(${index})">開く</button>
-          </div>
-        </div>
-      `).join('');
-    }
-
-
-      // 各カードのSVGバーコードを描画
-      savedBarcodes.forEach((item, index) => {
-        try {
-          JsBarcode(`#saved-svg-${index}`, item.code, {
-            format: "EAN13",
-            width: 1.5,
-            height: 40,
-            displayValue: true,
-            fontSize: 11
-          });
-        } catch (e) {
-          JsBarcode(`#saved-svg-${index}`, item.code, {
-            format: "CODE128",
-            width: 1.5,
-            height: 40,
-            displayValue: true,
-            fontSize: 11
-          });
-        }
-      });
-    }
-
-    // ⑤ 保存された特定のバーコード画像を共有（名前は含めない仕様）
-    function shareSavedBarcodeImage(index) {
-      const targetCard = document.getElementById(`saved-card-${index}`).querySelector('.saved-barcode-svg-wrap');
-      html2canvas(targetCard, { scale: 1.0, backgroundColor: '#ffffff', logging: false }).then(canvas => {
-        canvas.toBlob(blob => {
-          const file = new File([blob], `barcode_${savedBarcodes[index].code}.jpg`, { type: "image/jpeg" });
-          
-          if (navigator.canShare && navigator.canShare({ files: [file] })) {
-            navigator.share({
-              title: 'バーコード画像',
-              files: [file]
-            }).catch(err => console.log('共有キャンセル'));
-          } else {
-            const link = document.createElement('a');
-            link.download = `barcode_${savedBarcodes[index].code}.jpg`;
-            link.href = canvas.toDataURL('image/jpeg', 0.85);
-            link.click();
-          }
-        }, 'image/jpeg', 0.85);
-      });
-    }
-
-    // ⑥ 保存されたバーコードを削除する機能
     function deleteSavedBarcode(index) {
       if (confirm(`「${savedBarcodes[index].name}」を削除しますか？`)) {
         savedBarcodes.splice(index, 1);
@@ -1588,8 +1501,7 @@
       }
     }
 
-    
-  　 renderCart();
+    renderCart();
 
     const savedCustomerState = localStorage.getItem('customerCameraOn');
     const initialCustomerIsOn = savedCustomerState === null ? true : JSON.parse(savedCustomerState);
@@ -1604,12 +1516,9 @@
       statusMsg.textContent = "枠内にバーコードをかざしてください";
     } else {
       document.getElementById('customer-camera-off-overlay').style.display = 'flex';
-      // ★ OFFのときはメッセージも「カメラ停止中」に設定する
       statusMsg.style.color = '#888';
       statusMsg.textContent = "カメラ停止中";
     }
-
-
   </script>
 </body>
 </html>

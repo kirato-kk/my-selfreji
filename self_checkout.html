@@ -206,28 +206,43 @@
     .toggle-switch input:checked + .toggle-slider:before {
       transform: translateX(24px);
     }
-    /* 保存されたバーコードの個別カード用スタイル */
+        /* 保存されたバーコードのカードデザイン */
     .saved-barcode-card {
       background: #f8f9fa;
       border: 1px solid #dfe4ea;
       border-radius: 8px;
       padding: 12px;
       margin-bottom: 10px;
-      text-align: center;
-    }
-    .saved-barcode-header {
-      font-size: 14px;
-      font-weight: bold;
-      color: #2f3542;
-      margin-bottom: 5px;
       text-align: left;
     }
-    .saved-barcode-svg-wrap {
-      background: #ffffff;
-      padding: 8px;
-      border-radius: 6px;
-      margin-bottom: 8px;
+    .saved-barcode-info {
+      font-size: 13px;
+      font-weight: bold;
+      color: #2f3542;
+      margin-bottom: 10px;
+      word-break: break-all;
     }
+    /* 削除と開くボタンを同じ大きさで横並びにする */
+    .saved-barcode-btn-group {
+      display: flex;
+      gap: 10px;
+    }
+    .saved-action-btn {
+      flex: 1;
+      padding: 8px;
+      font-size: 14px;
+      font-weight: bold;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      text-align: center;
+      color: white;
+    }
+    .saved-delete-btn { background-color: #ff7675; }
+    .saved-delete-btn:hover { background-color: #d63031; }
+    .saved-open-btn { background-color: #0984e3; }
+    .saved-open-btn:hover { background-color: #0965b2; }
+
 
   
 </style>
@@ -784,8 +799,11 @@
       clearCartFromStorage();
     }
     
-    function closeHistory() { document.getElementById('history-modal').style.display = 'none'; }
-    function closeRegisterConfirm() { 
+    // 売上履歴の「戻る」
+    function closeHistory() {
+      document.getElementById('history-modal').style.display = 'none';
+      document.getElementById('settings-modal').style.display = 'flex'; // 管理画面に戻す
+    }    function closeRegisterConfirm() { 
       document.getElementById('register-confirm-modal').style.display = 'none'; 
       startRegisterScanner(); 
     }
@@ -866,10 +884,14 @@
       });
     }
 
+    // バーコード生成画面の「閉じる」
     function closeBarcodeModal() {
       document.getElementById('barcode-modal').style.display = 'none';
+      // ※「未使用のバーコードを生成」から開いた場合は管理画面に戻す
+      // （保存したバーコードの「開く」から開いた場合も管理画面に戻ります）
+      document.getElementById('settings-modal').style.display = 'flex';
     }
-
+    
     function setCustomReceiptMessage() {
       const input = prompt("「またのご利用をお待ちしております！」の下に表示する共通テキストを入力してください（空欄で表示なし）", customReceiptMessage);
       if (input !== null) {
@@ -1437,41 +1459,64 @@
     let savedBarcodes = JSON.parse(localStorage.getItem('myPosSavedBarcodes')) || [];
 
     // ① 現在生成されているバーコードに名前をつけて保存する処理
-    function promptSaveCurrentBarcode() {
+        function promptSaveCurrentBarcode() {
       if (!currentGeneratedCode) {
         alert("保存するバーコードがありません。");
         return;
       }
-      const nameInput = prompt("このバーコードの名前を入力してください（例: テスト）", "テスト");
-      if (nameInput === null) return; // キャンセルされた場合
+      // 初期値を空欄（""）に変更
+      const nameInput = prompt("このバーコードの名前を入力してください（例: テスト）", "");
+      if (nameInput === null) return; 
 
       const barcodeName = nameInput.trim() === "" ? "名無し" : nameInput.trim();
 
-      // 新しいものを配列の「先頭」に追加（上に上に追加するため）
       savedBarcodes.unshift({
         name: barcodeName,
         code: currentGeneratedCode
       });
 
-      // LocalStorageに保存
       localStorage.setItem('myPosSavedBarcodes', JSON.stringify(savedBarcodes));
       alert("バーコードを保存しました！");
     }
 
     // ② 保存したバーコード一覧モーダルを開く
-    function openSavedBarcodesModal() {
-      document.getElementById('settings-modal').style.display = 'none';
-      renderSavedBarcodesList();
-      document.getElementById('saved-barcodes-modal').style.display = 'flex';
+        function openSavedBarcodeModal(index) {
+      const target = savedBarcodes[index];
+      currentGeneratedCode = target.code;
+
+      // 生成モーダルのSVGにバーコードを描画
+      try {
+        JsBarcode("#generated-barcode-svg", target.code, {
+          format: "EAN13",
+          width: 1.8,
+          height: 50,
+          displayValue: true,
+          fontSize: 12
+        });
+      } catch (e) {
+        JsBarcode("#generated-barcode-svg", target.code, {
+          format: "CODE128",
+          width: 1.8,
+          height: 50,
+          displayValue: true,
+          fontSize: 12
+        });
+      }
+
+      // 一覧モーダルを閉じて、バーコード生成モーダルを開く
+      document.getElementById('saved-barcodes-modal').style.display = 'none';
+      document.getElementById('barcode-modal').style.display = 'flex';
     }
 
-    // ③ 保存したバーコード一覧モーダルを閉じる
+
+    // 保存したバーコード一覧の「閉じる」
     function closeSavedBarcodesModal() {
       document.getElementById('saved-barcodes-modal').style.display = 'none';
+      document.getElementById('settings-modal').style.display = 'flex'; // 管理画面に戻す
     }
 
     // ④ 一覧の描画（最大4件分の高さ・スクロール対応、名前とバーコード番号の表示、個別の共有ボタン）
-    function renderSavedBarcodesList() {
+        function renderSavedBarcodesList() {
       const container = document.getElementById('saved-barcodes-list');
       if (savedBarcodes.length === 0) {
         container.innerHTML = '<p style="color: #888; text-align: center; font-size: 13px;">保存されたバーコードはありません</p>';
@@ -1479,17 +1524,16 @@
       }
 
       container.innerHTML = savedBarcodes.map((item, index) => `
-        <div class="saved-barcode-card" id="saved-card-${index}">
-          <div class="saved-barcode-header">名前: ${item.name}　バーコード番号: ${item.code}</div>
-          <div class="saved-barcode-svg-wrap">
-            <svg id="saved-svg-${index}" style="max-width: 100%; height: 50px;"></svg>
-          </div>
-          <div style="display: flex; gap: 8px;">
-            <button class="btn share-btn" style="margin: 0; padding: 8px; font-size: 13px;" onclick="shareSavedBarcodeImage(${index})">バーコードを共有</button>
-            <button class="delete-item-btn" style="width: auto; height: auto; padding: 8px 12px; font-size: 13px;" onclick="deleteSavedBarcode(${index})">削除</button>
+        <div class="saved-barcode-card">
+          <div class="saved-barcode-info">名前: ${item.name}　バーコード番号: ${item.code}</div>
+          <div class="saved-barcode-btn-group">
+            <button class="saved-action-btn saved-delete-btn" onclick="deleteSavedBarcode(${index})">削除</button>
+            <button class="saved-action-btn saved-open-btn" onclick="openSavedBarcodeModal(${index})">開く</button>
           </div>
         </div>
       `).join('');
+    }
+
 
       // 各カードのSVGバーコードを描画
       savedBarcodes.forEach((item, index) => {

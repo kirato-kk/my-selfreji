@@ -240,7 +240,21 @@
     .saved-delete-btn { background-color: #ff7675; }
     .saved-delete-btn:hover { background-color: #d63031; }
     .saved-open-btn { background-color: #0984e3; }
-    .saved-open-btn:hover { background-color: #0965b2; }
+　　　.saved-open-btn:hover { background-color: #0965b2; }
+     /* 割引時の元値（打ち消し線） */
+    .price-original { 
+      text-decoration: line-through; 
+      color: #888; 
+      margin-right: 4px; 
+    }
+    
+    /* 割引後の赤字価格 */
+    .price-discounted { 
+      color: #ff4757; 
+      font-weight: bold; 
+    }
+
+  
   </style>
 </head>
 <body>
@@ -901,7 +915,10 @@ function openSettings() {
       renderCart();
     }
 
-    function renderCart() {
+        function renderCart() {
+      // 割引を自動適用してから描画
+      applyBundleDiscounts(cartItems);
+
       const container = document.getElementById('cart-list');
       if (cartItems.length === 0) {
         container.innerHTML = '<p style="color: #888; font-family: \'Segoe UI\', sans-serif; text-align: center;">スキャンした商品がここに表示されます</p>';
@@ -913,7 +930,11 @@ function openSettings() {
         totalCount = 0;
         
         cartItems.forEach((item, index) => {
-          totalPrice += item.taxPrice * item.quantity;
+          const discountPercent = item.discount || 0;
+          const discountedUnitPrice = Math.round(item.taxPrice * (1 - discountPercent / 100));
+          const itemSubtotal = discountedUnitPrice * item.quantity;
+
+          totalPrice += itemSubtotal;
           totalCount += item.quantity;
 
           let optionsHtml = '';
@@ -921,11 +942,16 @@ function openSettings() {
             optionsHtml += `<option value="${q}" ${item.quantity === q ? 'selected' : ''}>${q}</option>`;
           }
 
+          // 割引がある場合は打消し線と赤字価格を表示
+          let priceDisplay = discountPercent > 0 
+            ? `<small style="color: #666;">単価: <span class="price-original">${item.taxPrice}円</span><span class="price-discounted">${discountedUnitPrice}円 (税込/${discountPercent}%引)</span></small>`
+            : `<small style="color: #666;">単価: ${item.price}円 (税込${item.taxPrice}円)</small>`;
+
           container.innerHTML += `
             <div class="cart-item-row">
               <div class="cart-item-left">
                 <span>▶ ${item.name}</span>
-                <small style="color: #666;">単価: ${item.price}円 (税込${item.taxPrice}円)</small>
+                ${priceDisplay}
               </div>
               <div class="cart-item-right">
                 <div class="qty-select-wrapper">
@@ -1009,7 +1035,10 @@ function openSettings() {
       renderRegisterConfirmList();
     }
 
-    function renderRegisterConfirmList() {
+        function renderRegisterConfirmList() {
+      // レジ側でも割引を自動適用
+      applyBundleDiscounts(registerParsedCartItems);
+
       const container = document.getElementById('register-confirm-items');
       if (registerParsedCartItems.length === 0) {
         container.innerHTML = '<p style="color:#888; text-align:center;">商品がありません</p>';
@@ -1020,27 +1049,28 @@ function openSettings() {
 
       let regTotal = 0;
       let regCount = 0;
-      let allExpandedItems = [];
 
       container.innerHTML = registerParsedCartItems.map((item, index) => {
-        const itemTotal = item.taxPrice * item.quantity;
+        const discountPercent = item.discount || 0;
+        const discountedUnitPrice = Math.round(item.taxPrice * (1 - discountPercent / 100));
+        const itemTotal = discountedUnitPrice * item.quantity;
         regTotal += itemTotal;
         regCount += item.quantity;
-
-        for (let k = 0; k < item.quantity; k++) {
-          allExpandedItems.push({ name: item.name, taxPrice: item.taxPrice });
-        }
 
         let optionsHtml = '';
         for (let q = 1; q <= 20; q++) {
           optionsHtml += `<option value="${q}" ${item.quantity === q ? 'selected' : ''}>${q}</option>`;
         }
 
+        let priceDisplay = discountPercent > 0
+          ? `<div><span class="price-original">税込${item.taxPrice}円</span><span class="price-discounted">税込${discountedUnitPrice}円 (${discountPercent}%引)</span></div>`
+          : `<div><small style="color:#666;">税込${item.taxPrice}円</small></div>`;
+
         return `
           <div class="cart-item-row">
             <div class="cart-item-left">
               <span>▶ ${item.name}</span>
-              <small style="color:#666;">税込${item.taxPrice}円</small>
+              ${priceDisplay}
             </div>
             <div class="cart-item-right">
               <div class="qty-select-wrapper">
@@ -1056,7 +1086,7 @@ function openSettings() {
       }).join('');
 
       document.getElementById('register-confirm-total').textContent = `${regCount}点 合計: ${regTotal}円`;
-      scannedCartDataForRegister = { items: allExpandedItems, total: regTotal };
+      scannedCartDataForRegister = { items: registerParsedCartItems, total: regTotal };
     }
 
     function proceedToCashInput() {
@@ -1500,7 +1530,63 @@ function openSettings() {
         renderSavedBarcodesList();
       }
     }
+    // ==========================================
+    // 🏷️ まとめ買いグループ割引の設定（ここで自由に編集可能）
+    // ==========================================
+    const BUNDLE_DISCOUNT_GROUPS = {
+      group1: {
+        minQty: 3,        // 何個以上で割引
+        discountRate: 3,  // 3%引き
+        items: [
+          "4903110002222", // 対象のバーコード1
+          "4902402928837"  // 対象のバーコード2
+        ]
+      },
+      group2: {
+        minQty: 2,        // 何個以上で割引
+        discountRate: 5,  // 5%引き
+        items: [
+          "4901111959798", // 対象のバーコード3
+          "4902402928837"  // 対象のバーコード4
+        ]
+      }
+    };
 
+    // ==========================================
+    // 🔄 グループ別まとめ買い割引の自動計算処理
+    // ==========================================
+    function applyBundleDiscounts(itemsArray) {
+      let groupCounts = {};
+      for (let groupKey in BUNDLE_DISCOUNT_GROUPS) {
+        groupCounts[groupKey] = 0;
+      }
+
+      // 該当グループの合計個数をカウント
+      itemsArray.forEach(item => {
+        for (let groupKey in BUNDLE_DISCOUNT_GROUPS) {
+          const group = BUNDLE_DISCOUNT_GROUPS[groupKey];
+          if (group.items.includes(item.code)) {
+            groupCounts[groupKey] += item.quantity;
+          }
+        }
+      });
+
+      // 各商品に割引率を適用
+      itemsArray.forEach(item => {
+        let appliedDiscount = 0;
+        for (let groupKey in BUNDLE_DISCOUNT_GROUPS) {
+          const group = BUNDLE_DISCOUNT_GROUPS[groupKey];
+          if (group.items.includes(item.code) && groupCounts[groupKey] >= group.minQty) {
+            appliedDiscount = group.discountRate;
+            break;
+          }
+        }
+        item.discount = appliedDiscount;
+      });
+    }
+
+
+    
     renderCart();
 
     const savedCustomerState = localStorage.getItem('customerCameraOn');

@@ -442,6 +442,7 @@
         <button id="settings-switch-btn" class="btn" style="background-color: #2575fc; margin-top:5px; font-size:15px; padding:10px;" onclick="toggleModeFromSettings()">スタッフモードへ切替</button>
         <button class="btn" style="background-color: #00adb5; margin-top:10px; font-size:15px; padding:10px;" onclick="showSalesHistory()">売上履歴を見る</button>
         <button class="btn" style="background-color: #9b59b6; margin-top:10px; font-size:15px; padding:10px;" onclick="generateUniqueBarcode()">未使用のバーコードを生成</button>
+        <button class="btn" style="background-color: #00b894; margin-top:10px; font-size:15px; padding:10px;" onclick="openManualBarcodeModal()">数字でのバーコード作成</button>
         <button class="btn" style="background-color: #34495e; margin-top:10px; font-size:15px; padding:10px;" onclick="openSavedBarcodesModal()">保存したバーコードを見る</button>
         <button class="btn" style="background-color: #e67e22; margin-top:10px; font-size:15px; padding:10px;" onclick="setCustomReceiptMessage()">共通レシートメッセージ設定</button>
         <button class="btn" style="background-color: #ffa502; margin-top:10px; font-size:15px; padding:10px;" onclick="resetSalesOnly()">売上記録のみリセット</button>
@@ -480,6 +481,30 @@
     </div>
   </div>
 
+  <!-- 任意の数字のバーコード生成ダイアログ -->
+  <div class="modal-overlay" id="manual-barcode-modal">
+    <div class="modal-content-box" style="text-align: center; position: relative;">
+      <h2>任意のバーコード作成</h2>
+      <p style="font-size:12px; color:#666; margin-bottom: 10px;">好きな数字を入力してください</p>
+      
+      <div style="margin-bottom: 10px;">
+        <input type="text" id="manual-barcode-input" placeholder="例: 4901234567890" style="width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 5px; font-size: 14px; text-align: center;" oninput="generateManualBarcode()">
+      </div>
+
+      <div style="position: absolute; top: 15px; right: 15px; display: flex; gap: 5px;">
+        <button class="reload-barcode-btn" onclick="promptSaveManualBarcode()" title="このバーコードを保存" style="position: static; background: #2ed573; color: white;">💾</button>
+      </div>
+      
+      <div id="manual-barcode-target-area" style="background:#ffffff; padding:15px; border-radius:8px; margin: 10px 0; display:inline-block;">
+        <svg id="manual-generated-barcode-svg" style="max-width:100%; height:70px;"></svg>
+      </div>
+
+      <button class="btn share-btn" onclick="shareManualBarcodeImage()" style="margin-top: 5px;">バーコードを共有</button>
+      <button class="close-btn" onclick="closeManualBarcodeModal()">閉じる</button>
+    </div>
+  </div>
+
+  
   <!-- 売上履歴画面 -->
   <div class="modal-overlay" id="history-modal">
     <div class="modal-content-box" style="text-align: left; font-family: 'Segoe UI', sans-serif;">
@@ -1605,6 +1630,93 @@ function openSettings() {
       statusMsg.style.color = '#888';
       statusMsg.textContent = "カメラ停止中";
     }
+
+    let currentManualCode = "";
+
+    function openManualBarcodeModal() {
+      document.getElementById('settings-modal').style.display = 'none';
+      document.getElementById('manual-barcode-input').value = "4901234567890";
+      generateManualBarcode();
+      document.getElementById('manual-barcode-modal').style.display = 'flex';
+    }
+
+    function closeManualBarcodeModal() {
+      document.getElementById('manual-barcode-modal').style.display = 'none';
+      document.getElementById('settings-modal').style.display = 'flex';
+    }
+
+    function generateManualBarcode() {
+      const inputVal = document.getElementById('manual-barcode-input').value.trim();
+      currentManualCode = inputVal !== "" ? inputVal : "0000000000000";
+
+      try {
+        // 入力された文字数に合わせてEAN13またはCODE128を自動切り替え
+        const formatType = currentManualCode.length === 13 ? "EAN13" : "CODE128";
+        JsBarcode("#manual-generated-barcode-svg", currentManualCode, {
+          format: formatType,
+          width: 1.8,
+          height: 50,
+          displayValue: true,
+          fontSize: 12
+        });
+      } catch (e) {
+        // エラー時はCODE128フォールバック
+        try {
+          JsBarcode("#manual-generated-barcode-svg", currentManualCode, {
+            format: "CODE128",
+            width: 1.8,
+            height: 50,
+            displayValue: true,
+            fontSize: 12
+          });
+        } catch(err) {
+          console.error("バーコード生成エラー", err);
+        }
+      }
+    }
+
+    function promptSaveManualBarcode() {
+      if (!currentManualCode) {
+        alert("保存するバーコードがありません。");
+        return;
+      }
+      const nameInput = prompt("このバーコードの名前を入力してください（例: 特売品ラベル）", "");
+      if (nameInput === null) return; 
+
+      const barcodeName = nameInput.trim() === "" ? "名無し" : nameInput.trim();
+
+      savedBarcodes.unshift({
+        name: barcodeName,
+        code: currentManualCode
+      });
+
+      localStorage.setItem('myPosSavedBarcodes', JSON.stringify(savedBarcodes));
+      alert("バーコードを保存しました！");
+    }
+
+    function shareManualBarcodeImage() {
+      const targetArea = document.getElementById('manual-barcode-target-area');
+      html2canvas(targetArea, { scale: 1.0, backgroundColor: '#ffffff', logging: false }).then(canvas => {
+        canvas.toBlob(blob => {
+          const file = new File([blob], `barcode_${currentManualCode}.jpg`, { type: "image/jpeg" });
+          
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            navigator.share({
+              title: 'バーコード画像',
+              text: `バーコード番号: ${currentManualCode}`,
+              files: [file]
+            }).catch(err => console.log('共有キャンセル'));
+          } else {
+            const link = document.createElement('a');
+            link.download = `barcode_${currentManualCode}.jpg`;
+            link.href = canvas.toDataURL('image/jpeg', 0.85);
+            link.click();
+          }
+        }, 'image/jpeg', 0.85);
+      });
+    }
+
+    
   </script>
 </body>
 </html>

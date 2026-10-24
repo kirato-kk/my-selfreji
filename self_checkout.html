@@ -447,33 +447,38 @@
         <button id="settings-switch-btn" class="btn" style="background-color: #2575fc; margin-top:5px; font-size:15px; padding:10px;" onclick="toggleModeFromSettings()">スタッフモードへ切替</button>
         <button class="btn" style="background-color: #ff0033; margin-top:10px; font-size:15px; padding:10px;" onclick="openCouponMakerModal()">クーポン作成・管理</button>
         <button class="btn" style="background-color: #00adb5; margin-top:10px; font-size:15px; padding:10px;" onclick="showSalesHistory()">売上履歴を見る</button>
+        <button class="btn" style="background-color: #16a085; margin-top:10px; font-size:15px; padding:10px;" onclick="openReceiptSettingsModal()">レシート設定</button>
         <button class="btn" style="background-color: #9b59b6; margin-top:10px; font-size:15px; padding:10px;" onclick="generateUniqueBarcode()">未使用のバーコードを生成</button>
         <button class="btn" style="background-color: #00b894; margin-top:10px; font-size:15px; padding:10px;" onclick="openManualBarcodeModal()">数字でのバーコード作成</button>
         <button class="btn" style="background-color: #34495e; margin-top:10px; font-size:15px; padding:10px;" onclick="openSavedBarcodesModal()">保存したバーコードを見る</button>
         <button class="btn" style="background-color: #ffa502; margin-top:10px; font-size:15px; padding:10px;" onclick="resetSalesOnly()">売上記録のみリセット</button>
         <button class="btn" style="background-color: #ff4757; margin-top:10px; font-size:15px; padding:10px;" onclick="resetAllData()">すべてのデータをリセット</button>
-            <!-- 設定画面（id="settings-modal"）の中に追加 -->
-<div style="background:#f1f2f6; padding:10px; border-radius:8px; margin-top:10px;">
-  <div style="font-weight:bold; font-size:13px; margin-bottom:8px;">レシート設定</div>
-  
-  <label style="display:block; font-size:11px; font-weight:bold; color:#555;">店舗名</label>
-  <input type="text" id="setting-store-title" placeholder="" style="width:100%; padding:6px; font-size:12px; border:1px solid #ccc; border-radius:4px; box-sizing:border-box; margin-bottom:6px;">
-
-  <label style="display:block; font-size:11px; font-weight:bold; color:#555;">支店名・サブタイトル</label>
-  <input type="text" id="setting-store-sub" placeholder="" style="width:100%; padding:6px; font-size:12px; border:1px solid #ccc; border-radius:4px; box-sizing:border-box; margin-bottom:6px;">
-
-  <label style="display:block; font-size:11px; font-weight:bold; color:#555;">下部メッセージ</label>
-  <textarea id="setting-receipt-msg" rows="2" placeholder="" style="width:100%; padding:6px; font-size:12px; border:1px solid #ccc; border-radius:4px; box-sizing:border-box; resize:none;"></textarea>
-
-  <button class="btn" style="background-color:#20bf6b; margin-top:8px; padding:8px; font-size:12px;" onclick="saveReceiptSettings()">レシート設定を保存</button>
-</div>
-
-      </div>
+         </div>
       <button class="close-btn" onclick="closeSettings()" style="margin-top: 20px;">閉じる</button>
     </div>
   </div>
 
+<!-- 🧾 レシート設定専用モーダル -->
+<div class="modal-overlay" id="receipt-settings-modal">
+  <div class="modal-content-box" style="text-align: left; font-family: 'Segoe UI', sans-serif;">
+    <h2>レシート設定</h2>
+    
+    <div style="margin-top: 15px;">
+      <label style="display:block; font-size:12px; font-weight:bold; color:#555; margin-bottom:3px;">店舗名</label>
+      <input type="text" id="setting-store-title" placeholder="" style="width:100%; padding:8px; font-size:13px; border:1px solid #ccc; border-radius:6px; box-sizing:border-box; margin-bottom:10px;">
 
+      <label style="display:block; font-size:12px; font-weight:bold; color:#555; margin-bottom:3px;">支店名・サブタイトル</label>
+      <input type="text" id="setting-store-sub" placeholder="" style="width:100%; padding:8px; font-size:13px; border:1px solid #ccc; border-radius:6px; box-sizing:border-box; margin-bottom:10px;">
+
+      <label style="display:block; font-size:12px; font-weight:bold; color:#555; margin-bottom:3px;">下部メッセージ (改行可)</label>
+      <textarea id="setting-receipt-msg" rows="3" placeholder="" style="width:100%; padding:8px; font-size:13px; border:1px solid #ccc; border-radius:6px; box-sizing:border-box; resize:none; margin-bottom:12px;"></textarea>
+
+      <button class="btn" style="background-color:#20bf6b; padding:10px; font-size:15px;" onclick="saveReceiptSettings()">設定を保存</button>
+    </div>
+
+    <button class="close-btn" onclick="closeReceiptSettingsModal()" style="margin-top: 15px;">閉じる</button>
+  </div>
+</div>
 
   
   <!-- クーポン作成・保存一覧モーダル -->
@@ -1736,6 +1741,40 @@ function backToCustomerFromPayment() {
 }
 
 
+// レシート設定モーダルを開く
+function openReceiptSettingsModal() {
+  document.getElementById('settings-modal').style.display = 'none';
+  
+  // 現在の設定値をフォームにセット
+  document.getElementById('setting-store-title').value = receiptSettings.storeTitle;
+  document.getElementById('setting-store-sub').value = receiptSettings.storeSub;
+  document.getElementById('setting-receipt-msg').value = receiptSettings.message;
+
+  document.getElementById('receipt-settings-modal').style.display = 'flex';
+}
+
+// レシート設定モーダルを閉じる
+function closeReceiptSettingsModal() {
+  document.getElementById('receipt-settings-modal').style.display = 'none';
+  document.getElementById('settings-modal').style.display = 'flex';
+}
+
+// レシート設定を保存
+function saveReceiptSettings() {
+  const title = document.getElementById('setting-store-title').value.trim();
+  const sub = document.getElementById('setting-store-sub').value.trim();
+  const msg = document.getElementById('setting-receipt-msg').value.trim();
+
+  receiptSettings = {
+    storeTitle: title || "KK MART",
+    storeSub: sub || "",
+    message: msg || "ご来店ありがとうございました。"
+  };
+
+  localStorage.setItem('myPosReceiptSettings', JSON.stringify(receiptSettings));
+  alert("レシートの設定を保存しました！");
+  closeReceiptSettingsModal();
+}
 
 
     

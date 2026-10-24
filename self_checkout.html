@@ -141,7 +141,6 @@ margin-right: auto;
 
 .receipt-message { text-align: center; font-size: 11px; color: #444; margin-top: 10px; line-height: 1.5; }
 .receipt-custom-msg { text-align: center; font-size: 11px; color: #2575fc; margin-top: 5px; font-weight: bold; word-break: break-all; }
-.receipt-single-msg { text-align: center; font-size: 11px; color: #e67e22; margin-top: 5px; font-weight: bold; word-break: break-all; }
 
 .close-btn { width: 100%; padding: 12px; background: #e0e0e0; color: #333; border: none; font-weight: bold; cursor: pointer; border-radius: 10px; font-family: 'Segoe UI', sans-serif; margin-top: 5px; }
 .reload-barcode-btn { position: absolute; top: 15px; right: 15px; background: #f1f2f6; border: 1px solid #ccc; border-radius: 50%; width: 34px; height: 34px; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
@@ -154,8 +153,9 @@ margin-right: auto;
 .calc-key:active { background: #ced6e0; }
 .calc-display { font-size: 24px; font-weight: bold; background: #f8f9fa; border: 1px solid #ccc; padding: 10px; border-radius: 8px; text-align: right; margin-bottom: 10px; color: #333; }
 
-#qrcode { display: flex; justify-content: center; margin: 15px 0; }
+#qrcode, #11pay-qrcode-target { display: flex; justify-content: center; margin: 15px 0; }
 #qrcode img { border: 5px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); width: 220px; height: 220px; }
+#11pay-qrcode-target img { border: 5px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); width: 220px; height: 220px; }
 
 .view-container { display: none; }
 .view-container.active { display: block; }
@@ -241,6 +241,7 @@ color: white;
 .saved-delete-btn:hover { background-color: #d63031; }
 .saved-open-btn { background-color: #0984e3; }
 .saved-open-btn:hover { background-color: #0965b2; }
+
 /* 割引時の元値（打ち消し線） */
 .price-original {
 text-decoration: line-through;
@@ -387,7 +388,7 @@ background: #57606f;
 </div>
 </div>
 
-<!-- ⚠️ お客様モード：お会計前確認モーダル（新設） -->
+<!-- ⚠️ お客様モード：お会計前確認モーダル -->
 <div class="modal-overlay" id="customer-checkout-check-modal">
 <div class="modal-content-box" style="text-align: center; padding: 25px 20px;">
 <div class="warning-icon">⚠️</div>
@@ -427,7 +428,7 @@ background: #57606f;
 </div>
 </div>
 
-<!-- レジ側：お支払い方法選択モーダル（新設） -->
+<!-- レジ側：お支払い方法選択モーダル（SVGイラスト化） -->
 <div class="modal-overlay" id="pay-method-modal">
 <div class="modal-content-box" style="text-align: center;">
 <h3 style="font-size: 16px; margin-bottom: 10px;">お支払い方法の選択</h3>
@@ -435,11 +436,21 @@ background: #57606f;
 
 <div class="pay-method-options">
 <button class="pay-method-btn" onclick="selectPaymentMethod('cash')">
-<span style="font-size: 24px;">💵</span>
+<!-- 現金 SVG イラスト -->
+<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<rect x="2" y="6" width="20" height="12" rx="2"/>
+<circle cx="12" cy="12" r="3"/>
+<path d="M6 12h.01M18 12h.01"/>
+</svg>
 <span>現金支払い</span>
 </button>
 <button class="pay-method-btn" onclick="selectPaymentMethod('11pay')">
-<span style="font-size: 24px;">📲</span>
+<!-- スマホ/モバイル決済 SVG イラスト -->
+<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<rect x="5" y="2" width="14" height="20" rx="2"/>
+<path d="M12 18h.01"/>
+<path d="M9 6h6"/>
+</svg>
 <span>11Pay決済</span>
 </button>
 </div>
@@ -450,13 +461,13 @@ background: #57606f;
 </div>
 </div>
 
-<!-- レジ側：11Pay QRコード表示モーダル（新設） -->
+<!-- レジ側：11Pay QRコード表示モーダル（拡大サイズ対応） -->
 <div class="modal-overlay" id="11pay-qr-modal">
 <div class="modal-content-box" style="text-align: center;">
 <h3 style="font-size: 16px; margin-bottom: 8px;">11Pay お支払い</h3>
-<p style="font-size: 12px; color: #666; margin-bottom: 10px;">決済用QRコードをスキャンまたは表示します</p>
-<div id="11pay-qrcode-target" style="display: inline-block; padding: 12px; background: white; border: 1px solid #ddd; border-radius: 8px;"></div>
-<p style="font-size: 15px; font-weight: bold; color: #2c3e50; margin-top: 10px;" id="11pay-amount-text">請求額: 0円</p>
+<p style="font-size: 12px; color: #666; margin-bottom: 5px;">決済用QRコードをスキャンまたは表示します</p>
+<div id="11pay-qrcode-target"></div>
+<p style="font-size: 15px; font-weight: bold; color: #2c3e50; margin-top: 5px;" id="11pay-amount-text">請求額: 0円</p>
 <button class="btn pay-btn" style="margin-top: 15px; padding: 12px;" onclick="complete11PayPayment()">決済完了へ進む</button>
 <div style="text-align: left; margin-top: 10px;">
 <button class="modal-btn-back" onclick="backToPayMethodSelect()">← 戻る</button>
@@ -528,7 +539,6 @@ background: #57606f;
 <p style="margin: 4px 0;">ご来店ありがとうございました。</p>
 <p style="margin: 4px 0;">またのご利用をお待ちしております！</p>
 <div id="receipt-custom-msg-display" class="receipt-custom-msg"></div>
-<div id="receipt-single-msg-display" class="receipt-single-msg"></div>
 </div>
 
 <div class="receipt-barcode-wrapper">
@@ -1273,7 +1283,7 @@ document.getElementById('cash-input-modal').style.display = 'none';
 document.getElementById('pay-method-modal').style.display = 'flex';
 }
 
-// ================= 11Pay QRコード表示 =================
+// ================= 11Pay QRコード表示 (拡大生成) =================
 function show11PayQRModal() {
 const total = scannedCartDataForRegister.total;
 const qrData = `PAY_${total}`;
@@ -1284,7 +1294,7 @@ try {
 const qr = qrcode(0, 'M');
 qr.addData(qrData);
 qr.make();
-target.innerHTML = qr.createImgTag(5);
+target.innerHTML = qr.createImgTag(6); // 拡大表示のためにセルサイズ変更
 } catch (e) {
 target.innerHTML = "QR生成エラー";
 }
@@ -1358,9 +1368,8 @@ document.getElementById('change-modal').style.display = 'flex';
 currentInputAmount = "0";
 }
 
+//個別メッセージの入力ダイアログを削除し、直接レシート画面を表示
 function openReceiptModalFromChange() {
-const singleMsgInput = prompt("このレシートに追加する個別メッセージを入力してください（不要な場合は空欄のままOK）", "");
-
 document.getElementById('change-modal').style.display = 'none';
 
 const currentDate = new Date().toLocaleString();
@@ -1388,15 +1397,6 @@ customMsgContainer.style.display = "block";
 } else {
 customMsgContainer.textContent = "";
 customMsgContainer.style.display = "none";
-}
-
-const singleMsgContainer = document.getElementById('receipt-single-msg-display');
-if (singleMsgInput && singleMsgInput.trim() !== "") {
-singleMsgContainer.textContent = singleMsgInput.trim();
-singleMsgContainer.style.display = "block";
-} else {
-singleMsgContainer.textContent = "";
-singleMsgContainer.style.display = "none";
 }
 
 const amountStr = String(scannedCartDataForRegister.total).padStart(10, '0');

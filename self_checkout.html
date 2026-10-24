@@ -450,7 +450,9 @@
         <button class="btn" style="background-color: #9b59b6; margin-top:10px; font-size:15px; padding:10px;" onclick="generateUniqueBarcode()">未使用のバーコードを生成</button>
         <button class="btn" style="background-color: #00b894; margin-top:10px; font-size:15px; padding:10px;" onclick="openManualBarcodeModal()">数字でのバーコード作成</button>
         <button class="btn" style="background-color: #34495e; margin-top:10px; font-size:15px; padding:10px;" onclick="openSavedBarcodesModal()">保存したバーコードを見る</button>
-        <!-- 設定画面（id="settings-modal"）の中に追加 -->
+        <button class="btn" style="background-color: #ffa502; margin-top:10px; font-size:15px; padding:10px;" onclick="resetSalesOnly()">売上記録のみリセット</button>
+        <button class="btn" style="background-color: #ff4757; margin-top:10px; font-size:15px; padding:10px;" onclick="resetAllData()">すべてのデータをリセット</button>
+            <!-- 設定画面（id="settings-modal"）の中に追加 -->
 <div style="background:#f1f2f6; padding:10px; border-radius:8px; margin-top:10px;">
   <div style="font-weight:bold; font-size:13px; margin-bottom:8px;">レシート設定</div>
   
@@ -466,8 +468,6 @@
   <button class="btn" style="background-color:#20bf6b; margin-top:8px; padding:8px; font-size:12px;" onclick="saveReceiptSettings()">レシート設定を保存</button>
 </div>
 
-        <button class="btn" style="background-color: #ffa502; margin-top:10px; font-size:15px; padding:10px;" onclick="resetSalesOnly()">売上記録のみリセット</button>
-        <button class="btn" style="background-color: #ff4757; margin-top:10px; font-size:15px; padding:10px;" onclick="resetAllData()">すべてのデータをリセット</button>
       </div>
       <button class="close-btn" onclick="closeSettings()" style="margin-top: 20px;">閉じる</button>
     </div>

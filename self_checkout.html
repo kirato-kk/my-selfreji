@@ -223,6 +223,17 @@
     </div>
   </div>
 
+<!-- ❌️ カートが空のときのお知らせモーダル -->
+<div class="modal-overlay" id="empty-cart-modal">
+  <div class="modal-content-box" style="text-align: center; padding: 25px 20px;">
+    <div style="font-size: 54px; line-height: 1; margin: 10px 0;">❌</div>
+    <h3 style="font-size: 18px; margin-bottom: 10px; color: #2c3e50;">商品がスキャンされていません</h3>
+    <p style="font-size: 12px; color: #666; margin-bottom: 20px;">お会計をするには商品をスキャンしてください。</p>
+    <button class="btn pay-btn" style="width: 100%; margin: 0; padding: 10px;" onclick="closeEmptyCartModal()">OK</button>
+  </div>
+</div>
+
+  
   <!-- ⚠️ お客様モード：お会計前確認モーダル -->
   <div class="modal-overlay" id="customer-checkout-check-modal">
     <div class="modal-content-box" style="text-align: center; padding: 25px 20px;">
@@ -956,9 +967,18 @@
       document.getElementById('total-count').textContent = totalCount;
     }
 
-    function openCustomerCheckoutModal() {
-      if (cartItems.length === 0) { alert("商品がスキャンされていません。"); return; }
+        function openCustomerCheckoutModal() {
+      if (cartItems.length === 0) {
+        // 標準のalertの代わりに、専用のモーダルを表示する
+        document.getElementById('empty-cart-modal').style.display = 'flex';
+        return;
+      }
       document.getElementById('customer-checkout-check-modal').style.display = 'flex';
+    }
+
+    // カート空モーダルを閉じる関数
+    function closeEmptyCartModal() {
+      document.getElementById('empty-cart-modal').style.display = 'none';
     }
 
     function closeCustomerCheckoutCheck() { document.getElementById('customer-checkout-check-modal').style.display = 'none'; }

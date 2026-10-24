@@ -810,18 +810,32 @@
       }
     }
 
-    function openSettings() {
-      const input = prompt("パスワードを入力してください");
-      if (input !== SALES_PASSWORD) {
-        if (input !== null) alert("パスワードが違います");
+        function openSettings() {
+      // スタッフモードの時はパスコード入力をなしにする
+      if (currentMode === 'register') {
+        proceedToSettings();
         return;
       }
+
+      // お客様モードの時はパスコード入力を求める
+      const input = prompt("パスワードを入力してください");
+      if (input !== SALES_PASSWORD) { 
+        if (input !== null) alert("パスワードが違います"); 
+        return; 
+      }
+      
+      proceedToSettings();
+    }
+
+    // 設定画面を開く共通処理
+    function proceedToSettings() {
       document.getElementById('setting-voice-beep').checked = voiceSettings.beep;
       document.getElementById('setting-voice-speech').checked = voiceSettings.speech;
       document.getElementById('setting-voice-thanks').checked = voiceSettings.thanks;
 
       const switchBtn = document.getElementById('settings-switch-btn');
       switchBtn.textContent = (currentMode === 'customer') ? "スタッフモードへ切替" : "お客様モードへ切替";
+
       document.getElementById('settings-modal').style.display = 'flex';
     }
 

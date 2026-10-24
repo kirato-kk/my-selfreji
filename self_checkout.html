@@ -148,7 +148,6 @@
 
   <input type="file" id="customer-file-input" accept="image/*" style="display: none;" onchange="handleCustomerImageFile(event)">
   <input type="file" id="register-file-input" accept="image/*" style="display: none;" onchange="handleRegisterImageFile(event)">
-  <!-- クーポン読み取りモーダル用の画像ファイル選択 -->
   <input type="file" id="coupon-file-input" accept="image/*" style="display: none;" onchange="handleCouponImageFile(event)">
 
   <!-- ================= お客様画面 ================= -->
@@ -287,31 +286,28 @@
     </div>
   </div>
 
-  <!-- レジ側：クーポン読み取りモーダル（最大3つまで対応） -->
-<div class="modal-overlay" id="register-coupon-modal">
-  <div class="modal-content-box" style="text-align: center;">
-    <h3 style="font-size: 16px; margin-bottom: 6px;">🎟️ クーポン読み取り (最大3つ)</h3>
-    <div id="applied-coupons-banner" style="background:#f1f2f6; padding:8px 10px; border-radius:6px; margin-bottom:8px; font-size:12px; text-align:left; min-height: 45px;">
-      <b>適用中のクーポン (0/3):</b>
-      <div id="applied-coupons-list" style="margin-top: 4px;">なし</div>
-    </div>
-   
-    <!-- カメラビューポート -->
-    <div id="coupon-viewport-container">
-      <video id="coupon-video" playsinline autoplay muted></video>
-      <canvas id="coupon-canvas"></canvas>
-      <button class="coupon-file-btn" onclick="document.getElementById('coupon-file-input').click()" title="ファイルから読み込み">📁</button>
-    </div>
-    <p style="font-size: 11px; color: #666; margin: 0 0 10px 0;">クーポンQRをかざすと自動で追加されます</p>
-   
-    <div style="display: flex; gap: 10px;">
-      <button class="modal-btn-back" style="flex: 1;" onclick="backToPayMethodSelectFromCoupon()">← 戻る</button>
-      <button class="btn pay-btn" style="flex: 2; margin: 0; padding: 10px;" onclick="proceedAfterCoupon()">次に進む →</button>
+  <!-- レジ側：クーポン読み取りモーダル（最大3つ対応） -->
+  <div class="modal-overlay" id="register-coupon-modal">
+    <div class="modal-content-box" style="text-align: center;">
+      <h3 style="font-size: 16px; margin-bottom: 6px;">🎟️ クーポン読み取り (最大3つ)</h3>
+      <div id="applied-coupons-banner" style="background:#f1f2f6; padding:8px 10px; border-radius:6px; margin-bottom:8px; font-size:12px; text-align:left; min-height: 45px;">
+        <b>適用中のクーポン (0/3):</b>
+        <div id="applied-coupons-list" style="margin-top: 4px;"><span style="color:#888;">なし</span></div>
+      </div>
+     
+      <div id="coupon-viewport-container">
+        <video id="coupon-video" playsinline autoplay muted></video>
+        <canvas id="coupon-canvas"></canvas>
+        <button class="coupon-file-btn" onclick="document.getElementById('coupon-file-input').click()" title="ファイルから読み込み">📁</button>
+      </div>
+      <p style="font-size: 11px; color: #666; margin: 0 0 10px 0;">クーポンQRをかざすと自動で追加されます</p>
+     
+      <div style="display: flex; gap: 10px;">
+        <button class="modal-btn-back" style="flex: 1;" onclick="backToPayMethodSelectFromCoupon()">← 戻る</button>
+        <button class="btn pay-btn" style="flex: 2; margin: 0; padding: 10px;" onclick="proceedAfterCoupon()">次に進む →</button>
+      </div>
     </div>
   </div>
-</div> 
-
-
 
   <!-- レジ側：11Pay QRコード表示モーダル -->
   <div class="modal-overlay" id="11pay-qr-modal">
@@ -589,7 +585,9 @@
     let registerParsedCartItems = [];
     let scannedCartDataForRegister = { items: [], total: 0 };
     let selectedPayMethod = '現金';
-    let appliedCouponInfo = null;
+
+    // 最大3つまでの複数クーポン管理用配列
+    let appliedCouponList = [];
 
     let voiceSettings = JSON.parse(localStorage.getItem('myPosVoiceSettings')) || { beep: true, speech: true, thanks: true };
 
@@ -684,7 +682,6 @@
       event.target.value = '';
     }
 
-    // クーポン読み取りモーダル内の📁ファイル読み込み
     function handleCouponImageFile(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -1028,14 +1025,84 @@
       document.getElementById('register-confirm-modal').style.display = 'flex';
     }
 
+    // --- 最大3つ対応のクーポン処理・支払い方法選択関連（すべて関数の外に配置） ---
+
+    function processCouponData(codeData) {
+      if (codeData && codeData.startsWith("COUPON_")) {
+        if (appliedCouponList.length >= 3) {
+          alert("クーポンは最大3つまでしか適用できません。");
+          return;
+        }
+
+        const val = codeData.replace("COUPON_", "");
+        let couponObj = null;
+
+        if (val.includes("%")) {
+          couponObj = { type: 'pct', value: parseFloat(val), title: `${val}割引クーポン` };
+        } else {
+          couponObj = { type: 'yen', value: parseInt(val), title: `${val}円割引クーポン` };
+        }
+
+        appliedCouponList.push(couponObj);
+        playSound(1200, 0.1);
+        updateCouponBanner();
+        alert(`クーポン「${couponObj.title}」を追加しました！ (${appliedCouponList.length}/3)`);
+      }
+    }
+
+    function updateCouponBanner() {
+      const container = document.getElementById('applied-coupons-list');
+      const bannerHeader = document.querySelector('#applied-coupons-banner b');
+     
+      if (bannerHeader) {
+        bannerHeader.textContent = `適用中のクーポン (${appliedCouponList.length}/3):`;
+      }
+
+      if (!container) return;
+
+      if (appliedCouponList.length === 0) {
+        container.innerHTML = '<span style="color:#888;">なし</span>';
+      } else {
+        container.innerHTML = appliedCouponList.map((c, index) => `
+          <div style="display:flex; justify-content:space-between; align-items:center; background:#fff; padding:3px 6px; border-radius:4px; margin-top:3px; border:1px solid #ddd;">
+            <span style="color:#ff4757; font-weight:bold;">• ${c.title}</span>
+            <button onclick="removeCouponFromList(${index})" style="background:#ff7675; color:white; border:none; border-radius:3px; padding:2px 6px; font-size:10px; cursor:pointer;">削除</button>
+          </div>
+        `).join('');
+      }
+    }
+
+    function removeCouponFromList(index) {
+      appliedCouponList.splice(index, 1);
+      updateCouponBanner();
+    }
+
+    function getDiscountedTotal() {
+      let total = scannedCartDataForRegister.total;
+      if (appliedCouponList.length === 0) return total;
+
+      // 1. 円引きクーポンをすべて適用
+      appliedCouponList.filter(c => c.type === 'yen').forEach(c => {
+        total = Math.max(0, total - c.value);
+      });
+
+      // 2. %引きクーポンを適用
+      appliedCouponList.filter(c => c.type === 'pct').forEach(c => {
+        total = Math.max(0, Math.round(total * (1 - c.value / 100)));
+      });
+
+      return total;
+    }
+
     function selectPaymentMethod(method) {
       selectedPayMethod = (method === 'cash') ? '現金' : '11Pay';
       document.getElementById('pay-method-modal').style.display = 'none';
-      appliedCouponInfo = null;
+     
+      appliedCouponList = [];
       updateCouponBanner();
      
       document.getElementById('register-coupon-modal').style.display = 'flex';
-      startCouponScanner(); // 実カメラ起動
+      startCouponScanner();
     }
 
     function backToPayMethodSelectFromCoupon() {
@@ -1049,26 +1116,6 @@
       document.getElementById('cash-input-modal').style.display = 'none';
       document.getElementById('register-coupon-modal').style.display = 'flex';
       startCouponScanner();
-    }
-
-    function updateCouponBanner() {
-      const banner = document.getElementById('applied-coupons-banner');
-      if (!appliedCouponInfo) {
-        banner.innerHTML = '<b>適用中のクーポン:</b> なし';
-      } else {
-        banner.innerHTML = `<b>適用中のクーポン:</b> <span style="color:#ff4757;">${appliedCouponInfo.title}</span>`;
-      }
-    }
-
-    function getDiscountedTotal() {
-      let total = scannedCartDataForRegister.total;
-      if (!appliedCouponInfo) return total;
-      if (appliedCouponInfo.type === 'yen') {
-        total = Math.max(0, total - appliedCouponInfo.value);
-      } else if (appliedCouponInfo.type === 'pct') {
-        total = Math.max(0, Math.round(total * (1 - appliedCouponInfo.value / 100)));
-      }
-      return total;
     }
 
     function proceedAfterCoupon() {
@@ -1160,7 +1207,10 @@
         </div>
       `).join('');
 
-      let couponTextInfo = appliedCouponInfo ? `<br><span style="color:#ff4757;">クーポン適用: ${appliedCouponInfo.title}</span>` : '';
+      let couponTextInfo = appliedCouponList.length > 0
+        ? `<br><span style="color:#ff4757;">適用クーポン: ${appliedCouponList.map(c => c.title).join(', ')}</span>`
+        : '';
+
       document.getElementById('receipt-total-text').innerHTML = `${totalItemsCount}点 合計 : ${finalTotal} 円${couponTextInfo}`;
       document.getElementById('receipt-pay-method-text').textContent = `支払い方法: ${selectedPayMethod === '11Pay' ? '11Pay決済' : '現金'}`;
       document.getElementById('receipt-cash-text').textContent = `お預かり: ${lastReceivedCash}円 / お釣り: ${lastChangeCash}円`;
@@ -1192,7 +1242,6 @@
       });
     }
 
-    // --- 11Payクーポン作成・管理機能（保存・一覧・共有） ---
     function openCouponMakerModal() {
       document.getElementById('settings-modal').style.display = 'none';
       document.getElementById('maker-title').value = '';
@@ -1375,96 +1424,54 @@
       if (registerStream) { registerStream.getTracks().forEach(track => track.stop()); registerStream = null; }
     }
 
-   // ================= クーポン管理・処理関連（すべて関数の外に出した状態） =================
-
-// クーポン管理用の配列（最大3つまで保持）
-let appliedCouponList = [];
-
-// クーポン処理関数
-function processCouponData(codeData) {
-  if (codeData && codeData.startsWith("COUPON_")) {
-    if (appliedCouponList.length >= 3) {
-      alert("クーポンは最大3つまでしか適用できません。");
-      return;
+    function startCouponScanner() {
+      const video = document.getElementById('coupon-video');
+      const canvasElement = document.getElementById('coupon-canvas');
+      const canvas = canvasElement.getContext('2d');
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }).then((stream) => {
+        couponStream = stream; video.srcObject = stream; video.setAttribute("playsinline", true);
+        video.onloadedmetadata = () => {
+          video.play().then(() => {
+            if (couponScanInterval) clearInterval(couponScanInterval);
+            couponScanInterval = setInterval(() => {
+              if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                canvasElement.height = video.videoHeight; canvasElement.width = video.videoWidth;
+                canvas.drawImage(video, 0, 0, canvasElement.width, canvasElement.height);
+                var imageData = canvas.getImageData(0, 0, canvasElement.width, canvasElement.height);
+                var code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: "dontInvert" });
+                if (code) { processCouponData(code.data); }
+              }
+            }, 300);
+          }).catch(e => console.error(e));
+        };
+      }).catch((err) => { console.error(err); alert("クーポン用カメラを起動できませんでした。"); });
     }
 
-    const val = codeData.replace("COUPON_", "");
-    let couponObj = null;
-
-    if (val.includes("%")) {
-      couponObj = { type: 'pct', value: parseFloat(val), title: `${val}割引クーポン` };
-    } else {
-      couponObj = { type: 'yen', value: parseInt(val), title: `${val}円割引クーポン` };
+    function stopCouponScanner() {
+      if (couponScanInterval) { clearInterval(couponScanInterval); couponScanInterval = null; }
+      if (couponStream) { couponStream.getTracks().forEach(track => track.stop()); couponStream = null; }
     }
 
-    // 重複読み取り防止（同じクーポンを連続して追加しない場合など）
-    appliedCouponList.push(couponObj);
-    playSound(1200, 0.1);
-    updateCouponBanner();
-    alert(`クーポン「${couponObj.title}」を追加しました！ (${appliedCouponList.length}/3)`);
-  }
-}
+    function handleRegisterQRCode(codeData) {
+      if (codeData && codeData.startsWith("LUCKY_")) {
+        stopRegisterScanner(); playSound(1200, 0.1);
+        const parts = codeData.split("_");
+        const itemCodes = parts.slice(1, parts.length - 1);
+        let parsedItemsMap = {};
+        itemCodes.forEach(c => {
+          if (itemDatabase[c]) {
+            const name = itemDatabase[c].name;
+            const taxPrice = Math.round(itemDatabase[c].price * 1.1);
+            if (!parsedItemsMap[name]) { parsedItemsMap[name] = { name: name, taxPrice: taxPrice, quantity: 0 }; }
+            parsedItemsMap[name].quantity += 1;
+          }
+        });
+        registerParsedCartItems = Object.values(parsedItemsMap);
+        renderRegisterConfirmList();
+        document.getElementById('register-confirm-modal').style.display = 'flex';
+      }
+    }
 
-// クーポン表示・削除バナーの更新
-function updateCouponBanner() {
-  const container = document.getElementById('applied-coupons-list');
-  const bannerHeader = document.querySelector('#applied-coupons-banner b');
- 
-  if (bannerHeader) {
-    bannerHeader.textContent = `適用中のクーポン (${appliedCouponList.length}/3):`;
-  }
-
-  if (!container) return;
-
-  if (appliedCouponList.length === 0) {
-    container.innerHTML = '<span style="color:#888;">なし</span>';
-  } else {
-    container.innerHTML = appliedCouponList.map((c, index) => `
-      <div style="display:flex; justify-content:space-between; align-items:center; background:#fff; padding:3px 6px; border-radius:4px; margin-top:3px; border:1px solid #ddd;">
-        <span style="color:#ff4757; font-weight:bold;">• ${c.title}</span>
-        <button onclick="removeCouponFromList(${index})" style="background:#ff7675; color:white; border:none; border-radius:3px; padding:2px 6px; font-size:10px; cursor:pointer;">削除</button>
-      </div>
-    `).join('');
-  }
-}
-
-// 適用したクーポンを途中で削除する処理
-function removeCouponFromList(index) {
-  appliedCouponList.splice(index, 1);
-  updateCouponBanner();
-}
-
-// クーポン適用後の最終金額計算（複数クーポンの計算）
-function getDiscountedTotal() {
-  let total = scannedCartDataForRegister.total;
-  if (appliedCouponList.length === 0) return total;
-
-  // 1. まず「円引き」クーポンをすべて適用
-  appliedCouponList.filter(c => c.type === 'yen').forEach(c => {
-    total = Math.max(0, total - c.value);
-  });
-
-  // 2. 次に「%引き」クーポンを適用
-  appliedCouponList.filter(c => c.type === 'pct').forEach(c => {
-    total = Math.max(0, Math.round(total * (1 - c.value / 100)));
-  });
-
-  return total;
-}
-
-// お支払い方法選択時・モーダルを開く時の初期化
-function selectPaymentMethod(method) {
-  selectedPayMethod = (method === 'cash') ? '現金' : '11Pay';
-  document.getElementById('pay-method-modal').style.display = 'none';
- 
-  // クーポンリストをリセット
-  appliedCouponList = [];
-  updateCouponBanner();
- 
-  document.getElementById('register-coupon-modal').style.display = 'flex';
-  startCouponScanner();
-} 
- 
     function toggleCustomerCamera(checkbox) {
       const offOverlay = document.getElementById('customer-camera-off-overlay');
       const statusMsg = document.getElementById('status-msg');

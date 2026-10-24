@@ -292,27 +292,36 @@
   </div>
 
   <!-- レジ側：クーポン読み取りモーダル（最大3つ対応） -->
-  <div class="modal-overlay" id="register-coupon-modal">
-    <div class="modal-content-box" style="text-align: center;">
-      <h3 style="font-size: 16px; margin-bottom: 6px;">クーポン読み取り</h3>
-      <div id="applied-coupons-banner" style="background:#f1f2f6; padding:8px 10px; border-radius:6px; margin-bottom:8px; font-size:12px; text-align:left; min-height: 45px;">
-        <b>適用中のクーポン (0/3):</b>
-        <div id="applied-coupons-list" style="margin-top: 4px;"><span style="color:#888;">なし</span></div>
-      </div>
-     
-      <div id="coupon-viewport-container">
-        <video id="coupon-video" playsinline autoplay muted></video>
-        <canvas id="coupon-canvas"></canvas>
-        <button class="coupon-file-btn" onclick="document.getElementById('coupon-file-input').click()" title="ファイルから読み込み">📁</button>
-      </div>
-      <p style="font-size: 11px; color: #666; margin: 0 0 10px 0;">クーポンQRコードをかざすと追加されます</p>
-     
-      <div style="display: flex; gap: 10px;">
-        <button class="modal-btn-back" style="flex: 1;" onclick="backToPayMethodSelectFromCoupon()">← 戻る</button>
-        <button class="btn pay-btn" style="flex: 2; margin: 0; padding: 10px;" onclick="proceedAfterCoupon()">次に進む</button>
+<!-- レジ側：クーポン読み取りモーダル（金額表示付き） -->
+<div class="modal-overlay" id="register-coupon-modal">
+  <div class="modal-content-box" style="text-align: center;">
+    <h3 style="font-size: 16px; margin-bottom: 6px;">🎟️ クーポン読み取り (最大3つ)</h3>
+    
+    <!-- ▼ 適用中のクーポンと現在の金額を表示するエリア ▼ -->
+    <div id="applied-coupons-banner" style="background:#f1f2f6; padding:8px 10px; border-radius:6px; margin-bottom:8px; font-size:12px; text-align:left;">
+      <b>適用中のクーポン (0/3):</b>
+      <div id="applied-coupons-list" style="margin-top: 4px;"><span style="color:#888;">なし</span></div>
+      
+      <div style="margin-top: 8px; border-top: 1px dashed #ccc; padding-top: 6px; font-size: 13px; font-weight: bold; text-align: right; color: #ff4757;">
+        現在の金額: <span id="coupon-current-total">0</span> 円
       </div>
     </div>
+    <!-- ▲ここまで▲ -->
+    
+    <!-- カメラビューポート -->
+    <div id="coupon-viewport-container">
+      <video id="coupon-video" playsinline autoplay muted></video>
+      <canvas id="coupon-canvas"></canvas>
+      <button class="coupon-file-btn" onclick="document.getElementById('coupon-file-input').click()" title="ファイルから読み込み">📁</button>
+    </div>
+    <p style="font-size: 11px; color: #666; margin: 0 0 10px 0;">クーポンQRをかざすと自動で追加されます</p>
+    
+    <div style="display: flex; gap: 10px;">
+      <button class="modal-btn-back" style="flex: 1;" onclick="backToPayMethodSelectFromCoupon()">← 戻る</button>
+      <button class="btn pay-btn" style="flex: 2; margin: 0; padding: 10px;" onclick="proceedAfterCoupon()">次に進む →</button>
+    </div>
   </div>
+</div>
 
   <!-- レジ側：11Pay QRコード表示モーダル -->
   <div class="modal-overlay" id="11pay-qr-modal">
@@ -1055,27 +1064,36 @@
       }
     }
 
-    function updateCouponBanner() {
-      const container = document.getElementById('applied-coupons-list');
-      const bannerHeader = document.querySelector('#applied-coupons-banner b');
-     
-      if (bannerHeader) {
-        bannerHeader.textContent = `適用中のクーポン (${appliedCouponList.length}/3):`;
-      }
+    // クーポン表示・削除バナーの更新 ＋ 現在の金額の連動表示
+function updateCouponBanner() {
+  const container = document.getElementById('applied-coupons-list');
+  const bannerHeader = document.querySelector('#applied-coupons-banner b');
+  const currentTotalEl = document.getElementById('coupon-current-total');
+  
+  if (bannerHeader) {
+    bannerHeader.textContent = `適用中のクーポン (${appliedCouponList.length}/3):`;
+  }
 
-      if (!container) return;
-
-      if (appliedCouponList.length === 0) {
-        container.innerHTML = '<span style="color:#888;">なし</span>';
-      } else {
-        container.innerHTML = appliedCouponList.map((c, index) => `
-          <div style="display:flex; justify-content:space-between; align-items:center; background:#fff; padding:3px 6px; border-radius:4px; margin-top:3px; border:1px solid #ddd;">
-            <span style="color:#ff4757; font-weight:bold;">• ${c.title}</span>
-            <button onclick="removeCouponFromList(${index})" style="background:#ff7675; color:white; border:none; border-radius:3px; padding:2px 6px; font-size:10px; cursor:pointer;">削除</button>
-          </div>
-        `).join('');
-      }
+  if (container) {
+    if (appliedCouponList.length === 0) {
+      container.innerHTML = '<span style="color:#888;">なし</span>';
+    } else {
+      container.innerHTML = appliedCouponList.map((c, index) => `
+        <div style="display:flex; justify-content:space-between; align-items:center; background:#fff; padding:3px 6px; border-radius:4px; margin-top:3px; border:1px solid #ddd;">
+          <span style="color:#ff4757; font-weight:bold;">• ${c.title}</span>
+          <button onclick="removeCouponFromList(${index})" style="background:#ff7675; color:white; border:none; border-radius:3px; padding:2px 6px; font-size:10px; cursor:pointer;">削除</button>
+        </div>
+      `).join('');
     }
+  }
+
+  // 現在の割引後金額を計算して反映
+  if (currentTotalEl) {
+    const discountedTotal = getDiscountedTotal();
+    currentTotalEl.textContent = discountedTotal.toLocaleString();
+  }
+}
+
 
     function removeCouponFromList(index) {
       appliedCouponList.splice(index, 1);

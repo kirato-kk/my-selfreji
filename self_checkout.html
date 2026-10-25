@@ -141,7 +141,41 @@
     @keyframes popWarning { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 
     .modal-btn-back { background: #747d8c; color: white; border: none; padding: 10px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; }
-    .modal-btn-back:hover { background: #57606f; }
+   .modal-btn-back:hover { background: #57606f; }
+ 
+  /* 返金カメラ用の枠と右下📁ボタン */
+.refund-scanner-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 320px;
+  margin: 0 auto 10px auto;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 3px solid #28a745;
+}
+
+.scanner-file-btn {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: none;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+  cursor: pointer;
+  z-index: 10;
+}
+.scanner-file-btn:active {
+  transform: scale(0.95);
+}
+
+  
   </style>
 </head>
 <body>
@@ -202,6 +236,9 @@
     </div>
 
     <button class="btn" style="background-color: #00adb5; margin-bottom: 10px;" onclick="document.getElementById('register-file-input').click()">画像から読み取り</button>
+    <!-- スタッフモード用 返金対応ボタン -->
+<button class="main-btn" style="background: #e67e22; margin-top: 10px;" onclick="openRefundMenuModal()">返金対応</button>
+
     <button class="btn" style="background-color: #555;" onclick="switchView('customer')">お客様モードに戻る</button>
   </div>
 
@@ -423,6 +460,90 @@
     </div>
   </div>
 
+<!-- 【返金1】返金方法選択（レシートから / 金額入力） -->
+<div id="refund-menu-modal" class="modal-overlay hidden">
+  <div class="modal-content" style="max-width: 360px;">
+    <h3 style="margin-bottom: 15px; color: #333;">返金対応</h3>
+    <p style="font-size: 13px; color: #666; margin-bottom: 20px;">返金方法を選んでください</p>
+    <button class="main-btn" style="background: #007bff; margin-bottom: 10px;" onclick="openRefundReceiptScan()">レシートから</button>
+    <button class="main-btn" style="background: #6c757d; margin-bottom: 10px;" onclick="openRefundManualInput()">金額入力</button>
+    <button class="secondary-btn" onclick="closeModal('refund-menu-modal')">← 戻る</button>
+  </div>
+</div>
+
+<!-- 【返金2】レシート読み取りカメラ（右下に📁ボタン付き） -->
+<div id="refund-receipt-scan-modal" class="modal-overlay hidden">
+  <div class="modal-content" style="max-width: 360px;">
+    <h3 style="margin-bottom: 5px;">🧾 レシート読み取り</h3>
+    <p style="font-size: 13px; color: #666; margin-bottom: 15px;">レシートのバーコード/QRをかざしてください</p>
+    
+    <div class="refund-scanner-wrapper">
+      <div id="refund-reader" style="width: 100%; min-height: 200px; background: #222;"></div>
+      <button class="scanner-file-btn" onclick="document.getElementById('refund-file-input').click()" title="画像から選択">📁</button>
+      <input type="file" id="refund-file-input" accept="image/*" style="display:none;" onchange="handleRefundFileScan(this)">
+    </div>
+
+    <button class="secondary-btn" onclick="closeRefundReceiptScan()">← 戻る</button>
+  </div>
+</div>
+
+<!-- 【返金3】金額入力用（電卓キーボード） -->
+<div id="refund-calc-modal" class="modal-overlay hidden">
+  <div class="modal-content" style="max-width: 380px;">
+    <h3 style="margin-bottom: 5px;">返金金額入力</h3>
+    <p style="font-size: 13px; color: #666; margin-bottom: 15px;">金額を入力してください</p>
+    
+    <div style="background: #f0f3f6; color: #222; border: 2px solid #ddd; padding: 15px; border-radius: 12px; font-size: 32px; font-weight: bold; text-align: right; margin-bottom: 15px;">
+      <span id="refund-calc-display">0</span> <span style="font-size: 18px; color: #e67e22;">円</span>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 15px;">
+      <button class="secondary-btn" style="margin:0; font-size:20px; padding:12px;" onclick="appendRefundCalc('1')">1</button>
+      <button class="secondary-btn" style="margin:0; font-size:20px; padding:12px;" onclick="appendRefundCalc('2')">2</button>
+      <button class="secondary-btn" style="margin:0; font-size:20px; padding:12px;" onclick="appendRefundCalc('3')">3</button>
+      <button class="secondary-btn" style="margin:0; font-size:20px; padding:12px;" onclick="appendRefundCalc('4')">4</button>
+      <button class="secondary-btn" style="margin:0; font-size:20px; padding:12px;" onclick="appendRefundCalc('5')">5</button>
+      <button class="secondary-btn" style="margin:0; font-size:20px; padding:12px;" onclick="appendRefundCalc('6')">6</button>
+      <button class="secondary-btn" style="margin:0; font-size:20px; padding:12px;" onclick="appendRefundCalc('7')">7</button>
+      <button class="secondary-btn" style="margin:0; font-size:20px; padding:12px;" onclick="appendRefundCalc('8')">8</button>
+      <button class="secondary-btn" style="margin:0; font-size:20px; padding:12px;" onclick="appendRefundCalc('9')">9</button>
+      <button class="secondary-btn" style="margin:0; font-size:16px; padding:12px; background:#ffeeee; color:#ff0033;" onclick="clearRefundCalc()">C</button>
+      <button class="secondary-btn" style="margin:0; font-size:20px; padding:12px;" onclick="appendRefundCalc('0')">0</button>
+      <button class="secondary-btn" style="margin:0; font-size:16px; padding:12px;" onclick="appendRefundCalc('00')">00</button>
+    </div>
+
+    <button class="main-btn" style="background: #28a745; margin-bottom: 8px;" onclick="submitRefundAmount()">次へ（返金方法選択）</button>
+    <button class="secondary-btn" style="margin-top:0;" onclick="openRefundMenuModal()">← 戻る</button>
+  </div>
+</div>
+
+<!-- 【返金4】返金方法（現金 or 11Pay）選択 ＆ 金額確認 -->
+<div id="refund-method-modal" class="modal-overlay hidden">
+  <div class="modal-content" style="max-width: 360px;">
+    <h3 style="margin-bottom: 5px;">返金処理</h3>
+    <p style="font-size: 15px; font-weight: bold; margin: 15px 0; color: #333;">
+      返金金額: <span id="refund-target-amount" style="color: #e67e22; font-size: 22px;">0</span> 円
+    </p>
+    <p style="font-size: 13px; color: #666; margin-bottom: 15px;">返金方法を選んでください</p>
+    
+    <button class="main-btn" style="background: #28a745; margin-bottom: 10px;" onclick="executeCashRefund()">現金</button>
+    <button class="main-btn" style="background: #ff0033; margin-bottom: 10px;" onclick="executePayRefund()">11Pay</button>
+    <button class="secondary-btn" onclick="openRefundMenuModal()">← 戻る</button>
+  </div>
+</div>
+
+<!-- 【返金5】11Pay返金用QRコード表示 -->
+<div id="refund-qr-modal" class="modal-overlay hidden">
+  <div class="modal-content" style="max-width: 360px;">
+    <h3 style="margin-bottom: 5px;">11Pay 返金</h3>
+    <p style="font-size: 13px; color: #666; margin-bottom: 10px;">こちらのQRコードを読み取ってください</p>
+    <div id="refund-qr-container" style="display: flex; justify-content: center; margin: 15px 0;"></div>
+    <p style="font-size: 15px; font-weight: bold; color: #333;" id="refund-qr-desc"></p>
+    <button class="secondary-btn" style="margin-top: 15px;" onclick="openRefundMethodModal()">← 戻る</button>
+  </div>
+</div>
+
+  
   <!-- 設定・管理画面（パスワード保護） -->
   <div class="modal-overlay" id="settings-modal">
     <div class="modal-content-box" style="text-align: left; font-family: 'Segoe UI', sans-serif;">
@@ -573,6 +694,8 @@
     </div>
   </div>
 
+
+  
   <script>
     let defaultDatabase = {
       "4901330502880": { name: "ポテトチップス", price: 160 },
@@ -1776,6 +1899,194 @@ function saveReceiptSettings() {
   closeReceiptSettingsModal();
 }
 
+  let refundAmount = 0;
+  let refundInputStr = "0";
+  let refundScanner = null;
+
+  // モーダル一括非表示
+  function hideAllRefundModals() {
+    document.getElementById("refund-menu-modal").classList.add("hidden");
+    document.getElementById("refund-receipt-scan-modal").classList.add("hidden");
+    document.getElementById("refund-calc-modal").classList.add("hidden");
+    document.getElementById("refund-method-modal").classList.add("hidden");
+    document.getElementById("refund-qr-modal").classList.add("hidden");
+  }
+
+  function closeModal(modalId) {
+    playSound('beep');
+    document.getElementById(modalId).classList.add("hidden");
+  }
+
+  // 1. 返金対応メニューを開く
+  function openRefundMenuModal() {
+    playSound('beep');
+    hideAllRefundModals();
+    document.getElementById("refund-menu-modal").classList.remove("hidden");
+  }
+
+  // 2-A. レシート読み取り（カメラ起動）
+  function openRefundReceiptScan() {
+    playSound('beep');
+    hideAllRefundModals();
+    document.getElementById("refund-receipt-scan-modal").classList.remove("hidden");
+
+    const readerDiv = document.getElementById("refund-reader");
+    readerDiv.innerHTML = "";
+
+    if (refundScanner) {
+      try { refundScanner.clear(); } catch(e){}
+      refundScanner = null;
+    }
+
+    refundScanner = new Html5Qrcode("refund-reader");
+    refundScanner.start(
+      { facingMode: "environment" },
+      { fps: 10, qrbox: { width: 200, height: 200 } },
+      onRefundScanSuccess
+    ).catch(err => {
+      console.log("レシートカメラ起動エラー:", err);
+    });
+  }
+
+  // レシートカメラ停止
+  function closeRefundReceiptScan() {
+    playSound('beep');
+    if (refundScanner) {
+      refundScanner.stop().then(() => {
+        try { refundScanner.clear(); } catch(e){}
+        refundScanner = null;
+        document.getElementById("refund-receipt-scan-modal").classList.add("hidden");
+        openRefundMenuModal();
+      }).catch(() => {
+        refundScanner = null;
+        document.getElementById("refund-receipt-scan-modal").classList.add("hidden");
+        openRefundMenuModal();
+      });
+    } else {
+      document.getElementById("refund-receipt-scan-modal").classList.add("hidden");
+      openRefundMenuModal();
+    }
+  }
+
+  // スキャン成功時（バーコード/QRから金額抽出）
+  function onRefundScanSuccess(decodedText) {
+    playSound('beep');
+    const digits = decodedText.replace(/[^0-9]/g, '');
+    let num = parseInt(digits, 10);
+
+    if (!num || isNaN(num)) {
+      playSound('error');
+      alert("読み取ったデータから金額を取得できませんでした。");
+      return;
+    }
+
+    refundAmount = num;
+
+    if (refundScanner) {
+      refundScanner.stop().then(() => {
+        try { refundScanner.clear(); } catch(e){}
+        refundScanner = null;
+        document.getElementById("refund-receipt-scan-modal").classList.add("hidden");
+        openRefundMethodModal();
+      }).catch(() => {
+        refundScanner = null;
+        document.getElementById("refund-receipt-scan-modal").classList.add("hidden");
+        openRefundMethodModal();
+      });
+    } else {
+      document.getElementById("refund-receipt-scan-modal").classList.add("hidden");
+      openRefundMethodModal();
+    }
+  }
+
+  // 右下📁ボタン画像選択読み取り
+  function handleRefundFileScan(input) {
+    if (input.files.length === 0) return;
+    const file = input.files[0];
+    const html5QrCodeForFile = new Html5Qrcode("refund-reader");
+
+    html5QrCodeForFile.scanFile(file, true)
+      .then(decodedText => {
+        onRefundScanSuccess(decodedText);
+      })
+      .catch(err => {
+        playSound('error');
+        alert("画像からバーコード/QRコードを検出できませんでした");
+      });
+  }
+
+  // 2-B. 金額手動入力（電卓キーボード）
+  function openRefundManualInput() {
+    playSound('beep');
+    hideAllRefundModals();
+    refundInputStr = "0";
+    updateRefundCalcDisplay();
+    document.getElementById("refund-calc-modal").classList.remove("hidden");
+  }
+
+  function appendRefundCalc(num) {
+    playSound('tick');
+    if (refundInputStr === "0") {
+      refundInputStr = num;
+    } else {
+      if (refundInputStr.length < 7) {
+        refundInputStr += num;
+      }
+    }
+    updateRefundCalcDisplay();
+  }
+
+  function clearRefundCalc() {
+    playSound('beep');
+    refundInputStr = "0";
+    updateRefundCalcDisplay();
+  }
+
+  function updateRefundCalcDisplay() {
+    const el = document.getElementById("refund-calc-display");
+    if (el) el.innerText = parseInt(refundInputStr || "0", 10).toLocaleString();
+  }
+
+  function submitRefundAmount() {
+    playSound('beep');
+    const amount = parseInt(refundInputStr, 10);
+    if (isNaN(amount) || amount <= 0) {
+      alert("有効な金額を入力してください");
+      return;
+    }
+    refundAmount = amount;
+    openRefundMethodModal();
+  }
+
+  // 3. 返金確認画面（現金 / 11Pay）
+  function openRefundMethodModal() {
+    playSound('beep');
+    hideAllRefundModals();
+    document.getElementById("refund-target-amount").innerText = refundAmount.toLocaleString();
+    document.getElementById("refund-method-modal").classList.remove("hidden");
+  }
+
+  // 4-A. 現金返金
+  function executeCashRefund() {
+    playSound('win');
+    alert(`現金にて ${refundAmount.toLocaleString()}円 の返金を行いました。`);
+    hideAllRefundModals();
+  }
+
+  // 4-B. 11Pay返金 (CHARGE_金額 のQRコード表示)
+  function executePayRefund() {
+    playSound('pay');
+    hideAllRefundModals();
+
+    const qrData = `CHARGE_${refundAmount}`;
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrData)}`;
+
+    const container = document.getElementById("refund-qr-container");
+    container.innerHTML = `<img src="${qrUrl}" alt="返金用QRコード" style="width:180px; height:180px; border-radius:10px;">`;
+    document.getElementById("refund-qr-desc").innerText = `返金金額: ${refundAmount.toLocaleString()}円`;
+
+    document.getElementById("refund-qr-modal").classList.remove("hidden");
+  }
 
     
   </script>

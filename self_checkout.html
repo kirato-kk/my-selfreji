@@ -237,7 +237,7 @@ background: #f1f2f6; border: 1px solid #ccc; border-radius: 6px; padding: 4px 8p
 
 <button class="btn" style="background-color: #00adb5; margin-bottom: 10px;" onclick="document.getElementById('register-file-input').click()">画像から読み取り</button>
 
-<button class="btn" style="background-color: #e67e22; margin-bottom: 10px;" onclick="openDiscountBarcodeScanModal()">🏷️ 割引バーコード作成</button>
+<button class="btn" style="background-color: #e67e22; margin-bottom: 10px;" onclick="openDiscountBarcodeScanModal()">割引バーコード作成</button>
 <button class="btn" style="background-color: #555;" onclick="switchView('customer')">お客様モードに戻る</button>
 </div>
 
@@ -337,7 +337,7 @@ background: #f1f2f6; border: 1px solid #ccc; border-radius: 6px; padding: 4px 8p
 <!-- レジ側：クーポン読み取りモーダル -->
 <div class="modal-overlay" id="register-coupon-modal">
 <div class="modal-content-box" style="text-align: center;">
-<h3 style="font-size: 16px; margin-bottom: 6px;">🎟️ クーポン読み取り (最大3つ)</h3>
+<h3 style="font-size: 16px; margin-bottom: 6px;">クーポン読み取り (最大3つ)</h3>
 <div id="applied-coupons-banner" style="background:#f1f2f6; padding:8px 10px; border-radius:6px; margin-bottom:8px; font-size:12px; text-align:left;">
 <b>適用中のクーポン (0/3):</b>
 <div id="applied-coupons-list" style="margin-top: 4px;"><span style="color:#888;">なし</span></div>
@@ -458,7 +458,7 @@ background: #f1f2f6; border: 1px solid #ccc; border-radius: 6px; padding: 4px 8p
 <!-- ① 割引バーコード作成：商品スキャンモーダル -->
 <div class="modal-overlay" id="disc-scan-modal">
 <div class="modal-content-box" style="text-align: center;">
-<h3>🏷️ 割引バーコード作成</h3>
+<h3>割引バーコード作成</h3>
 <p style="font-size: 12px; color: #666; margin-bottom: 10px;">割引したい商品のバーコードをかざしてください</p>
 <div class="refund-scanner-wrapper">
 <div id="disc-reader" style="width: 100%; min-height: 180px; background: #222;"></div>
@@ -476,10 +476,10 @@ background: #f1f2f6; border: 1px solid #ccc; border-radius: 6px; padding: 4px 8p
 <div style="text-align: left; background: #f8f9fa; padding: 12px; border-radius: 8px; margin-bottom: 12px;">
 <label style="display:block; font-size:12px; font-weight:bold; margin-bottom:6px;">割引の種類</label>
 <div style="display:flex; gap:15px; margin-bottom:10px;">
-<label><input type="radio" name="disc-type" value="pct" checked onclick="toggleDiscTypeInput()"> % 割引 (1〜2桁)</label>
-<label><input type="radio" name="disc-type" value="yen" onclick="toggleDiscTypeInput()"> 円引き (3〜4桁)</label>
+<label><input type="radio" name="disc-type" value="pct" checked onclick="toggleDiscTypeInput()"> % 割引</label>
+<label><input type="radio" name="disc-type" value="yen" onclick="toggleDiscTypeInput()"> 円引き</label>
 </div>
-<label style="display:block; font-size:12px; font-weight:bold; margin-bottom:4px;" id="disc-val-label">割引値 (例: 10 または 200)</label>
+<label style="display:block; font-size:12px; font-weight:bold; margin-bottom:4px;" id="disc-val-label">割引値</label>
 <input type="number" id="disc-input-value" value="10" style="width:100%; padding:8px; font-size:16px; border:1px solid #ccc; border-radius:6px; box-sizing:border-box;">
 </div>
 <div style="display:flex; gap:10px;">
@@ -529,7 +529,7 @@ background: #f1f2f6; border: 1px solid #ccc; border-radius: 6px; padding: 4px 8p
 <button id="settings-switch-btn" class="btn" style="background-color: #2575fc; margin-top:5px; font-size:15px; padding:10px;" onclick="toggleModeFromSettings()">スタッフモードへ切替</button>
 <button class="btn" style="background-color: #ff0033; margin-top:10px; font-size:15px; padding:10px;" onclick="openCouponMakerModal()">クーポン作成・管理</button>
 <button class="btn" style="background-color: #00adb5; margin-top:10px; font-size:15px; padding:10px;" onclick="showSalesHistory()">売上履歴を見る</button>
-<button class="btn" style="background-color: #16a085; margin-top:10px; font-size:15px; padding:10px;" onclick="openReceiptSettingsModal()">🧾 レシート設定</button>
+<button class="btn" style="background-color: #16a085; margin-top:10px; font-size:15px; padding:10px;" onclick="openReceiptSettingsModal()">レシート設定</button>
 <button class="btn" style="background-color: #9b59b6; margin-top:10px; font-size:15px; padding:10px;" onclick="generateUniqueBarcode()">未使用のバーコードを生成</button>
 <button class="btn" style="background-color: #00b894; margin-top:10px; font-size:15px; padding:10px;" onclick="openManualBarcodeModal()">数字でのバーコード作成</button>
 <button class="btn" style="background-color: #34495e; margin-top:10px; font-size:15px; padding:10px;" onclick="openSavedBarcodesModal()">保存したバーコードを見る</button>
@@ -545,16 +545,16 @@ background: #f1f2f6; border: 1px solid #ccc; border-radius: 6px; padding: 4px 8p
 <div class="modal-content-box" style="text-align: left; font-family: 'Segoe UI', sans-serif;">
 <h2>レシート設定</h2>
 <div style="margin-top: 15px;">
-<label style="display:block; font-size:12px; font-weight:bold; color:#555; margin-bottom:3px;">店舗名 (一番上のロゴ・大文字)</label>
+<label style="display:block; font-size:12px; font-weight:bold; color:#555; margin-bottom:3px;">店舗名</label>
 <input type="text" id="setting-store-title" placeholder="KKマート" style="width:100%; padding:8px; font-size:13px; border:1px solid #ccc; border-radius:6px; box-sizing:border-box; margin-bottom:10px;">
 
 <label style="display:block; font-size:12px; font-weight:bold; color:#555; margin-bottom:3px;">支店名・サブタイトル</label>
 <input type="text" id="setting-store-sub" placeholder="名古屋東 店" style="width:100%; padding:8px; font-size:13px; border:1px solid #ccc; border-radius:6px; box-sizing:border-box; margin-bottom:10px;">
 
-<label style="display:block; font-size:12px; font-weight:bold; color:#555; margin-bottom:3px;">下部メッセージ (改行可)</label>
+<label style="display:block; font-size:12px; font-weight:bold; color:#555; margin-bottom:3px;">下部メッセージ</label>
 <textarea id="setting-receipt-msg" rows="3" style="width:100%; padding:8px; font-size:13px; border:1px solid #ccc; border-radius:6px; box-sizing:border-box; resize:none; margin-bottom:12px;"></textarea>
 
-<button class="btn" style="background-color:#20bf6b; padding:10px; font-size:15px;" onclick="saveReceiptSettings()">設定を保存</button>
+<button class="btn" style="background-color:#20bf6b; padding:10px; font-size:15px;" onclick="saveReceiptSettings()">保存</button>
 </div>
 <button class="close-btn" onclick="closeReceiptSettingsModal()" style="margin-top: 15px;">閉じる</button>
 </div>

@@ -29,7 +29,6 @@ h1 { color: #2575fc; margin: 0; font-size: 24px; cursor: pointer; user-select: n
 #register-video { width: 100%; height: 100%; object-fit: cover; }
 #register-canvas { display: none; }
 
-/* クーポン読み取り用カメラコンテナ */
 #coupon-viewport-container { width: 100%; height: 180px; background-color: #000; border: 2px solid #20bf6b; border-radius: 10px; overflow: hidden; margin-bottom: 12px; position: relative; }
 #coupon-video { width: 100%; height: 100%; object-fit: cover; }
 #coupon-canvas { display: none; }
@@ -94,7 +93,6 @@ align-items: center; justify-content: center; color: white; font-size: 10px; poi
 .product-card-price { font-size: 13px; color: #ff4757; font-weight: bold; }
 .product-add-badge { background: #2ed573; color: white; border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; }
 
-/* 新レシートデザイン（画像風等幅フォント＆KKマートロゴ対応） */
 .receipt-paper {
 background: #fffdf9; color: #111111; font-family: 'Courier New', Courier, monospace;
 padding: 25px 15px; border: 1px dashed #cccccc; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
@@ -104,13 +102,10 @@ text-align: left; position: relative; margin-bottom: 20px; width: 280px; margin-
 .receipt-store-sub { text-align: center; font-size: 11px; color: #444; margin-bottom: 12px; }
 .receipt-info { font-size: 11px; color: #333; margin-bottom: 10px; border-bottom: 1px dashed #333; padding-bottom: 6px; }
 .receipt-items-container { border-bottom: 1px dashed #333; padding-bottom: 8px; margin-bottom: 8px; min-height: 80px; }
-.receipt-item-row { display: flex; justify-content: space-between; font-size: 12px; margin: 4px 0; }
 .receipt-total-section { font-size: 13px; font-weight: bold; text-align: right; margin-bottom: 10px; line-height: 1.5; border-bottom: 1px dashed #333; padding-bottom: 8px; }
 .receipt-barcode-wrapper { text-align: center; margin-top: 10px; margin-bottom: 5px; }
 .receipt-barcode-svg { max-width: 100%; height: 45px; }
 .receipt-message { text-align: center; font-size: 11px; color: #444; margin-top: 8px; line-height: 1.4; }
-.receipt-qr-area { display: flex; justify-content: space-around; margin: 10px 0; }
-.receipt-qr-box { text-align: center; font-size: 9px; }
 
 .close-btn { width: 100%; padding: 12px; background: #e0e0e0; color: #333; border: none; font-weight: bold; cursor: pointer; border-radius: 10px; font-family: 'Segoe UI', sans-serif; margin-top: 5px; }
 .staff-box { background: #ff4757; color: white; padding: 15px; border-radius: 10px; margin-bottom: 15px; font-family: 'Segoe UI', sans-serif; }
@@ -148,7 +143,6 @@ display: flex; flex-direction: column; align-items: center; gap: 6px; transition
 .modal-btn-back { background: #747d8c; color: white; border: none; padding: 10px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; }
 .modal-btn-back:hover { background: #57606f; }
 
-/* 返金カメラ用の枠と右下📁ボタン */
 .refund-scanner-wrapper {
 position: relative;
 width: 100%;
@@ -177,6 +171,10 @@ cursor: pointer;
 z-index: 10;
 }
 .scanner-file-btn:active { transform: scale(0.95); }
+
+.reload-barcode-btn {
+background: #f1f2f6; border: 1px solid #ccc; border-radius: 6px; padding: 4px 8px; cursor: pointer; font-size: 14px;
+}
 </style>
 </head>
 <body>
@@ -239,9 +237,7 @@ z-index: 10;
 
 <button class="btn" style="background-color: #00adb5; margin-bottom: 10px;" onclick="document.getElementById('register-file-input').click()">画像から読み取り</button>
 
-<!-- ▼ ご要望の追加ボタン：お客様モードに戻るの上 ▼ -->
 <button class="btn" style="background-color: #e67e22; margin-bottom: 10px;" onclick="openDiscountBarcodeScanModal()">🏷️ 割引バーコード作成</button>
-
 <button class="btn" style="background-color: #555;" onclick="switchView('customer')">お客様モードに戻る</button>
 </div>
 
@@ -422,7 +418,7 @@ z-index: 10;
 </div>
 </div>
 
-<!-- レジ側：レシート表示画面（画像に合わせた新デザイン） -->
+<!-- レジ側：レシート表示画面 -->
 <div class="modal-overlay" id="receipt-modal">
 <div class="modal-content-box">
 <div id="receipt-target" class="receipt-paper">
@@ -432,7 +428,7 @@ z-index: 10;
 <div class="receipt-items-container" id="receipt-items"></div>
 
 <div class="receipt-total-section">
-<div id="receipt-total-text" style="text-align: right; font-size:14px; font-weight:bold;">0点 合計 : 0 円</div>
+<div id="receipt-total-text" style="text-align: right; font-size:14px; font-weight:bold;">0点 合計 : ¥0</div>
 <div style="display:flex; justify-content:space-between; margin-top:4px;"><span>8%税抜対象額</span><span id="receipt-tax-target">¥0</span></div>
 <div style="display:flex; justify-content:space-between;"><span>8%税額</span><span id="receipt-tax-amount">¥0</span></div>
 <div style="display:flex; justify-content:space-between; margin-top:4px;"><span>お支払い方法</span><span id="receipt-pay-method-text">現金</span></div>
@@ -445,11 +441,6 @@ z-index: 10;
 <div class="receipt-message" id="receipt-message-el">
 <p style="margin: 2px 0;">ご来店ありがとうございました。</p>
 <p style="margin: 2px 0;">またのご利用をお待ちしております！</p>
-</div>
-
-<div class="receipt-qr-area">
-<div class="receipt-qr-box"><div id="receipt-qr-1"></div>LINEスタンプ</div>
-<div class="receipt-qr-box"><div id="receipt-qr-2"></div>ハッピープライス</div>
 </div>
 
 <div class="receipt-barcode-wrapper">
@@ -485,14 +476,14 @@ z-index: 10;
 <div style="text-align: left; background: #f8f9fa; padding: 12px; border-radius: 8px; margin-bottom: 12px;">
 <label style="display:block; font-size:12px; font-weight:bold; margin-bottom:6px;">割引の種類</label>
 <div style="display:flex; gap:15px; margin-bottom:10px;">
-<label><input type="radio" name="disc-type" value="pct" checked onclick="toggleDiscTypeInput()"> % 割引 (例: 10)</label>
-<label><input type="radio" name="disc-type" value="yen" onclick="toggleDiscTypeInput()"> 円引き (例: 200)</label>
+<label><input type="radio" name="disc-type" value="pct" checked onclick="toggleDiscTypeInput()"> % 割引 (1〜2桁)</label>
+<label><input type="radio" name="disc-type" value="yen" onclick="toggleDiscTypeInput()"> 円引き (3〜4桁)</label>
 </div>
-<label style="display:block; font-size:12px; font-weight:bold; margin-bottom:4px;" id="disc-val-label">割引率 (%)</label>
+<label style="display:block; font-size:12px; font-weight:bold; margin-bottom:4px;" id="disc-val-label">割引値 (例: 10 または 200)</label>
 <input type="number" id="disc-input-value" value="10" style="width:100%; padding:8px; font-size:16px; border:1px solid #ccc; border-radius:6px; box-sizing:border-box;">
 </div>
 <div style="display:flex; gap:10px;">
-<button class="modal-btn-back" style="flex:1;" onclick="openDiscountBarcodeScanModal()">← 戻る</button>
+<button class="modal-btn-back" style="flex:1;" onclick="backFromDiscInputToScan()">← 戻る</button>
 <button class="btn pay-btn" style="flex:2; margin:0; padding:10px;" onclick="generateDiscountBarcodeFinal()">完了（バーコード表示）</button>
 </div>
 </div>
@@ -500,7 +491,10 @@ z-index: 10;
 
 <!-- ③ 割引バーコード表示モーダル -->
 <div class="modal-overlay" id="disc-result-modal">
-<div class="modal-content-box" style="text-align: center;">
+<div class="modal-content-box" style="text-align: center; position: relative;">
+<div style="position: absolute; top: 15px; right: 15px; display: flex; gap: 5px;">
+<button class="reload-barcode-btn" onclick="promptSaveCurrentDiscDiscBarcode()" title="このバーコードを保存" style="background: #2ed573; color: white;">💾</button>
+</div>
 <h3>割引バーコード完成</h3>
 <p style="font-size:12px; color:#666;" id="disc-result-code-text">コード: </p>
 <div style="background:#fff; padding:15px; border-radius:8px; margin: 15px 0; display:inline-block;" id="disc-result-area">
@@ -650,13 +644,7 @@ z-index: 10;
 </div>
 
 <script>
-/* ==========================================================
-    💡 GitHub側での商品追加が超簡単なデータベース
-    ここに「"13桁バーコード": { name: "商品名", price: 価格 },」の
-    形式で書き足すだけで、すぐにカートでスキャンできるようになります！
-    ========================================================== */
 let defaultDatabase = {
-// --- 通常商品 ---
 "4901330502880": { name: "ポテトチップス", price: 160 },
 "4902105001569": { name: "カップヌードル", price: 210 },
 "4902402928837": { name: "とんがりCORN", price: 150 },
@@ -676,7 +664,6 @@ let defaultDatabase = {
 "4902105034095": { name: "U.F.O.プチ", price: 110 },
 "4902881048651": { name: "一平ちゃん", price: 160 },
 
-// --- バーコードの無い商品 (野菜・果物) ---
 "100001": { name: "葉しょうが", price: 158, category: "yasai" },
 "100002": { name: "ズッキーニ", price: 198, category: "yasai" },
 "100003": { name: "なす", price: 78, category: "yasai" },
@@ -691,18 +678,15 @@ let defaultDatabase = {
 "100012": { name: "バナナ", price: 129, category: "yasai" },
 "100013": { name: "イチゴ", price: 267, category: "yasai" },
 
-// --- 肉・魚 ---
 "200001": { name: "国産牛ステーキ用", price: 980, category: "niku" },
 "200002": { name: "豚ロース薄切り", price: 398, category: "niku" },
 "200003": { name: "鶏もも肉(カット)", price: 298, category: "niku" },
 "200004": { name: "生鮭切り身", price: 450, category: "niku" },
 
-// --- 惣菜 ---
 "300001": { name: "特製から揚げ弁当", price: 550, category: "sozai" },
 "300002": { name: "ロースカツサンド", price: 380, category: "sozai" },
 "300003": { name: "お寿司盛り合わせ", price: 880, category: "sozai" },
 
-// --- その他 ---
 "400001": { name: "ペットボトル緑茶", price: 120, category: "sonota" },
 "400002": { name: "手巻きおにぎり(梅)", price: 130, category: "sonota" }
 };
@@ -735,6 +719,39 @@ let currentGeneratedCode = "";
 let settingsClickCount = 0, settingsClickTimer = null;
 let titleClickCount = 0, titleClickTimer = null;
 let purchaseListClickCount = 0, purchaseListClickTimer = null;
+
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+// 「ポッ」音（タップ時効果音）
+function playTapSound() {
+if (audioCtx.state === 'suspended') audioCtx.resume();
+const osc = audioCtx.createOscillator();
+const gain = audioCtx.createGain();
+osc.type = 'sine';
+osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+osc.frequency.exponentialRampToValueAtTime(200, audioCtx.currentTime + 0.05);
+gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
+osc.connect(gain); gain.connect(audioCtx.destination);
+osc.start(); osc.stop(audioCtx.currentTime + 0.05);
+}
+
+// ピピッ音
+function playSound(freq, duration, type = 'sine') {
+if (!voiceSettings.beep) return;
+if (audioCtx.state === 'suspended') audioCtx.resume();
+const osc = audioCtx.createOscillator();
+const gain = audioCtx.createGain();
+osc.type = type; osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+osc.connect(gain); gain.connect(audioCtx.destination);
+osc.start(); osc.stop(audioCtx.currentTime + duration);
+}
+
+document.addEventListener('click', (e) => {
+const target = e.target.closest('button, .product-card, .tab-btn, .pay-method-btn, h1');
+if (target) { playTapSound(); }
+});
 
 function saveCartToStorage() { localStorage.setItem('myPosCartItems', JSON.stringify(cartItems)); }
 function clearCartFromStorage() { cartItems = []; localStorage.removeItem('myPosCartItems'); renderCart(); }
@@ -780,7 +797,7 @@ event.target.value = '';
 }
 
 // -------------------------------------------------------------
-// 🏷️ 割引バーコード関連のロジック
+// 🏷️ 割引バーコード作成関連
 // -------------------------------------------------------------
 let discSelectedProduct = null;
 let discScanner = null;
@@ -796,6 +813,7 @@ discScanner.start(
 { facingMode: "environment" },
 { fps: 10, qrbox: { width: 200, height: 150 } },
 (decodedText) => {
+playSound(1200, 0.08);
 handleDiscScannedCode(decodedText);
 },
 (error) => {}
@@ -817,18 +835,25 @@ document.getElementById('disc-scan-modal').style.display = 'none';
 }
 }
 
+function backFromDiscInputToScan() {
+document.getElementById('disc-input-modal').style.display = 'none';
+openDiscountBarcodeScanModal();
+}
+
 function handleDiscScanFile(event) {
 const file = event.target.files[0];
 if (!file) return;
 const html5QrCodeForFile = new Html5Qrcode("disc-reader");
 html5QrCodeForFile.scanFile(file, true)
-.then(decodedText => { handleDiscScannedCode(decodedText); })
+.then(decodedText => {
+playSound(1200, 0.08);
+handleDiscScannedCode(decodedText);
+})
 .catch(err => alert("画像からバーコードを検出できませんでした"));
 event.target.value = '';
 }
 
 function handleDiscScannedCode(code) {
-// 割引バーコードや通常商品の判別
 if (discScanner) {
 discScanner.stop().then(() => {
 try { discScanner.clear(); } catch(e){}
@@ -848,17 +873,15 @@ document.getElementById('disc-scan-modal').style.display = 'none';
 let prodName = "不明な商品";
 let basePrice = 100;
 
-// すでに割引コードのときは元を抽出するか、そのまま扱う
 if (itemDatabase[code]) {
 prodName = itemDatabase[code].name;
 basePrice = itemDatabase[code].price;
 } else {
-// 割引コード（例: 490133050288010 など）から元コードを推測
 for (let originalCode in itemDatabase) {
 if (code.startsWith(originalCode)) {
 prodName = itemDatabase[originalCode].name;
 basePrice = itemDatabase[originalCode].price;
-code = originalCode; // 元コードに直す
+code = originalCode;
 break;
 }
 }
@@ -874,11 +897,11 @@ function toggleDiscTypeInput() {
 const type = document.querySelector('input[name="disc-type"]:checked').value;
 const label = document.getElementById('disc-val-label');
 if (type === 'pct') {
-label.textContent = "割引率 (%)";
+label.textContent = "割引率 (1〜2桁: 例 10)";
 document.getElementById('disc-input-value').value = "10";
 } else {
-label.textContent = "割引金額 (円)";
-document.getElementById('disc-input-value').value = "100";
+label.textContent = "割引金額 (3〜4桁: 例 200)";
+document.getElementById('disc-input-value').value = "200";
 }
 }
 
@@ -887,10 +910,19 @@ function generateDiscountBarcodeFinal() {
 const type = document.querySelector('input[name="disc-type"]:checked').value;
 const val = document.getElementById('disc-input-value').value.trim();
 if (!val || isNaN(val)) { alert("有効な数値を入力してください"); return; }
+const numVal = parseInt(val);
 
-// ご要望の仕様：商品の13桁コードにプラスで、10%だと最後尾に「10」が追加されるようなコード体系
-// 例: 4901330502880 + 10 = 490133050288010
-currentDiscBarcode = `${discSelectedProduct.code}${val}`;
+// 1〜2桁は%　3〜4桁は円のルールに合わせた文字列生成
+let suffix = "";
+if (type === 'pct') {
+if (numVal < 1 || numVal > 99) { alert("percentageは1〜99の間で入力してください"); return; }
+suffix = String(numVal).padStart(2, '0'); // 1桁なら01などのように2桁にするか、そのまま
+} else {
+if (numVal < 100 || numVal > 9999) { alert("円引きは3〜4桁(100〜9999)で入力してください"); return; }
+suffix = String(numVal); // 3〜4桁
+}
+
+currentDiscBarcode = `${discSelectedProduct.code}${suffix}`;
 
 document.getElementById('disc-input-modal').style.display = 'none';
 document.getElementById('disc-result-code-text').textContent = `${discSelectedProduct.name} (${val}${type === 'pct' ? '%割引' : '円引き'}) [コード: ${currentDiscBarcode}]`;
@@ -900,6 +932,16 @@ JsBarcode("#disc-result-svg", currentDiscBarcode, { format: "CODE128", width: 1.
 } catch(e) { console.error(e); }
 
 document.getElementById('disc-result-modal').style.display = 'flex';
+}
+
+function promptSaveCurrentDiscDiscBarcode() {
+if (!currentDiscBarcode) return;
+const nameInput = prompt("この割引バーコードの名前を入力してください", `${discSelectedProduct.name}_割引`);
+if (nameInput === null) return;
+const barcodeName = nameInput.trim() === "" ? "割引バーコード" : nameInput.trim();
+savedBarcodes.unshift({ name: barcodeName, code: currentDiscBarcode });
+localStorage.setItem('myPosSavedBarcodes', JSON.stringify(savedBarcodes));
+alert("割引バーコードを保存しました！");
 }
 
 function shareDiscBarcodeImage() {
@@ -920,16 +962,16 @@ function closeDiscResultModal() {
 document.getElementById('disc-result-modal').style.display = 'none';
 }
 
-// 割引バーコードや通常バーコードの判別処理
+// バーコード判定ロジック（1〜2桁=%, 3〜4桁=円）
 function processScannedBarcode(code) {
-// 1. 通常商品かチェック
+// 1. 通常商品
 if (itemDatabase[code]) {
-addItem(itemDatabase[code].name, itemDatabase[code].price);
-showScanStatus(`「${itemDatabase[code].name}」を追加しました！`, '#2575fc');
+addItem(itemDatabase[code].name, itemDatabase[code].price, code);
+setTimeout(() => { canScan = true; }, 1500);
 return;
 }
 
-// 2. 割引バーコード（元コード + 割引値）の判別
+// 2. 割引バーコード判定
 let matchedOriginalCode = null;
 let matchedValStr = "";
 for (let originalCode in itemDatabase) {
@@ -942,39 +984,24 @@ break;
 
 if (matchedOriginalCode) {
 const baseItem = itemDatabase[matchedOriginalCode];
-const valNum = parseFloat(matchedValStr);
+const valNum = parseInt(matchedValStr);
 let discountedPrice = baseItem.price;
-let discountName = `${baseItem.name} (割引)`;
 
-// %か円かの判別（値の大きさや簡易判定：例えばvalが50以下なら%割引、それ以上または特定条件。ここでは簡易的に50以下は%割引、50超は円引きなど、あるいはコード体系から判別。安全のため、末尾が小さい場合は%等、もしくは設定に合わせる）
-// ※ここでは、ユーザー指定「10%だと最後に10、200円だと最後に200」に対応するため、valNumが例えば 1〜99 のかつ妥当な範囲なら %割引、あるいは円引きと判定。直感的に200などの大きな数値は円引きと分かります。
-if (valNum <= 90 && (code.endsWith("10") || code.endsWith("20") || code.endsWith("30") || code.endsWith("50"))) {
+// 桁数判定：1〜2桁なら%引き、3〜4桁なら円引き
+if (matchedValStr.length <= 2) {
 discountedPrice = Math.round(baseItem.price * (1 - valNum / 100));
-discountName = `${baseItem.name} (${valNum}%OFF)`;
 } else {
 discountedPrice = Math.max(0, baseItem.price - valNum);
-discountName = `${baseItem.name} (${valNum}円引き)`;
 }
 
-addItemCustomPrice(discountName, discountedPrice);
-showScanStatus(`🏷️ ${discountName} を適用しました！`, '#20bf6b');
+addItemCustomPrice(baseItem.name, baseItem.price, discountedPrice, code);
+setTimeout(() => { canScan = true; }, 1500);
 return;
 }
 
-// どちらでもない場合エラー
+// エラー時
 playSound(300, 0.2, 'sawtooth');
-showScanStatus(`エラー: 未登録のバーコード (${code})`, '#ff4757');
-}
-
-function showScanStatus(text, color) {
-const statusMsg = document.getElementById('status-msg');
-statusMsg.style.color = color;
-statusMsg.textContent = text;
-setTimeout(() => {
-statusMsg.style.color = '#2575fc';
-statusMsg.textContent = "枠内にバーコードをかざしてください";
-canScan = true;
-}, 1500);
+setTimeout(() => { canScan = true; }, 1500);
 }
 
 function handleRegisterImageFile(event) {
@@ -1031,18 +1058,6 @@ window.speechSynthesis.speak(utter);
 }
 }
 
-const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-function playSound(freq, duration, type = 'sine') {
-if (!voiceSettings.beep) return;
-if (audioCtx.state === 'suspended') audioCtx.resume();
-const osc = audioCtx.createOscillator();
-const gain = audioCtx.createGain();
-osc.type = type; osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-osc.connect(gain); gain.connect(audioCtx.destination);
-osc.start(); osc.stop(audioCtx.currentTime + duration);
-}
-
 function handleSettingsClick() {
 settingsClickCount++;
 if (settingsClickCount === 1) {
@@ -1083,7 +1098,7 @@ grid.innerHTML += `
 
 function addNoBarcodeItem(code) {
 const item = itemDatabase[code];
-if (item) { addItem(item.name, item.price); playSound(1200, 0.08); }
+if (item) { addItem(item.name, item.price, code); playSound(1200, 0.08); }
 }
 
 function switchView(viewName) {
@@ -1195,21 +1210,30 @@ document.getElementById('barcode-modal').style.display = 'none';
 document.getElementById('settings-modal').style.display = 'flex';
 }
 
-function addItem(name, price) {
+function addItem(name, price, code = "") {
 playSound(1200, 0.08);
 const taxPrice = Math.round(price * 1.1);
-let existing = cartItems.find(item => item.name === name && item.price === price);
+let existing = cartItems.find(item => item.name === name && item.price === price && !item.originalPrice);
 if (existing) { existing.quantity += 1; }
-else { cartItems.unshift({ name: name, price: price, taxPrice: taxPrice, quantity: 1 }); }
+else { cartItems.unshift({ name: name, price: price, taxPrice: taxPrice, quantity: 1, code: code }); }
 saveCartToStorage(); renderCart();
 }
 
-function addItemCustomPrice(name, price) {
+function addItemCustomPrice(name, origPrice, discPrice, code = "") {
 playSound(1200, 0.08);
-const taxPrice = Math.round(price * 1.1);
-let existing = cartItems.find(item => item.name === name && item.price === price);
+const taxPrice = Math.round(discPrice * 1.1);
+let existing = cartItems.find(item => item.name === name && item.price === discPrice && item.originalPrice === origPrice);
 if (existing) { existing.quantity += 1; }
-else { cartItems.unshift({ name: name, price: price, taxPrice: taxPrice, quantity: 1 }); }
+else {
+cartItems.unshift({
+name: name,
+price: discPrice,
+originalPrice: origPrice,
+taxPrice: taxPrice,
+quantity: 1,
+code: code
+});
+}
 saveCartToStorage(); renderCart();
 }
 
@@ -1230,7 +1254,7 @@ saveCartToStorage(); renderCart();
 function renderCart() {
 const container = document.getElementById('cart-list');
 if (cartItems.length === 0) {
-container.innerHTML = '<p style="color: #888; font-family: \'Segoe UI\', sans-serif; text-align: center;">スキャンした商品がここに表示されます</p>';
+container.innerHTML = '<p style="color: #888; font-family: \'Segoe UI\', sans-serif; text-align: center;">スキャンされた商品がここに表示されます</p>';
 totalPrice = 0; totalCount = 0;
 } else {
 container.innerHTML = ''; totalPrice = 0; totalCount = 0;
@@ -1239,11 +1263,17 @@ const itemSubtotal = item.taxPrice * item.quantity;
 totalPrice += itemSubtotal; totalCount += item.quantity;
 let optionsHtml = '';
 for (let q = 1; q <= 20; q++) { optionsHtml += `<option value="${q}" ${item.quantity === q ? 'selected' : ''}>${q}</option>`; }
+
+let priceDisplayHtml = `単価: ${item.price}円 (税込${item.taxPrice}円)`;
+if (item.originalPrice) {
+priceDisplayHtml = `単価: <s style="color:#ff4757; margin-right:4px;">${item.originalPrice}円</s> <b style="color:#ff4757; font-size:14px;">${item.price}円</b> (税込${item.taxPrice}円)`;
+}
+
 container.innerHTML += `
 <div class="cart-item-row">
 <div class="cart-item-left">
 <span>▶ ${item.name}</span>
-<small style="color: #666;">単価: ${item.price}円 (税込${item.taxPrice}円)</small>
+<small style="color: #666;">${priceDisplayHtml}</small>
 </div>
 <div class="cart-item-right">
 <div class="qty-select-wrapper">
@@ -1276,8 +1306,10 @@ closeCustomerCheckoutCheck();
 document.getElementById('pay-amount').textContent = totalPrice;
 let codes = [];
 cartItems.forEach(item => {
-let foundCode = "00000";
-for (let code in itemDatabase) { if (itemDatabase[code].name === item.name) { foundCode = code; break; } }
+let foundCode = item.code || "00000";
+if (!item.code) {
+for (let c in itemDatabase) { if (itemDatabase[c].name === item.name) { foundCode = c; break; } }
+}
 for (let i = 0; i < item.quantity; i++) { codes.push(foundCode); }
 });
 const qrData = `LUCKY_${codes.join('_')}_${totalPrice}`;
@@ -1511,7 +1543,6 @@ document.getElementById('change-modal').style.display = 'flex';
 currentInputAmount = "0";
 }
 
-// --- レシートカスタム設定 ---
 let receiptSettings = JSON.parse(localStorage.getItem('myPosReceiptSettings')) || {
 storeTitle: "KKマート",
 storeSub: "名古屋東 店",
@@ -1560,7 +1591,6 @@ alert("レシートの設定を保存しました！");
 closeReceiptSettingsModal();
 }
 
-// --- 画像風レシート表示処理 ---
 function openReceiptModalFromChange() {
 document.getElementById('change-modal').style.display = 'none';
 const currentDate = new Date().toLocaleString();
@@ -1596,14 +1626,6 @@ document.getElementById('receipt-total-text').textContent = `${totalItemsCount}�
 document.getElementById('receipt-pay-method-text').textContent = selectedPayMethod === '11Pay' ? '11Pay決済' : '現金';
 document.getElementById('receipt-cash-text').textContent = `${lastReceivedCash}円`;
 document.getElementById('receipt-change-text').textContent = `${lastChangeCash}円`;
-
-// ミニQRコードの生成
-try {
-const qr1 = qrcode(0, 'L'); qr1.addData("https://line.me"); qr1.make();
-document.getElementById('receipt-qr-1').innerHTML = qr1.createImgTag(3);
-const qr2 = qrcode(0, 'L'); qr2.addData("https://example.com"); qr2.make();
-document.getElementById('receipt-qr-2').innerHTML = qr2.createImgTag(3);
-} catch(e){}
 
 const amountStr = String(finalTotal).padStart(10, '0');
 const receiptBarcodeCode = `20${amountStr}`;
@@ -1829,6 +1851,7 @@ if (couponScanInterval) { clearInterval(couponScanInterval); couponScanInterval 
 if (couponStream) { couponStream.getTracks().forEach(track => track.stop()); couponStream = null; }
 }
 
+// お会計QRコード読み取り（割引対応版）
 function handleRegisterQRCode(codeData) {
 if (codeData && codeData.startsWith("LUCKY_")) {
 stopRegisterScanner(); playSound(1200, 0.1);
@@ -1836,24 +1859,23 @@ const parts = codeData.split("_");
 const itemCodes = parts.slice(1, parts.length - 1);
 let parsedItemsMap = {};
 itemCodes.forEach(c => {
-// 通常商品または割引コードかチェック
 let foundName = "";
 let foundPrice = 0;
 if (itemDatabase[c]) {
 foundName = itemDatabase[c].name;
 foundPrice = itemDatabase[c].price;
 } else {
-// 割引コード形式の処理
 for (let orig in itemDatabase) {
 if (c.startsWith(orig) && c.length > orig.length) {
 const base = itemDatabase[orig];
-const valNum = parseFloat(c.substring(orig.length));
-foundName = (valNum <= 90 && (c.endsWith("10")||c.endsWith("20")||c.endsWith("30")||c.endsWith("50")))
-? `${base.name} (${valNum}%OFF)`
-: `${base.name} (${valNum}円引き)`;
-foundPrice = (valNum <= 90 && (c.endsWith("10")||c.endsWith("20")||c.endsWith("30")||c.endsWith("50")))
-? Math.round(base.price * (1 - valNum / 100))
-: Math.max(0, base.price - valNum);
+const valStr = c.substring(orig.length);
+const valNum = parseInt(valStr);
+foundName = base.name;
+if (valStr.length <= 2) {
+foundPrice = Math.round(base.price * (1 - valNum / 100));
+} else {
+foundPrice = Math.max(0, base.price - valNum);
+}
 break;
 }
 }
@@ -1874,10 +1896,9 @@ document.getElementById('register-confirm-modal').style.display = 'flex';
 
 function toggleCustomerCamera(checkbox) {
 const offOverlay = document.getElementById('customer-camera-off-overlay');
-const statusMsg = document.getElementById('status-msg');
 localStorage.setItem('customerCameraOn', checkbox.checked);
-if (checkbox.checked) { offOverlay.style.display = 'none'; startCustomerScanner(); statusMsg.style.color = '#2575fc'; statusMsg.textContent = "枠内にバーコードをかざしてください"; }
-else { stopCustomerScanner(); offOverlay.style.display = 'flex'; statusMsg.style.color = '#888'; statusMsg.textContent = "カメラ停止中"; }
+if (checkbox.checked) { offOverlay.style.display = 'none'; startCustomerScanner(); }
+else { stopCustomerScanner(); offOverlay.style.display = 'flex'; }
 }
 
 function toggleRegisterCamera(checkbox) {
@@ -1948,14 +1969,11 @@ renderCart();
 const savedCustomerState = localStorage.getItem('customerCameraOn');
 const initialCustomerIsOn = savedCustomerState === null ? true : JSON.parse(savedCustomerState);
 document.getElementById('customer-camera-toggle').checked = initialCustomerIsOn;
-const statusMsg = document.getElementById('status-msg');
 if (initialCustomerIsOn) {
 document.getElementById('customer-camera-off-overlay').style.display = 'none';
 startCustomerScanner();
-statusMsg.style.color = '#2575fc'; statusMsg.textContent = "枠内にバーコードをかざしてください";
 } else {
 document.getElementById('customer-camera-off-overlay').style.display = 'flex';
-statusMsg.style.color = '#888'; statusMsg.textContent = "カメラ停止中";
 }
 
 let currentManualCode = "";

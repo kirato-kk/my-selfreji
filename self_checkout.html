@@ -222,7 +222,7 @@ background: #f1f2f6; border: 1px solid #ccc; border-radius: 6px; padding: 4px 8p
 </div>
 
 <div class="camera-control-bar">
-<div class="status" style="color: #ff4757; margin-bottom: 0; text-align: left;">QRコードを枠内にかざしてください</div>
+<div class="status" id="register-status-msg" style="color: #ff4757; margin-bottom: 0; text-align: left;">QRコードを枠内にかざしてください</div>
 <label class="toggle-switch">
 <input type="checkbox" id="register-camera-toggle" onchange="toggleRegisterCamera(this)">
 <span class="toggle-slider"></span>
@@ -645,50 +645,50 @@ background: #f1f2f6; border: 1px solid #ccc; border-radius: 6px; padding: 4px 8p
 
 <script>
 let defaultDatabase = {
-"4901330502880": { name: "ポテトチップス", price: 160 },
-"4902105001569": { name: "カップヌードル", price: 210 },
-"4902402928837": { name: "とんがりCORN", price: 150 },
-"958412687453": { name: "コーラ", price: 350 },
-"4903110002222": { name: "ロイヤルブレッド", price: 390 },
-"4902555170893": { name: "カントリーマアム", price: 320 },
-"4901313256015": { name: "こつぶっこ", price: 240 },
-"4901005532595": { name: "クリーム コロン", price: 260 },
-"4901626025353": { name: "ぱりんこ", price: 180 },
-"4903333252725": { name: "小さな チョコパイ", price: 150 },
-"4901111959798": { name: "Blendy stick カフェオレ", price: 260 },
-"4901777018686": { name: "SUNTORY 天然水 2L", price: 120 },
-"4902888218842": { name: "森永 チョコチップクッキー", price: 220 },
-"49715590": { name: "スパイスクッキング ハンバーグ", price: 140 },
-"49698633": { name: "カップヌードル シーフード", price: 160 },
-"4902471102541": { name: "じっくりコトコトこんがりパン 濃厚コーンポタージュ", price: 160 },
-"4902105034095": { name: "U.F.O.プチ", price: 110 },
-"4902881048651": { name: "一平ちゃん", price: 160 },
+"4901330502880": { name: "ポテトチップス", price: 160, waribiki: 0 },
+"4902105001569": { name: "カップヌードル", price: 210, waribiki: 0 },
+"4902402928837": { name: "とんがりCORN", price: 150, waribiki: 0 },
+"958412687453": { name: "コーラ", price: 350, waribiki: 0 },
+"4903110002222": { name: "ロイヤルブレッド", price: 390, waribiki: 0 },
+"4902555170893": { name: "カントリーマアム", price: 320, waribiki: 0 },
+"4901313256015": { name: "こつぶっこ", price: 240, waribiki: 0 },
+"4901005532595": { name: "クリーム コロン", price: 260, waribiki: 0 },
+"4901626025353": { name: "ぱりんこ", price: 180, waribiki: 0 },
+"4903333252725": { name: "小さな チョコパイ", price: 150, waribiki: 0 },
+"4901111959798": { name: "Blendy stick カフェオレ", price: 260, waribiki: 0 },
+"4901777018686": { name: "SUNTORY 天然水 2L", price: 120, waribiki: 0 },
+"4902888218842": { name: "森永 チョコチップクッキー", price: 220, waribiki: 0 },
+"49715590": { name: "スパイスクッキング ハンバーグ", price: 140, waribiki: 0 },
+"49698633": { name: "カップヌードル シーフード", price: 160, waribiki: 0 },
+"4902471102541": { name: "じっくりコトコトこんがりパン 濃厚コーンポタージュ", price: 160, waribiki: 0 },
+"4902105034095": { name: "U.F.O.プチ", price: 110, waribiki: 0 },
+"4902881048651": { name: "一平ちゃん", price: 160, waribiki: 0 },
 
-"100001": { name: "葉しょうが", price: 158, category: "yasai" },
-"100002": { name: "ズッキーニ", price: 198, category: "yasai" },
-"100003": { name: "なす", price: 78, category: "yasai" },
-"100004": { name: "ピーマン", price: 38, category: "yasai" },
-"100005": { name: "さつまいも", price: 198, category: "yasai" },
-"100006": { name: "ジャガイモ", price: 58, category: "yasai" },
-"100007": { name: "たまねぎ", price: 48, category: "yasai" },
-"100008": { name: "にんじん", price: 58, category: "yasai" },
-"100009": { name: "トマト", price: 58, category: "yasai" },
-"100010": { name: "りんご", price: 98, category: "yasai" },
-"100011": { name: "オレンジ", price: 135, category: "yasai" },
-"100012": { name: "バナナ", price: 129, category: "yasai" },
-"100013": { name: "イチゴ", price: 267, category: "yasai" },
+"100001": { name: "葉しょうが", price: 158, waribiki: 0, category: "yasai" },
+"100002": { name: "ズッキーニ", price: 198, waribiki: 0, category: "yasai" },
+"100003": { name: "なす", price: 78, waribiki: 20, category: "yasai" }, // 例：なすに20円引きなどの設定が可能です
+"100004": { name: "ピーマン", price: 38, waribiki: 0, category: "yasai" },
+"100005": { name: "さつまいも", price: 198, waribiki: 0, category: "yasai" },
+"100006": { name: "ジャガイモ", price: 58, waribiki: 0, category: "yasai" },
+"100007": { name: "たまねぎ", price: 48, waribiki: 0, category: "yasai" },
+"100008": { name: "にんじん", price: 58, waribiki: 0, category: "yasai" },
+"100009": { name: "トマト", price: 58, waribiki: 0, category: "yasai" },
+"100010": { name: "りんご", price: 98, waribiki: 0, category: "yasai" },
+"100011": { name: "オレンジ", price: 135, waribiki: 0, category: "yasai" },
+"100012": { name: "バナナ", price: 129, waribiki: 0, category: "yasai" },
+"100013": { name: "イチゴ", price: 267, waribiki: 0, category: "yasai" },
 
-"200001": { name: "国産牛ステーキ用", price: 980, category: "niku" },
-"200002": { name: "豚ロース薄切り", price: 398, category: "niku" },
-"200003": { name: "鶏もも肉(カット)", price: 298, category: "niku" },
-"200004": { name: "生鮭切り身", price: 450, category: "niku" },
+"200001": { name: "国産牛ステーキ用", price: 980, waribiki: 0, category: "niku" },
+"200002": { name: "豚ロース薄切り", price: 398, waribiki: 0, category: "niku" },
+"200003": { name: "鶏もも肉(カット)", price: 298, waribiki: 0, category: "niku" },
+"200004": { name: "生鮭切り身", price: 450, waribiki: 0, category: "niku" },
 
-"300001": { name: "特製から揚げ弁当", price: 550, category: "sozai" },
-"300002": { name: "ロースカツサンド", price: 380, category: "sozai" },
-"300003": { name: "お寿司盛り合わせ", price: 880, category: "sozai" },
+"300001": { name: "特製から揚げ弁当", price: 550, waribiki: 0, category: "sozai" },
+"300002": { name: "ロースカツサンド", price: 380, waribiki: 0, category: "sozai" },
+"300003": { name: "お寿司盛り合わせ", price: 880, waribiki: 0, category: "sozai" },
 
-"400001": { name: "ペットボトル緑茶", price: 120, category: "sonota" },
-"400002": { name: "手巻きおにぎり(梅)", price: 130, category: "sonota" }
+"400001": { name: "ペットボトル緑茶", price: 120, waribiki: 0, category: "sonota" },
+"400002": { name: "手巻きおにぎり(梅)", price: 130, waribiki: 0, category: "sonota" }
 };
 
 let itemDatabase = defaultDatabase;
@@ -722,7 +722,6 @@ let purchaseListClickCount = 0, purchaseListClickTimer = null;
 
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-// 「ポッ」音（タップ時効果音）
 function playTapSound() {
 if (audioCtx.state === 'suspended') audioCtx.resume();
 const osc = audioCtx.createOscillator();
@@ -736,7 +735,6 @@ osc.connect(gain); gain.connect(audioCtx.destination);
 osc.start(); osc.stop(audioCtx.currentTime + 0.05);
 }
 
-// ピピッ音
 function playSound(freq, duration, type = 'sine') {
 if (!voiceSettings.beep) return;
 if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -912,14 +910,13 @@ const val = document.getElementById('disc-input-value').value.trim();
 if (!val || isNaN(val)) { alert("有効な数値を入力してください"); return; }
 const numVal = parseInt(val);
 
-// 1〜2桁は%　3〜4桁は円のルールに合わせた文字列生成
 let suffix = "";
 if (type === 'pct') {
-if (numVal < 1 || numVal > 99) { alert("percentageは1〜99の間で入力してください"); return; }
-suffix = String(numVal).padStart(2, '0'); // 1桁なら01などのように2桁にするか、そのまま
+if (numVal < 1 || numVal > 99) { alert("割引率は1〜99の間で入力してください"); return; }
+suffix = String(numVal).padStart(2, '0');
 } else {
 if (numVal < 100 || numVal > 9999) { alert("円引きは3〜4桁(100〜9999)で入力してください"); return; }
-suffix = String(numVal); // 3〜4桁
+suffix = String(numVal);
 }
 
 currentDiscBarcode = `${discSelectedProduct.code}${suffix}`;
@@ -962,16 +959,24 @@ function closeDiscResultModal() {
 document.getElementById('disc-result-modal').style.display = 'none';
 }
 
-// バーコード判定ロジック（1〜2桁=%, 3〜4桁=円）
 function processScannedBarcode(code) {
-// 1. 通常商品
 if (itemDatabase[code]) {
-addItem(itemDatabase[code].name, itemDatabase[code].price, code);
+const item = itemDatabase[code];
+if (item.waribiki && item.waribiki > 0) {
+let discPrice = item.price;
+if (item.waribiki <= 99) {
+discPrice = Math.round(item.price * (1 - item.waribiki / 100));
+} else {
+discPrice = Math.max(0, item.price - item.waribiki);
+}
+addItemCustomPrice(item.name, item.price, discPrice, code);
+} else {
+addItem(item.name, item.price, code);
+}
 setTimeout(() => { canScan = true; }, 1500);
 return;
 }
 
-// 2. 割引バーコード判定
 let matchedOriginalCode = null;
 let matchedValStr = "";
 for (let originalCode in itemDatabase) {
@@ -987,7 +992,6 @@ const baseItem = itemDatabase[matchedOriginalCode];
 const valNum = parseInt(matchedValStr);
 let discountedPrice = baseItem.price;
 
-// 桁数判定：1〜2桁なら%引き、3〜4桁なら円引き
 if (matchedValStr.length <= 2) {
 discountedPrice = Math.round(baseItem.price * (1 - valNum / 100));
 } else {
@@ -999,7 +1003,6 @@ setTimeout(() => { canScan = true; }, 1500);
 return;
 }
 
-// エラー時
 playSound(300, 0.2, 'sawtooth');
 setTimeout(() => { canScan = true; }, 1500);
 }
@@ -1098,11 +1101,25 @@ grid.innerHTML += `
 
 function addNoBarcodeItem(code) {
 const item = itemDatabase[code];
-if (item) { addItem(item.name, item.price, code); playSound(1200, 0.08); }
+if (item) {
+if (item.waribiki && item.waribiki > 0) {
+let discPrice = item.price;
+if (item.waribiki <= 99) {
+discPrice = Math.round(item.price * (1 - item.waribiki / 100));
+} else {
+discPrice = Math.max(0, item.price - item.waribiki);
+}
+addItemCustomPrice(item.name, item.price, discPrice, code);
+} else {
+addItem(item.name, item.price, code);
+}
+playSound(1200, 0.08);
+}
 }
 
 function switchView(viewName) {
 currentMode = viewName;
+localStorage.setItem('myPosCurrentMode', viewName);
 document.querySelectorAll('.view-container').forEach(el => el.classList.remove('active'));
 if (viewName === 'customer') {
 document.getElementById('customer-view').classList.add('active');
@@ -1110,20 +1127,36 @@ stopRegisterScanner(); stopCouponScanner();
 const savedCustomerState = localStorage.getItem('customerCameraOn');
 const toggle = document.getElementById('customer-camera-toggle');
 const offOverlay = document.getElementById('customer-camera-off-overlay');
+const statusMsg = document.getElementById('status-msg');
 const isOn = savedCustomerState === null ? true : JSON.parse(savedCustomerState);
 toggle.checked = isOn;
-if (isOn) { offOverlay.style.display = 'none'; startCustomerScanner(); }
-else { stopCustomerScanner(); offOverlay.style.display = 'flex'; }
+if (isOn) {
+offOverlay.style.display = 'none';
+statusMsg.textContent = "枠内にバーコードをかざしてください";
+startCustomerScanner();
+} else {
+stopCustomerScanner();
+offOverlay.style.display = 'flex';
+statusMsg.textContent = "カメラはOFFです";
+}
 } else if (viewName === 'register') {
 document.getElementById('register-view').classList.add('active');
 stopCustomerScanner(); stopCouponScanner();
 const savedRegisterState = localStorage.getItem('registerCameraOn');
 const toggle = document.getElementById('register-camera-toggle');
 const offOverlay = document.getElementById('register-camera-off-overlay');
+const regStatusMsg = document.getElementById('register-status-msg');
 const isOn = savedRegisterState === null ? true : JSON.parse(savedRegisterState);
 toggle.checked = isOn;
-if (isOn) { offOverlay.style.display = 'none'; startRegisterScanner(); }
-else { stopRegisterScanner(); offOverlay.style.display = 'flex'; }
+if (isOn) {
+offOverlay.style.display = 'none';
+regStatusMsg.textContent = "QRコードを枠内にかざしてください";
+startRegisterScanner();
+} else {
+stopRegisterScanner();
+offOverlay.style.display = 'flex';
+regStatusMsg.textContent = "カメラはOFFです";
+}
 }
 }
 
@@ -1325,9 +1358,19 @@ document.getElementById('payment-modal').style.display = 'flex';
 function getGroupedItems(items) {
 let map = {};
 items.forEach(i => {
-const key = `${i.name}_${i.taxPrice}`;
-if (!map[key]) { map[key] = { name: i.name, price: i.price || Math.round(i.taxPrice/1.1), taxPrice: i.taxPrice, count: 0, totalTaxPrice: 0 }; }
-map[key].count += 1; map[key].totalTaxPrice += i.taxPrice;
+const key = `${i.name}_${i.taxPrice}_${i.originalPrice || 0}`;
+if (!map[key]) {
+map[key] = {
+name: i.name,
+price: i.price,
+originalPrice: i.originalPrice,
+taxPrice: i.taxPrice,
+count: 0,
+totalTaxPrice: 0
+};
+}
+map[key].count += i.quantity || 1;
+map[key].totalTaxPrice += i.taxPrice * (i.quantity || 1);
 });
 return Object.values(map);
 }
@@ -1360,11 +1403,15 @@ const itemTotal = item.taxPrice * item.quantity;
 regTotal += itemTotal; regCount += item.quantity;
 let optionsHtml = '';
 for (let q = 1; q <= 20; q++) { optionsHtml += `<option value="${q}" ${item.quantity === q ? 'selected' : ''}>${q}</option>`; }
+let priceSub = `税込${item.taxPrice}円`;
+if (item.originalPrice) {
+priceSub = `<s style="color:#ff4757;">原価:¥${item.originalPrice}</s> 割引単価:¥${item.price} (税込${item.taxPrice}円)`;
+}
 return `
 <div class="cart-item-row">
 <div class="cart-item-left">
 <span>▶ ${item.name}</span>
-<div><small style="color:#666;">税込${item.taxPrice}円</small></div>
+<div><small style="color:#666;">${priceSub}</small></div>
 </div>
 <div class="cart-item-right">
 <div class="qty-select-wrapper">
@@ -1610,11 +1657,23 @@ const finalTotal = getDiscountedTotal();
 const container = document.getElementById('receipt-items');
 container.innerHTML = groupedItems.map(i => {
 let unitPrice = Math.round(i.taxPrice / 1.1);
+let discountLine = '';
+
+if (i.originalPrice) {
+const diff = (i.originalPrice - i.price) * i.count;
+discountLine = `
+<div style="display:flex; justify-content:space-between; font-size:11px; color:#ff4757;">
+<span><s>¥${i.originalPrice * i.count}</s> (-¥${diff}割引)</span>
+<span></span>
+</div>`;
+}
+
 return `
 <div style="margin-bottom: 4px;">
 <div style="display:flex; justify-content:space-between; font-weight:bold;">
 <span>${i.name}</span><span>¥${i.totalTaxPrice}※</span>
 </div>
+${discountLine}
 <div style="font-size:10px; color:#555;">(@${unitPrice} × ${i.count}個)</div>
 </div>
 `;
@@ -1851,7 +1910,6 @@ if (couponScanInterval) { clearInterval(couponScanInterval); couponScanInterval 
 if (couponStream) { couponStream.getTracks().forEach(track => track.stop()); couponStream = null; }
 }
 
-// お会計QRコード読み取り（割引対応版）
 function handleRegisterQRCode(codeData) {
 if (codeData && codeData.startsWith("LUCKY_")) {
 stopRegisterScanner(); playSound(1200, 0.1);
@@ -1861,9 +1919,21 @@ let parsedItemsMap = {};
 itemCodes.forEach(c => {
 let foundName = "";
 let foundPrice = 0;
+let origPrice = null;
+
 if (itemDatabase[c]) {
-foundName = itemDatabase[c].name;
-foundPrice = itemDatabase[c].price;
+const base = itemDatabase[c];
+foundName = base.name;
+if (base.waribiki && base.waribiki > 0) {
+origPrice = base.price;
+if (base.waribiki <= 99) {
+foundPrice = Math.round(base.price * (1 - base.waribiki / 100));
+} else {
+foundPrice = Math.max(0, base.price - base.waribiki);
+}
+} else {
+foundPrice = base.price;
+}
 } else {
 for (let orig in itemDatabase) {
 if (c.startsWith(orig) && c.length > orig.length) {
@@ -1871,6 +1941,7 @@ const base = itemDatabase[orig];
 const valStr = c.substring(orig.length);
 const valNum = parseInt(valStr);
 foundName = base.name;
+origPrice = base.price;
 if (valStr.length <= 2) {
 foundPrice = Math.round(base.price * (1 - valNum / 100));
 } else {
@@ -1883,8 +1954,16 @@ break;
 
 if (foundName) {
 const taxPrice = Math.round(foundPrice * 1.1);
-const key = `${foundName}_${taxPrice}`;
-if (!parsedItemsMap[key]) { parsedItemsMap[key] = { name: foundName, price: foundPrice, taxPrice: taxPrice, quantity: 0 }; }
+const key = `${foundName}_${taxPrice}_${origPrice || 0}`;
+if (!parsedItemsMap[key]) {
+parsedItemsMap[key] = {
+name: foundName,
+price: foundPrice,
+originalPrice: origPrice,
+taxPrice: taxPrice,
+quantity: 0
+};
+}
 parsedItemsMap[key].quantity += 1;
 }
 });
@@ -1896,16 +1975,32 @@ document.getElementById('register-confirm-modal').style.display = 'flex';
 
 function toggleCustomerCamera(checkbox) {
 const offOverlay = document.getElementById('customer-camera-off-overlay');
+const statusMsg = document.getElementById('status-msg');
 localStorage.setItem('customerCameraOn', checkbox.checked);
-if (checkbox.checked) { offOverlay.style.display = 'none'; startCustomerScanner(); }
-else { stopCustomerScanner(); offOverlay.style.display = 'flex'; }
+if (checkbox.checked) {
+offOverlay.style.display = 'none';
+statusMsg.textContent = "枠内にバーコードをかざしてください";
+startCustomerScanner();
+} else {
+stopCustomerScanner();
+offOverlay.style.display = 'flex';
+statusMsg.textContent = "カメラはOFFです";
+}
 }
 
 function toggleRegisterCamera(checkbox) {
 const offOverlay = document.getElementById('register-camera-off-overlay');
+const regStatusMsg = document.getElementById('register-status-msg');
 localStorage.setItem('registerCameraOn', checkbox.checked);
-if (checkbox.checked) { offOverlay.style.display = 'none'; startRegisterScanner(); }
-else { stopRegisterScanner(); offOverlay.style.display = 'flex'; }
+if (checkbox.checked) {
+offOverlay.style.display = 'none';
+regStatusMsg.textContent = "QRコードを枠内にかざしてください";
+startRegisterScanner();
+} else {
+stopRegisterScanner();
+offOverlay.style.display = 'flex';
+regStatusMsg.textContent = "カメラはOFFです";
+}
 }
 
 let savedBarcodes = JSON.parse(localStorage.getItem('myPosSavedBarcodes')) || [];
@@ -1966,15 +2061,8 @@ renderSavedBarcodesList();
 
 renderCart();
 
-const savedCustomerState = localStorage.getItem('customerCameraOn');
-const initialCustomerIsOn = savedCustomerState === null ? true : JSON.parse(savedCustomerState);
-document.getElementById('customer-camera-toggle').checked = initialCustomerIsOn;
-if (initialCustomerIsOn) {
-document.getElementById('customer-camera-off-overlay').style.display = 'none';
-startCustomerScanner();
-} else {
-document.getElementById('customer-camera-off-overlay').style.display = 'flex';
-}
+const savedMode = localStorage.getItem('myPosCurrentMode') || 'customer';
+switchView(savedMode);
 
 let currentManualCode = "";
 function openManualBarcodeModal() {

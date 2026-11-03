@@ -242,7 +242,7 @@ box-sizing: border-box !important;
 </div>
 
 <div class="camera-control-bar">
-<div class="status" id="status-msg" style="margin-bottom: 0; text-align: left;">枠内にバーコードをかざしてください</div>
+<div class="status" id="status-msg" style="margin-bottom: 0; text-align: left; color: #747d8c;">カメラはOFFです</div>
 <label class="toggle-switch">
 <input type="checkbox" id="customer-camera-toggle" onchange="toggleCustomerCamera(this)">
 <span class="toggle-slider"></span>
@@ -250,7 +250,7 @@ box-sizing: border-box !important;
 </div>
 
 <div id="interactive" class="viewport">
-<div id="customer-camera-off-overlay" style="display: none; width: 100%; height: 100%; background-color: #747d8c; color: #fff; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; position: absolute; top: 0; left: 0; z-index: 10;">カメラはOFFです</div>
+<div id="customer-camera-off-overlay" style="display: none; width: 100%; height: 100%; background-color: #000; color: #747d8c; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; position: absolute; top: 0; left: 0; z-index: 10;">カメラはOFFです</div>
 </div>
 
 <div class="section-header">
@@ -272,7 +272,7 @@ box-sizing: border-box !important;
 </div>
 
 <div class="camera-control-bar">
-<div class="status" id="register-status-msg" style="color: #ff4757; margin-bottom: 0; text-align: left;">QRコードを枠内にかざしてください</div>
+<div class="status" id="register-status-msg" style="color: #747d8c; margin-bottom: 0; text-align: left;">カメラはOFFです</div>
 <label class="toggle-switch">
 <input type="checkbox" id="register-camera-toggle" onchange="toggleRegisterCamera(this)">
 <span class="toggle-slider"></span>
@@ -282,7 +282,7 @@ box-sizing: border-box !important;
 <div id="register-viewport-container">
 <video id="register-video" playsinline autoplay muted></video>
 <canvas id="register-canvas"></canvas>
-<div id="register-camera-off-overlay" style="display: none; width: 100%; height: 100%; background-color: #747d8c; color: #fff; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; position: absolute; top: 0; left: 0; z-index: 10;">カメラはOFFです</div>
+<div id="register-camera-off-overlay" style="display: none; width: 100%; height: 100%; background-color: #000; color: #747d8c; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; position: absolute; top: 0; left: 0; z-index: 10;">カメラはOFFです</div>
 </div>
 
 <button class="btn" style="background-color: #00adb5; margin-bottom: 10px;" onclick="document.getElementById('register-file-input').click()">画像から読み取り</button>
@@ -2002,11 +2002,13 @@ toggle.checked = isOn;
 if (isOn) {
 offOverlay.style.display = 'none';
 statusMsg.textContent = "枠内にバーコードをかざしてください";
+statusMsg.style.color = "#2575fc";
 startCustomerScanner();
 } else {
 stopCustomerScanner();
 offOverlay.style.display = 'flex';
 statusMsg.textContent = "カメラはOFFです";
+statusMsg.style.color = "#747d8c";
 }
 } else if (viewName === 'register') {
 document.getElementById('register-view').classList.add('active');
@@ -2020,11 +2022,13 @@ toggle.checked = isOn;
 if (isOn) {
 offOverlay.style.display = 'none';
 regStatusMsg.textContent = "QRコードを枠内にかざしてください";
+regStatusMsg.style.color = "#ff4757";
 startRegisterScanner();
 } else {
 stopRegisterScanner();
 offOverlay.style.display = 'flex';
 regStatusMsg.textContent = "カメラはOFFです";
+regStatusMsg.style.color = "#747d8c";
 }
 }
 }
@@ -2352,7 +2356,6 @@ return;
 let regTotal = 0;
 let regCount = 0;
 
-// カート商品から全ユニットを展開
 let allUnits = [];
 registerParsedCartItems.forEach((item, index) => {
 for (let u = 0; u < item.quantity; u++) {
@@ -2360,7 +2363,6 @@ allUnits.push({ cartIndex: index, item: item });
 }
 });
 
-// まとめ買いボックスの解析
 let individualBundleBoxes = [];
 let usedUnitMap = {};
 
@@ -2392,7 +2394,6 @@ unitPriceTax: unitPriceTax
 
 let htmlContent = '';
 
-// 1. まとめ買いセット枠の描画
 individualBundleBoxes.forEach(box => {
 let groupHtml = `<div class="bundle-group-box" style="margin-bottom:8px; padding:8px;">`;
 groupHtml += `<div class="bundle-group-title"><span>🎁 ${box.rule.name}</span></div>`;
@@ -2426,7 +2427,6 @@ regTotal += box.bundleTaxTotal;
 regCount += box.units.length;
 });
 
-// 2. 通常商品（余り・枠外）の描画
 registerParsedCartItems.forEach((item, index) => {
 let usedQty = 0;
 allUnits.forEach((u, uIdx) => {
@@ -2698,7 +2698,6 @@ msgContainer.innerHTML = receiptSettings.message.split('\n').map(line => `<p sty
 let totalItemsCount = 0;
 scannedCartDataForRegister.items.forEach(i => totalItemsCount += i.quantity);
 
-// 全ユニット展開してレシート用にもまとめ買いセットを解析
 let allUnits = [];
 scannedCartDataForRegister.items.forEach(item => {
 for (let u = 0; u < item.quantity; u++) {
@@ -2738,7 +2737,6 @@ unitPriceTax: unitPriceTax
 const container = document.getElementById('receipt-items');
 let itemsHtml = '';
 
-// 1. まとめ買いセット枠のレシート印字
 individualBundleBoxes.forEach(box => {
 let itemGroupMap = {};
 box.units.forEach(u => {
@@ -2761,7 +2759,6 @@ itemsHtml += `
 `;
 });
 
-// 2. 通常商品のレシート印字
 scannedCartDataForRegister.items.forEach((item, index) => {
 let usedQty = 0;
 allUnits.forEach((u, uIdx) => {
@@ -2795,7 +2792,6 @@ ${discountLine}
 }
 });
 
-// クーポン割引の印字
 let calculatedTotal = scannedCartDataForRegister.total;
 let freeCouponLinesHtml = '';
 appliedCouponList.forEach(c => {
@@ -3058,11 +3054,13 @@ localStorage.setItem('customerCameraOn', checkbox.checked);
 if (checkbox.checked) {
 offOverlay.style.display = 'none';
 statusMsg.textContent = "枠内にバーコードをかざしてください";
+statusMsg.style.color = "#2575fc";
 startCustomerScanner();
 } else {
 stopCustomerScanner();
 offOverlay.style.display = 'flex';
 statusMsg.textContent = "カメラはOFFです";
+statusMsg.style.color = "#747d8c";
 }
 }
 
@@ -3073,11 +3071,13 @@ localStorage.setItem('registerCameraOn', checkbox.checked);
 if (checkbox.checked) {
 offOverlay.style.display = 'none';
 regStatusMsg.textContent = "QRコードを枠内にかざしてください";
+regStatusMsg.style.color = "#ff4757";
 startRegisterScanner();
 } else {
 stopRegisterScanner();
 offOverlay.style.display = 'flex';
 regStatusMsg.textContent = "カメラはOFFです";
+regStatusMsg.style.color = "#747d8c";
 }
 }
 

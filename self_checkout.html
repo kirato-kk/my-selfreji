@@ -1020,9 +1020,6 @@ let defaultDatabase = {
 "400002": { name: "手巻きおにぎり(梅)", price: 130, waribiki: 0, category: "sonota" }
 };
 
-// -------------------------------------------------------------
-// 🛍️ まとめ買い（バンドル割引）グループルール設定
-// -------------------------------------------------------------
 const bundleRules = [
   {
     id: "bundle_noodle",
@@ -1102,7 +1099,13 @@ if (target) { playTapSound(); }
 });
 
 function saveCartToStorage() { localStorage.setItem('myPosCartItems', JSON.stringify(cartItems)); }
-function clearCartFromStorage() { cartItems = []; localStorage.removeItem('myPosCartItems'); renderCart(); }
+function clearCartFromStorage() {
+  cartItems = [];
+  localStorage.removeItem('myPosCartItems');
+  totalPrice = 0;
+  totalCount = 0;
+  renderCart();
+}
 
 function handlePurchaseListTitleClick() {
 purchaseListClickCount++;
@@ -1144,9 +1147,6 @@ reader.readAsDataURL(file);
 event.target.value = '';
 }
 
-// -------------------------------------------------------------
-// 🎁 クーポン作成・管理関連
-// -------------------------------------------------------------
 function openCouponMakerMenuModal() {
 document.getElementById('settings-modal').style.display = 'none';
 document.getElementById('coupon-maker-menu-modal').style.display = 'flex';
@@ -1405,9 +1405,6 @@ const link = document.createElement('a'); link.download = 'coupon_qr.jpg'; link.
 });
 }
 
-// -------------------------------------------------------------
-// 🏷️ 割引バーコード作成関連
-// -------------------------------------------------------------
 let discSelectedProduct = null;
 let discScanner = null;
 
@@ -1570,9 +1567,6 @@ function closeDiscResultModal() {
 document.getElementById('disc-result-modal').style.display = 'none';
 }
 
-// -------------------------------------------------------------
-// 🔄 返金対応処理関連
-// -------------------------------------------------------------
 let refundTargetAmount = 0;
 let refundSelectedMethod = "現金";
 let refundScanner = null;
@@ -2157,14 +2151,13 @@ speakText("商品を削除しました。商品は元の棚にお戻しくださ
 saveCartToStorage(); renderCart();
 }
 
-// -------------------------------------------------------------
-// 🛒 カート描画（1セット単位でピンク枠を複数個独立表示）
-// -------------------------------------------------------------
 function renderCart() {
 const container = document.getElementById('cart-list');
 if (cartItems.length === 0) {
 container.innerHTML = '<p style="color: #888; font-family: \'Segoe UI\', sans-serif; text-align: center;">スキャンされた商品がここに表示されます</p>';
 totalPrice = 0; totalCount = 0;
+document.getElementById('total-price').textContent = totalPrice;
+document.getElementById('total-count').textContent = totalCount;
 return;
 }
 
@@ -2341,9 +2334,6 @@ speakText("商品を削除しました。");
 renderRegisterConfirmList();
 }
 
-// -------------------------------------------------------------
-// 📋 スタッフの確認画面：まとめ買いセット枠表示対応
-// -------------------------------------------------------------
 function renderRegisterConfirmList() {
 const container = document.getElementById('register-confirm-items');
 if (registerParsedCartItems.length === 0) {
@@ -2681,9 +2671,6 @@ alert("レシートの設定を保存しました！");
 closeReceiptSettingsModal();
 }
 
-// -------------------------------------------------------------
-// 📄 レシート発行（まとめ買いセットの明細印字対応）
-// -------------------------------------------------------------
 function openReceiptModalFromChange() {
 document.getElementById('change-modal').style.display = 'none';
 const currentDate = new Date().toLocaleString();

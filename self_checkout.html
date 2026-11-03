@@ -2167,12 +2167,11 @@ return;
 container.innerHTML = '';
 totalPrice = 0; totalCount = 0;
 
-// 1. 各ルールごとに該当するアイテムを展開
-let individualBundleBoxes = []; // 1セットごとの枠データ [{ rule, units: [], bundleTaxTotal, unitPriceTax }]
+let individualBundleBoxes = [];
 let regularItems = [];
 
 bundleRules.forEach(rule => {
-let matchedUnits = []; // [{ cartIndex, item }]
+let matchedUnits = [];
 cartItems.forEach((item, index) => {
 if (item.code && rule.items.includes(item.code)) {
 for (let u = 0; u < item.quantity; u++) {
@@ -2198,15 +2197,13 @@ unitPriceTax: unitPriceTax
 }
 });
 
-// 枠に使われたユニット数を追跡
-let usedUnitCountMap = {}; // cartIndex -> count
+let usedUnitCountMap = {};
 individualBundleBoxes.forEach(box => {
 box.units.forEach(u => {
 usedUnitCountMap[u.cartIndex] = (usedUnitCountMap[u.cartIndex] || 0) + 1;
 });
 });
 
-// 2. 1セットごとのピンク枠を描画
 individualBundleBoxes.forEach(box => {
 let groupHtml = `<div class="bundle-group-box">`;
 groupHtml += `<div class="bundle-group-title"><span>🎁 ${box.rule.name}</span></div>`;
@@ -2247,7 +2244,6 @@ totalPrice += box.bundleTaxTotal;
 totalCount += box.units.length;
 });
 
-// 3. 通常商品（まとめ買い枠外・余り分）の描画
 cartItems.forEach((item, index) => {
 const usedQty = usedUnitCountMap[index] || 0;
 const remainQty = item.quantity - usedQty;
@@ -2327,27 +2323,6 @@ qrContainer.innerHTML = qr.createImgTag(5);
 document.getElementById('payment-modal').style.display = 'flex';
 }
 
-function getGroupedItems(items) {
-let map = {};
-items.forEach(i => {
-const key = `${i.name}_${i.taxPrice}_${i.originalPrice || 0}`;
-if (!map[key]) {
-map[key] = {
-name: i.name,
-price: i.price,
-originalPrice: i.originalPrice,
-taxPrice: i.taxPrice,
-count: 0,
-totalTaxPrice: 0,
-code: i.code
-};
-}
-map[key].count += i.quantity || 1;
-map[key].totalTaxPrice += i.taxPrice * (i.quantity || 1);
-});
-return Object.values(map);
-}
-
 function changeRegisterItemQuantity(index, newQty) {
 let qty = parseInt(newQty);
 if (qty <= 0) { registerParsedCartItems.splice(index, 1); }
@@ -2362,6 +2337,9 @@ speakText("商品を削除しました。");
 renderRegisterConfirmList();
 }
 
+// -------------------------------------------------------------
+// 📋 スタッフの確認画面：まとめ買いセット枠表示対応
+// -------------------------------------------------------------
 function renderRegisterConfirmList() {
 const container = document.getElementById('register-confirm-items');
 if (registerParsedCartItems.length === 0) {
@@ -2370,22 +2348,111 @@ document.getElementById('register-confirm-total').textContent = "0点 合計: 0�
 scannedCartDataForRegister = { items: [], total: 0 };
 return;
 }
-let regTotal = 0, regCount = 0;
 
-container.innerHTML = registerParsedCartItems.map((item, index) => {
-const itemTotal = item.taxPrice * item.quantity;
-regTotal += itemTotal; regCount += item.quantity;
+let regTotal = 0;
+let regCount = 0;
+
+// カート商品から全ユニットを展開
+let allUnits = [];
+registerParsedCartItems.forEach((item, index) => {
+for (let u = 0; u < item.quantity; u++) {
+allUnits.push({ cartIndex: index, item: item });
+}
+});
+
+// まとめ買いボックスの解析
+let individualBundleBoxes = [];
+let usedUnitMap = {};
+
+bundleRules.forEach(rule => {
+let matchedUnits = [];
+allUnits.forEach((u, uIdx) => {
+if (!usedUnitMap[uIdx] && u.item.code && rule.items.includes(u.item.code)) {
+matchedUnits.push({ globalIdx: uIdx, ...u });
+}
+});
+
+const sets = Math.floor(matchedUnits.length / rule.count);
+if (sets > 0) {
+const bundleTaxTotal = Math.round(rule.setPrice * 1.1);
+const unitPriceTax = Math.round(bundleTaxTotal / rule.count);
+
+for (let s = 0; s < sets; s++) {
+const setUnits = matchedUnits.slice(s * rule.count, (s + 1) * rule.count);
+setUnits.forEach(su => { usedUnitMap[su.globalIdx] = true; });
+individualBundleBoxes.push({
+rule: rule,
+units: setUnits,
+bundleTaxTotal: bundleTaxTotal,
+unitPriceTax: unitPriceTax
+});
+}
+}
+});
+
+let htmlContent = '';
+
+// 1. まとめ買いセット枠の描画
+individualBundleBoxes.forEach(box => {
+let groupHtml = `<div class="bundle-group-box" style="margin-bottom:8px; padding:8px;">`;
+groupHtml += `<div class="bundle-group-title"><span>🎁 ${box.rule.name}</span></div>`;
+
+let itemGroupMap = {};
+box.units.forEach(u => {
+const item = u.item;
+const key = `${item.name}`;
+if (!itemGroupMap[key]) {
+itemGroupMap[key] = { name: item.name, origPrice: item.taxPrice, count: 0 };
+}
+itemGroupMap[key].count++;
+});
+
+for (let k in itemGroupMap) {
+const gItem = itemGroupMap[k];
+groupHtml += `
+<div style="display:flex; justify-content:space-between; align-items:center; font-size:13px; margin:4px 0; border-bottom:1px dashed #ffccd5; padding-bottom:3px;">
+<div>
+<span>▶ ${gItem.name}</span><br>
+<small style="color:#666;">単価: <s>¥${Math.round(gItem.origPrice)}</s> <b style="color:#ff4757;">税込${box.unitPriceTax}円</b></small>
+</div>
+<div style="font-weight:bold; font-size:13px;">× ${gItem.count}</div>
+</div>
+`;
+}
+groupHtml += `<div class="bundle-group-footer" style="font-size:12px;">小計: 税込${box.bundleTaxTotal}円</div></div>`;
+htmlContent += groupHtml;
+
+regTotal += box.bundleTaxTotal;
+regCount += box.units.length;
+});
+
+// 2. 通常商品（余り・枠外）の描画
+registerParsedCartItems.forEach((item, index) => {
+let usedQty = 0;
+allUnits.forEach((u, uIdx) => {
+if (u.cartIndex === index && usedUnitMap[uIdx]) { usedQty++; }
+});
+const remainQty = item.quantity - usedQty;
+
+if (remainQty > 0) {
+const itemSubtotal = item.taxPrice * remainQty;
+regTotal += itemSubtotal;
+regCount += remainQty;
+
 let optionsHtml = '';
-for (let q = 1; q <= 20; q++) { optionsHtml += `<option value="${q}" ${item.quantity === q ? 'selected' : ''}>${q}</option>`; }
+for (let q = 1; q <= 20; q++) { optionsHtml += `<option value="${q}" ${remainQty === q ? 'selected' : ''}>${q}</option>`; }
+
 let priceSub = `税込${item.taxPrice}円`;
 if (item.originalPrice) {
 priceSub = `<s style="color:#ff4757;">原価:¥${item.originalPrice}</s> 割引単価:¥${item.price} (税込${item.taxPrice}円)`;
 }
-return `
+
+htmlContent += `
 <div class="cart-item-row">
 <div class="cart-item-left">
 <span>▶ ${item.name}</span>
 <div><small style="color:#666;">${priceSub}</small></div>
+${usedQty > 0 ? `<small style="color:#e67e22; font-size:10px;">(※${usedQty}個はまとめ買い適用済み)</small>` : ''}
 </div>
 <div class="cart-item-right">
 <div class="qty-select-wrapper">
@@ -2396,8 +2463,10 @@ return `
 </div>
 </div>
 `;
-}).join('');
+}
+});
 
+container.innerHTML = htmlContent;
 document.getElementById('register-confirm-total').textContent = `${regCount}点 合計: ${regTotal}円`;
 scannedCartDataForRegister = { items: registerParsedCartItems, total: regTotal };
 }
@@ -2612,6 +2681,9 @@ alert("レシートの設定を保存しました！");
 closeReceiptSettingsModal();
 }
 
+// -------------------------------------------------------------
+// 📄 レシート発行（まとめ買いセットの明細印字対応）
+// -------------------------------------------------------------
 function openReceiptModalFromChange() {
 document.getElementById('change-modal').style.display = 'none';
 const currentDate = new Date().toLocaleString();
@@ -2623,13 +2695,109 @@ document.getElementById('receipt-store-sub-el').textContent = receiptSettings.st
 const msgContainer = document.getElementById('receipt-message-el');
 msgContainer.innerHTML = receiptSettings.message.split('\n').map(line => `<p style="margin: 2px 0;">${line}</p>`).join('');
 
-const groupedItems = getGroupedItems(scannedCartDataForRegister.items);
 let totalItemsCount = 0;
 scannedCartDataForRegister.items.forEach(i => totalItemsCount += i.quantity);
 
+// 全ユニット展開してレシート用にもまとめ買いセットを解析
+let allUnits = [];
+scannedCartDataForRegister.items.forEach(item => {
+for (let u = 0; u < item.quantity; u++) {
+allUnits.push({ item: item });
+}
+});
+
+let individualBundleBoxes = [];
+let usedUnitMap = {};
+
+bundleRules.forEach(rule => {
+let matchedUnits = [];
+allUnits.forEach((u, uIdx) => {
+if (!usedUnitMap[uIdx] && u.item.code && rule.items.includes(u.item.code)) {
+matchedUnits.push({ globalIdx: uIdx, ...u });
+}
+});
+
+const sets = Math.floor(matchedUnits.length / rule.count);
+if (sets > 0) {
+const bundleTaxTotal = Math.round(rule.setPrice * 1.1);
+const unitPriceTax = Math.round(bundleTaxTotal / rule.count);
+
+for (let s = 0; s < sets; s++) {
+const setUnits = matchedUnits.slice(s * rule.count, (s + 1) * rule.count);
+setUnits.forEach(su => { usedUnitMap[su.globalIdx] = true; });
+individualBundleBoxes.push({
+rule: rule,
+units: setUnits,
+bundleTaxTotal: bundleTaxTotal,
+unitPriceTax: unitPriceTax
+});
+}
+}
+});
+
+const container = document.getElementById('receipt-items');
+let itemsHtml = '';
+
+// 1. まとめ買いセット枠のレシート印字
+individualBundleBoxes.forEach(box => {
+let itemGroupMap = {};
+box.units.forEach(u => {
+const name = u.item.name;
+itemGroupMap[name] = (itemGroupMap[name] || 0) + 1;
+});
+
+let descParts = [];
+for (let name in itemGroupMap) {
+descParts.push(`${name}×${itemGroupMap[name]}`);
+}
+
+itemsHtml += `
+<div style="margin-bottom: 4px; border-bottom: 1px dotted #eee; padding-bottom: 2px;">
+<div style="display:flex; justify-content:space-between; font-weight:bold; color:#d63031;">
+<span>🎁 ${box.rule.name}</span><span>¥${box.bundleTaxTotal}※</span>
+</div>
+<div style="font-size:10px; color:#555;">(内訳: ${descParts.join(', ')} セット価格)</div>
+</div>
+`;
+});
+
+// 2. 通常商品のレシート印字
+scannedCartDataForRegister.items.forEach((item, index) => {
+let usedQty = 0;
+allUnits.forEach((u, uIdx) => {
+if (u.item.name === item.name && usedUnitMap[uIdx]) { usedQty++; }
+});
+const remainQty = item.quantity - usedQty;
+
+if (remainQty > 0) {
+const itemTotalTax = item.taxPrice * remainQty;
+let unitPrice = Math.round(item.taxPrice / 1.1);
+let discountLine = '';
+
+if (item.originalPrice) {
+const diff = (item.originalPrice - item.price) * remainQty;
+discountLine = `
+<div style="display:flex; justify-content:space-between; font-size:11px; color:#ff4757;">
+<span><s>¥${item.originalPrice * remainQty}</s> (-¥${diff}割引)</span>
+<span></span>
+</div>`;
+}
+
+itemsHtml += `
+<div style="margin-bottom: 4px;">
+<div style="display:flex; justify-content:space-between; font-weight:bold;">
+<span>${item.name}</span><span>¥${itemTotalTax}※</span>
+</div>
+${discountLine}
+<div style="font-size:10px; color:#555;">(@${unitPrice} × ${remainQty}個)</div>
+</div>
+`;
+}
+});
+
+// クーポン割引の印字
 let calculatedTotal = scannedCartDataForRegister.total;
 let freeCouponLinesHtml = '';
-
 appliedCouponList.forEach(c => {
 if (c.type === 'free') {
 const targetItem = scannedCartDataForRegister.items.find(i => i.code === c.baseCode || (itemDatabase[c.baseCode] && i.name === itemDatabase[c.baseCode].name) || i.code.startsWith(c.baseCode));
@@ -2662,34 +2830,8 @@ freeCouponLinesHtml += `
 }
 });
 
-const finalTotal = calculatedTotal;
-
-const container = document.getElementById('receipt-items');
-let itemsHtml = groupedItems.map(i => {
-let unitPrice = Math.round(i.taxPrice / 1.1);
-let discountLine = '';
-
-if (i.originalPrice) {
-const diff = (i.originalPrice - i.price) * i.count;
-discountLine = `
-<div style="display:flex; justify-content:space-between; font-size:11px; color:#ff4757;">
-<span><s>¥${i.originalPrice * i.count}</s> (-¥${diff}割引)</span>
-<span></span>
-</div>`;
-}
-
-return `
-<div style="margin-bottom: 4px;">
-<div style="display:flex; justify-content:space-between; font-weight:bold;">
-<span>${i.name}</span><span>¥${i.totalTaxPrice}※</span>
-</div>
-${discountLine}
-<div style="font-size:10px; color:#555;">(@${unitPrice} × ${i.count}個)</div>
-</div>
-`;
-}).join('');
-
 container.innerHTML = itemsHtml + freeCouponLinesHtml;
+const finalTotal = calculatedTotal;
 
 document.getElementById('receipt-tax-target').textContent = `¥${finalTotal}`;
 document.getElementById('receipt-tax-amount').textContent = `¥${Math.round(finalTotal * 0.08 / 1.08)}`;
@@ -2706,7 +2848,7 @@ JsBarcode("#receipt-barcode-element", receiptBarcodeCode, { format: "CODE128", w
 
 document.getElementById('receipt-modal').style.display = 'flex';
 
-const itemsPurchased = groupedItems.map(i => `${i.name}×${i.count} (¥${i.totalTaxPrice})`).join(', ');
+const itemsPurchased = `まとめ買い・商品合計 (¥${finalTotal})`;
 salesHistory.push({ date: currentDate, count: totalItemsCount, total: finalTotal, items: itemsPurchased, payMethod: selectedPayMethod });
 localStorage.setItem('myPosSalesHistory', JSON.stringify(salesHistory));
 }

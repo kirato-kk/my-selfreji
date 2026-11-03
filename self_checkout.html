@@ -222,7 +222,7 @@ box-sizing: border-box !important;
 </div>
 
 <div id="interactive" class="viewport">
-<div id="customer-camera-off-overlay" style="display: none; width: 100%; height: 100%; background-color: #2f3542; color: #fff; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; position: absolute; top: 0; left: 0; z-index: 10;">カメラはOFFです</div>
+<div id="customer-camera-off-overlay" style="display: none; width: 100%; height: 100%; background-color: #747d8c; color: #fff; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; position: absolute; top: 0; left: 0; z-index: 10;">カメラはOFFです</div>
 </div>
 
 <div class="section-header">
@@ -254,7 +254,7 @@ box-sizing: border-box !important;
 <div id="register-viewport-container">
 <video id="register-video" playsinline autoplay muted></video>
 <canvas id="register-canvas"></canvas>
-<div id="register-camera-off-overlay" style="display: none; width: 100%; height: 100%; background-color: #2f3542; color: #fff; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; position: absolute; top: 0; left: 0; z-index: 10;">カメラはOFFです</div>
+<div id="register-camera-off-overlay" style="display: none; width: 100%; height: 100%; background-color: #747d8c; color: #fff; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; position: absolute; top: 0; left: 0; z-index: 10;">カメラはOFFです</div>
 </div>
 
 <button class="btn" style="background-color: #00adb5; margin-bottom: 10px;" onclick="document.getElementById('register-file-input').click()">画像から読み取り</button>
@@ -473,7 +473,7 @@ box-sizing: border-box !important;
 </div>
 
 <button class="btn share-btn" onclick="shareReceiptImage()">レシート印刷</button>
-<button class="btn close-btn" onclick="closeReceiptToRegister()">閉じる</button>
+<button class="close-btn" onclick="closeReceiptToRegister()">閉じる</button>
 </div>
 </div>
 
@@ -503,7 +503,7 @@ box-sizing: border-box !important;
 <h3 style="font-size: 18px; margin-bottom: 12px; color: #ff0033;">クーポン作成</h3>
 <p style="font-size: 12px; color: #666; margin-bottom: 15px;">作成するクーポンの種類を選択してください</p>
 <div class="pay-method-options" style="flex-direction: column; gap: 10px;">
-<button class="pay-method-btn" onclick="openFreeCouponScanModal()" style="border-color: #20bf6b; color: #20bf6b;">
+<button class="pay-method-btn" onclick="openFreeCouponSelectProductTypeModal()" style="border-color: #20bf6b; color: #20bf6b;">
 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"/><path d="M4 6v12a2 2 0 0 0 2 2h14v-4"/><path d="M18 12a2 2 0 0 0-2 2c0 1.1.9 2 2 2h4v-4h-4z"/></svg>
 <span>無料クーポン</span>
 </button>
@@ -518,7 +518,44 @@ box-sizing: border-box !important;
 </div>
 </div>
 
-<!-- ③ 無料クーポン：スキャンモーダル -->
+<!-- ③-A 無料クーポン：商品タイプ選択（バーコードあり or なし） -->
+<div class="modal-overlay" id="free-coupon-prod-type-modal">
+<div class="modal-content-box" style="text-align: center;">
+<h3 style="color:#20bf6b;">無料クーポン作成</h3>
+<p style="font-size: 12px; color: #666; margin-bottom: 15px;">対象商品のタイプを選択してください</p>
+<div class="pay-method-options" style="flex-direction: column; gap: 10px;">
+<button class="pay-method-btn" onclick="openFreeCouponScanModal()" style="border-color: #2575fc; color: #2575fc;">
+<span>バーコードのある商品</span>
+</button>
+<button class="pay-method-btn" onclick="openFreeCouponNoBarcodeModal()" style="border-color: #f1c40f; color: #d35400;">
+<span>バーコードの無い商品</span>
+</button>
+</div>
+<div style="text-align: left; margin-top: 15px;">
+<button class="modal-btn-back" onclick="backToCouponTypeSelectFromProdType()">← 戻る</button>
+</div>
+</div>
+</div>
+
+<!-- ③-B 無料クーポン：バーコードの無い商品選択モーダル -->
+<div class="modal-overlay" id="free-coupon-nobarcode-modal">
+<div class="modal-content-box nobarcode-modal">
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+<h3 style="margin:0; font-size:16px; color:#20bf6b;">無料クーポンにする商品を選択</h3>
+<button onclick="closeFreeCouponNoBarcodeModal()" style="background:none; border:none; font-size:18px; cursor:pointer; color:#888;">✕</button>
+</div>
+<div class="tab-container">
+<button class="tab-btn active" onclick="switchFreeCouponCategory('yasai', this)">野菜・果物</button>
+<button class="tab-btn" onclick="switchFreeCouponCategory('niku', this)">肉・魚</button>
+<button class="tab-btn" onclick="switchFreeCouponCategory('sozai', this)">惣菜</button>
+<button class="tab-btn" onclick="switchFreeCouponCategory('sonota', this)">その他</button>
+</div>
+<div class="product-grid" id="free-coupon-nobarcode-grid"></div>
+<button class="close-btn" onclick="closeFreeCouponNoBarcodeModal()" style="margin-top:15px;">閉じる</button>
+</div>
+</div>
+
+<!-- ③-C 無料クーポン：バーコードのある商品スキャンモーダル -->
 <div class="modal-overlay" id="free-coupon-scan-modal">
 <div class="modal-content-box" style="text-align: center;">
 <h3 style="color:#20bf6b;">無料クーポン作成</h3>
@@ -527,7 +564,7 @@ box-sizing: border-box !important;
 <div id="free-coupon-reader" style="width: 100%; min-height: 180px; background: #222;"></div>
 <button class="scanner-file-btn" onclick="document.getElementById('free-coupon-scan-file-input').click()" title="ファイルから読み込み">📁</button>
 </div>
-<button class="modal-btn-back" style="margin-top: 10px;" onclick="backToCouponTypeSelectFromFree()">← 戻る</button>
+<button class="modal-btn-back" style="margin-top: 10px;" onclick="backToProdTypeFromFreeScan()">← 戻る</button>
 </div>
 </div>
 
@@ -906,8 +943,953 @@ box-sizing: border-box !important;
 <div id="history-list" style="max-height: 220px; overflow-y: auto; margin-top: 10px; font-size: 13px; border-top: 1px solid #eee; padding-top: 5px;"></div>
 <button class="close-btn" onclick="closeHistory()" style="margin-top: 15px;">閉じる</button>
 </div>
+</div> 
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ピピッとカート 🛒</title>
+<!-- バーコードリーダーライブラリ（お客様用） -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
+<!-- QRコードリーダーライブラリ（レジ用） -->
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+<!-- QRコード生成ライブラリ -->
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+<!-- HTMLを画像化するライブラリ（html2canvas） -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<!-- バーコード生成ライブラリ（JsBarcode） -->
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+<!-- バーコード読取用（html5-qrcode） -->
+<script src="https://unpkg.com/html5-qrcode"></script>
+<style>
+body { font-family: 'Segoe UI', sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; background-color: #f7f9fc; color: #333333; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+.header-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+h1 { color: #2575fc; margin: 0; font-size: 24px; cursor: pointer; user-select: none; }
+.settings-btn { background: none; border: none; font-size: 24px; cursor: pointer; padding: 0; color: #555; }
+.status { text-align: center; color: #2575fc; margin-bottom: 10px; font-weight: bold; }
+#interactive.viewport { width: 100%; height: 250px; background-color: #000; border: 2px solid #2575fc; border-radius: 10px; overflow: hidden; margin-bottom: 20px; position: relative; }
+#interactive.viewport video { width: 100%; height: 100%; object-fit: cover; }
+
+#register-viewport-container { width: 100%; height: 200px; background-color: #000; border: 2px solid #ff4757; border-radius: 10px; overflow: hidden; margin-bottom: 15px; position: relative; }
+#register-video { width: 100%; height: 100%; object-fit: cover; }
+#register-canvas { display: none; }
+
+#coupon-viewport-container, #free-coupon-viewport-container { width: 100%; height: 180px; background-color: #000; border: 2px solid #ff4757; border-radius: 10px; overflow: hidden; margin-bottom: 12px; position: relative; }
+#coupon-video, #free-coupon-video { width: 100%; height: 100%; object-fit: cover; }
+#coupon-canvas, #free-coupon-canvas { display: none; }
+.coupon-file-btn { position: absolute; bottom: 10px; right: 10px; width: 40px; height: 40px; background: rgba(255,255,255,0.9); border: none; border-radius: 50%; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.3); z-index: 20; }
+.coupon-file-btn:active { background: #fff; transform: scale(0.95); }
+
+.section-header { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; margin-bottom: 5px; }
+h2 { font-size: 18px; color: #444; margin: 0; }
+
+.add-nobarcode-btn { background-color: #f1c40f; color: #2d3436; border: none; padding: 7px 12px; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+.add-nobarcode-btn:active { opacity: 0.8; }
+
+.cart { background: #ffffff; padding: 15px; border-radius: 10px; max-height: 190px; overflow-y: auto; border: 1px solid #e0e0e0; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); }
+.cart-item-row { display: flex; justify-content: space-between; align-items: center; margin: 8px 0; border-bottom: 1px dashed #eee; padding-bottom: 6px; font-size: 14px; }
+.cart-item-left { display: flex; flex-direction: column; }
+.cart-item-right { display: flex; align-items: center; gap: 8px; }
+
+.qty-select-wrapper {
+position: relative;
+display: inline-flex;
+align-items: center;
+justify-content: center;
+border: 1px solid #333;
+border-radius: 20px;
+padding: 2px 2px 2px 8px;
+background: #fff;
+min-width: 54px;
+box-sizing: border-box;
+}
+.qty-select {
+appearance: none; -webkit-appearance: none; -moz-appearance: none;
+border: none; background: transparent; font-size: 14px; font-weight: bold;
+color: #333; cursor: pointer; padding-right: 18px; outline: none; text-align: center; text-align-last: center; width: 100%;
+}
+.qty-badge-icon {
+position: absolute; right: 6px; width: 18px; height: 18px;
+background-color: #ff4757; border-radius: 50%; display: flex;
+align-items: center; justify-content: center; color: white; font-size: 10px; pointer-events: none;
+}
+
+.delete-item-btn { background: #ff7675; color: white; border: none; border-radius: 4px; width: 26px; height: 26px; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.delete-item-btn:hover { background: #d63031; }
+
+.total { font-size: 22px; font-weight: bold; text-align: right; margin-top: 15px; color: #ff4757; }
+.btn { width: 100%; padding: 15px; font-size: 18px; font-weight: bold; color: white; border: none; border-radius: 10px; cursor: pointer; margin-top: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: opacity 0.2s; }
+.btn:active { opacity: 0.8; }
+.pay-btn { background-color: #ff4757; }
+.share-btn { background-color: #00b894; margin-bottom: 10px; }
+
+.modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); justify-content: center; align-items: center; z-index: 100; }
+.modal-content-box { background: #ffffff; padding: 25px; width: 340px; max-height: 90vh; overflow-y: auto; border-radius: 10px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.3); position: relative; }
+
+.nobarcode-modal { width: 380px; max-height: 85vh; display: flex; flex-direction: column; padding: 20px; }
+.tab-container { display: flex; background: #f1f2f6; border-radius: 8px; padding: 4px; margin-bottom: 15px; }
+.tab-btn { flex: 1; background: none; border: none; padding: 8px 4px; font-size: 12px; font-weight: bold; cursor: pointer; border-radius: 6px; color: #57606f; }
+.tab-btn.active { background: #ffffff; color: #2f3542; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+.product-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; max-height: 300px; overflow-y: auto; text-align: left; padding-right: 4px; }
+.product-card { background: #f8f9fa; border: 1px solid #dfe4ea; border-radius: 8px; padding: 10px; display: flex; flex-direction: column; justify-content: space-between; cursor: pointer; transition: background 0.2s; }
+.product-card:hover { background: #f1f2f6; }
+.product-card-name { font-size: 13px; font-weight: bold; color: #2f3542; margin-bottom: 5px; }
+.product-card-bottom { display: flex; justify-content: space-between; align-items: center; }
+.product-card-price { font-size: 13px; color: #ff4757; font-weight: bold; }
+.product-add-badge { background: #2ed573; color: white; border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; }
+
+.receipt-paper {
+background: #fffdf9; color: #111111; font-family: 'Courier New', Courier, monospace;
+padding: 25px 15px; border: 1px dashed #cccccc; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+text-align: left; position: relative; margin-bottom: 20px; width: 280px; margin-left: auto; margin-right: auto; font-size: 12px; line-height: 1.4;
+}
+.receipt-store-title { text-align: center; font-size: 22px; font-weight: bold; letter-spacing: 2px; margin-bottom: 2px; font-family: 'Segoe UI', sans-serif; }
+.receipt-store-sub { text-align: center; font-size: 11px; color: #444; margin-bottom: 12px; }
+.receipt-info { font-size: 11px; color: #333; margin-bottom: 10px; border-bottom: 1px dashed #333; padding-bottom: 6px; }
+.receipt-items-container { border-bottom: 1px dashed #333; padding-bottom: 8px; margin-bottom: 8px; min-height: 80px; }
+.receipt-total-section { font-size: 13px; font-weight: bold; text-align: right; margin-bottom: 10px; line-height: 1.5; border-bottom: 1px dashed #333; padding-bottom: 8px; }
+.receipt-barcode-wrapper { text-align: center; margin-top: 10px; margin-bottom: 5px; }
+.receipt-barcode-svg { max-width: 100%; height: 45px; }
+.receipt-message { text-align: center; font-size: 11px; color: #444; margin-top: 8px; line-height: 1.4; }
+
+.close-btn { width: 100%; padding: 12px; background: #e0e0e0; color: #333; border: none; font-weight: bold; cursor: pointer; border-radius: 10px; font-family: 'Segoe UI', sans-serif; margin-top: 5px; }
+.staff-box { background: #ff4757; color: white; padding: 15px; border-radius: 10px; margin-bottom: 15px; font-family: 'Segoe UI', sans-serif; }
+
+.calculator-pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 15px 0; }
+.calc-key { background: #f1f2f6; border: 1px solid #dfe4ea; padding: 12px; font-size: 18px; font-weight: bold; border-radius: 8px; cursor: pointer; color: #2f3542; }
+.calc-key:active { background: #ced6e0; }
+.calc-display { font-size: 24px; font-weight: bold; background: #f8f9fa; border: 1px solid #ccc; padding: 10px; border-radius: 8px; text-align: right; margin-bottom: 10px; color: #333; }
+
+#qrcode, #11pay-qrcode-target, #refund-11pay-qrcode-target { display: flex; justify-content: center; margin: 15px 0; }
+#qrcode img, #11pay-qrcode-target img, #refund-11pay-qrcode-target img { border: 5px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); width: 220px; height: 220px; }
+
+.view-container { display: none; }
+.view-container.active { display: block; }
+
+.camera-control-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 0 4px; }
+.toggle-switch { position: relative; display: inline-block; width: 50px; height: 26px; flex-shrink: 0; }
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.toggle-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .3s; border-radius: 26px; }
+.toggle-slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
+.toggle-switch input:checked + .toggle-slider { background-color: #2575fc; }
+.toggle-switch input:checked + .toggle-slider:before { transform: translateX(24px); }
+
+.pay-method-options { display: flex; gap: 12px; margin: 15px 0; }
+.pay-method-btn {
+flex: 1; padding: 15px 10px; border: 2px solid #2575fc; border-radius: 10px;
+background: #fff; color: #2575fc; font-weight: bold; font-size: 14px; cursor: pointer;
+display: flex; flex-direction: column; align-items: center; gap: 6px; transition: all 0.2s ease;
+}
+.pay-method-btn:hover, .pay-method-btn:active { background: #2575fc; color: #fff; }
+
+.warning-icon { font-size: 64px; line-height: 1; margin: 10px 0; animation: popWarning 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+@keyframes popWarning { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+.modal-btn-back { background: #747d8c; color: white; border: none; padding: 10px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+.modal-btn-back:hover { background: #57606f; }
+
+.refund-scanner-wrapper, .free-coupon-scanner-wrapper {
+position: relative;
+width: 100%;
+max-width: 320px;
+margin: 0 auto 10px auto;
+border-radius: 12px;
+overflow: hidden;
+border: 3px solid #2575fc;
+}
+
+.scanner-file-btn {
+position: absolute;
+right: 12px;
+bottom: 12px;
+width: 42px;
+height: 42px;
+border-radius: 50%;
+background: #ffffff;
+border: none;
+font-size: 20px;
+display: flex;
+align-items: center;
+justify-content: center;
+box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+cursor: pointer;
+z-index: 10;
+}
+.scanner-file-btn:active { transform: scale(0.95); }
+
+.reload-barcode-btn {
+background: #f1f2f6; border: 1px solid #ccc; border-radius: 6px; padding: 4px 8px; cursor: pointer; font-size: 14px;
+}
+
+.reason-btn {
+width: 100%; padding: 12px; font-size: 15px; font-weight: bold; color: #2c3e50;
+background: #f1f2f6; border: 1px solid #dfe4ea; border-radius: 8px; margin-bottom: 8px; cursor: pointer;
+}
+.reason-btn:active { background: #e2e6ea; }
+
+.action-btn-item {
+width: 60px !important;
+height: 32px !important;
+padding: 0 !important;
+font-size: 12px !important;
+font-weight: bold !important;
+display: inline-flex !important;
+align-items: center !important;
+justify-content: center !important;
+border-radius: 6px !important;
+margin: 0 !important;
+box-sizing: border-box !important;
+}
+</style>
+</head>
+<body>
+
+<input type="file" id="customer-file-input" accept="image/*" style="display: none;" onchange="handleCustomerImageFile(event)">
+<input type="file" id="register-file-input" accept="image/*" style="display: none;" onchange="handleRegisterImageFile(event)">
+<input type="file" id="coupon-file-input" accept="image/*" style="display: none;" onchange="handleCouponImageFile(event)">
+<input type="file" id="disc-scan-file-input" accept="image/*" style="display: none;" onchange="handleDiscScanFile(event)">
+<input type="file" id="refund-scan-file-input" accept="image/*" style="display: none;" onchange="handleRefundScanFile(event)">
+<input type="file" id="free-coupon-scan-file-input" accept="image/*" style="display: none;" onchange="handleFreeCouponScanFile(event)">
+
+<!-- ================= お客様画面 ================= -->
+<div id="customer-view" class="view-container active">
+<div class="header-container">
+<h1 id="app-title-header" onclick="handleTitleClick()">ピピッとカート 🛒</h1>
+<button class="settings-btn" onclick="handleSettingsClick()" title="設定">⚙️</button>
 </div>
 
+<div class="camera-control-bar">
+<div class="status" id="status-msg" style="margin-bottom: 0; text-align: left;">枠内にバーコードをかざしてください</div>
+<label class="toggle-switch">
+<input type="checkbox" id="customer-camera-toggle" onchange="toggleCustomerCamera(this)">
+<span class="toggle-slider"></span>
+</label>
+</div>
+
+<div id="interactive" class="viewport">
+<div id="customer-camera-off-overlay" style="display: none; width: 100%; height: 100%; background-color: #747d8c; color: #fff; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; position: absolute; top: 0; left: 0; z-index: 10;">カメラはOFFです</div>
+</div>
+
+<div class="section-header">
+<h2 id="purchase-list-title" onclick="handlePurchaseListTitleClick()" style="cursor: pointer; user-select: none;" title="2回タップでスタッフモード">購入リスト</h2>
+<button class="add-nobarcode-btn" onclick="openNoBarcodeModal()">＋ バーコードの無い商品を追加</button>
+</div>
+
+<div class="cart" id="cart-list"><p style="color: #888; font-family: 'Segoe UI', sans-serif; text-align: center;">スキャンされた商品がここに表示されます</p></div>
+<div class="total"><span id="total-count">0</span>点 合計: <span id="total-price">0</span> 円</div>
+
+<button class="btn pay-btn" onclick="openCustomerCheckoutModal()">お会計</button>
+</div>
+
+<!-- ================= レジ操作画面 ================= -->
+<div id="register-view" class="view-container">
+<div class="header-container">
+<h1>スタッフモード</h1>
+<button class="settings-btn" onclick="handleSettingsClick()" title="設定">⚙️</button>
+</div>
+
+<div class="camera-control-bar">
+<div class="status" id="register-status-msg" style="color: #ff4757; margin-bottom: 0; text-align: left;">QRコードを枠内にかざしてください</div>
+<label class="toggle-switch">
+<input type="checkbox" id="register-camera-toggle" onchange="toggleRegisterCamera(this)">
+<span class="toggle-slider"></span>
+</label>
+</div>
+
+<div id="register-viewport-container">
+<video id="register-video" playsinline autoplay muted></video>
+<canvas id="register-canvas"></canvas>
+<div id="register-camera-off-overlay" style="display: none; width: 100%; height: 100%; background-color: #747d8c; color: #fff; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; position: absolute; top: 0; left: 0; z-index: 10;">カメラはOFFです</div>
+</div>
+
+<button class="btn" style="background-color: #00adb5; margin-bottom: 10px;" onclick="document.getElementById('register-file-input').click()">画像から読み取り</button>
+
+<button class="btn" style="background-color: #e67e22; margin-bottom: 10px;" onclick="openDiscountBarcodeScanModal()">割引バーコード作成</button>
+<button class="btn" style="background-color: #eb4d4b; margin-bottom: 10px;" onclick="openRefundMenuModal()">返金対応</button>
+<button class="btn" style="background-color: #555;" onclick="switchView('customer')">お客様モードに戻る</button>
+</div>
+
+<!-- バーコードの無い商品選択モーダル -->
+<div class="modal-overlay" id="nobarcode-modal">
+<div class="modal-content-box nobarcode-modal">
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+<h3 style="margin:0; font-size:16px; color:#333;">商品を選択</h3>
+<button onclick="closeNoBarcodeModal()" style="background:none; border:none; font-size:18px; cursor:pointer; color:#888;">✕</button>
+</div>
+<div class="tab-container">
+<button class="tab-btn active" onclick="switchCategory('yasai', this)">野菜・果物</button>
+<button class="tab-btn" onclick="switchCategory('niku', this)">肉・魚</button>
+<button class="tab-btn" onclick="switchCategory('sozai', this)">惣菜</button>
+<button class="tab-btn" onclick="switchCategory('sonota', this)">その他</button>
+</div>
+<div class="product-grid" id="nobarcode-product-grid"></div>
+<button class="close-btn" onclick="closeNoBarcodeModal()" style="margin-top:15px;">閉じる</button>
+</div>
+</div>
+
+<!-- ❌️ カートが空のときのお知らせモーダル -->
+<div class="modal-overlay" id="empty-cart-modal">
+<div class="modal-content-box" style="text-align: center; padding: 25px 20px;">
+<div style="font-size: 54px; line-height: 1; margin: 10px 0;">❌</div>
+<h3 style="font-size: 18px; margin-bottom: 10px; color: #2c3e50;">商品がスキャンされていません</h3>
+<p style="font-size: 12px; color: #666; margin-bottom: 20px;">お会計をするには商品をスキャンしてください。</p>
+<button class="btn pay-btn" style="width: 100%; margin: 0; padding: 10px;" onclick="closeEmptyCartModal()">OK</button>
+</div>
+</div>
+
+<!-- ⚠️ お客様モード：お会計前確認モーダル -->
+<div class="modal-overlay" id="customer-checkout-check-modal">
+<div class="modal-content-box" style="text-align: center; padding: 25px 20px;">
+<div class="warning-icon">⚠️</div>
+<h3 style="font-size: 18px; margin-bottom: 10px; color: #2c3e50;">スキャンし忘れの商品は<br>ございませんか？</h3>
+<p style="font-size: 12px; color: #666; margin-bottom: 20px;">カゴの中に未読み取りの商品がないかご確認ください。</p>
+<div style="display: flex; gap: 10px;">
+<button class="modal-btn-back" style="flex: 1;" onclick="closeCustomerCheckoutCheck()">戻る</button>
+<button class="btn pay-btn" style="flex: 2; margin: 0; padding: 10px;" onclick="proceedToCustomerQR()">OK</button>
+</div>
+</div>
+</div>
+
+<!-- お会計・QRコード画面（お客様用） -->
+<div class="modal-overlay" id="payment-modal">
+<div class="modal-content-box">
+<div class="staff-box">
+<h2 style="color: white; margin: 0; font-size: 18px;">お会計用QRコード</h2>
+</div>
+<p style="font-size: 22px; font-weight: bold; margin: 10px 0; color: #ff4757;"><span id="pay-amount">0</span> 円</p>
+<div id="qrcode"></div>
+<p style="font-size: 12px; color: #666; margin: 5px 0;">このQRコードをスタッフに提示してください</p>
+
+<button class="modal-btn-back" style="width: 100%; margin-top: 10px; padding: 12px;" onclick="backToCustomerFromPayment()">戻る</button>
+<button class="close-btn" onclick="closePaymentModal()">閉じる</button>
+</div>
+</div>
+
+<!-- レジ側：お会計確認画面 -->
+<div class="modal-overlay" id="register-confirm-modal">
+<div class="modal-content-box" style="text-align: left;">
+<h2>お会計内容確認</h2>
+<div id="register-confirm-items" style="margin: 10px 0; max-height: 200px; overflow-y:auto;"></div>
+<hr style="border: none; border-top: 1px dashed #ccc; margin: 10px 0;">
+<div id="register-confirm-total" style="font-weight:bold; text-align:right; font-size: 16px; color: #ff4757;"></div>
+<button class="btn pay-btn" style="margin-top:15px; padding:10px; font-size:16px;" onclick="openPaymentMethodModal()">確認完了</button>
+<div style="text-align: left; margin-top: 10px;">
+<button class="modal-btn-back" onclick="closeRegisterConfirm()">← 戻る</button>
+</div>
+</div>
+</div>
+
+<!-- レジ側：お支払い方法選択モーダル -->
+<div class="modal-overlay" id="pay-method-modal">
+<div class="modal-content-box" style="text-align: center;">
+<h3 style="font-size: 16px; margin-bottom: 10px;">お支払い方法選択</h3>
+<p style="font-size: 14px; font-weight: bold; color: #ff4757; margin-bottom: 10px;" id="pay-select-amount-display">お支払い金額: 0円</p>
+
+<div class="pay-method-options">
+<button class="pay-method-btn" onclick="selectPaymentMethod('cash')">
+<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="3"/><path d="M6 12h.01M18 12h.01"/></svg>
+<span>現金支払い</span>
+</button>
+<button class="pay-method-btn" onclick="selectPaymentMethod('11pay')">
+<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/><path d="M9 6h6"/></svg>
+<span>11Pay決済</span>
+</button>
+</div>
+
+<div style="text-align: left; margin-top: 15px;">
+<button class="modal-btn-back" onclick="backToRegisterConfirm()">← 戻る</button>
+</div>
+</div>
+</div>
+
+<!-- レジ側：クーポン読み取りモーダル -->
+<div class="modal-overlay" id="register-coupon-modal">
+<div class="modal-content-box" style="text-align: center;">
+<h3 style="font-size: 16px; margin-bottom: 6px;">クーポン読み取り</h3>
+<div id="applied-coupons-banner" style="background:#f1f2f6; padding:8px 10px; border-radius:6px; margin-bottom:8px; font-size:12px; text-align:left;">
+<b>適用中のクーポン (0/3):</b>
+<div id="applied-coupons-list" style="margin-top: 4px;"><span style="color:#888;">なし</span></div>
+<div style="margin-top: 8px; border-top: 1px dashed #ccc; padding-top: 6px; font-size: 13px; font-weight: bold; text-align: right; color: #ff4757;">
+現在の金額: <span id="coupon-current-total">0</span> 円
+</div>
+</div>
+<div id="coupon-viewport-container">
+<video id="coupon-video" playsinline autoplay muted></video>
+<canvas id="coupon-canvas"></canvas>
+<button class="coupon-file-btn" onclick="document.getElementById('coupon-file-input').click()" title="ファイルから読み込み">📁</button>
+</div>
+<p style="font-size: 11px; color: #666; margin: 0 0 10px 0;">クーポンQRをかざすと追加されます</p>
+<div style="display: flex; gap: 10px;">
+<button class="modal-btn-back" style="flex: 1;" onclick="backToPayMethodSelectFromCoupon()">← 戻る</button>
+<button class="btn pay-btn" style="flex: 2; margin: 0; padding: 10px;" onclick="proceedAfterCoupon()">次に進む →</button>
+</div>
+</div>
+</div>
+
+<!-- レジ側：11Pay QRコード表示モーダル -->
+<div class="modal-overlay" id="11pay-qr-modal">
+<div class="modal-content-box" style="text-align: center;">
+<h3 style="font-size: 16px; margin-bottom: 8px;">11Payでお支払い</h3>
+<p style="font-size: 12px; color: #666; margin-bottom: 5px;">QRコードをスキャンしてください</p>
+<div id="11pay-qrcode-target"></div>
+<p style="font-size: 15px; font-weight: bold; color: #2c3e50; margin-top: 5px;" id="11pay-amount-text">請求額: 0円</p>
+<button class="btn pay-btn" style="margin-top: 15px; padding: 12px;" onclick="complete11PayPayment()">決済完了</button>
+<div style="text-align: left; margin-top: 10px;">
+<button class="modal-btn-back" onclick="openRegisterCouponModal()">← 戻る</button>
+</div>
+</div>
+</div>
+
+<!-- レジ側：お預かり金額入力画面 -->
+<div class="modal-overlay" id="cash-input-modal">
+<div class="modal-content-box" style="text-align: center;">
+<h2>お預かり金額入力</h2>
+<p style="font-size: 14px; color: #666; margin: 5px 0;">合計金額: <span id="cash-modal-total" style="font-weight:bold; color:#ff4757;">0</span> 円</p>
+<div class="calc-display" id="cash-input-display">0</div>
+
+<div class="calculator-pad">
+<button class="calc-key" onclick="appendCalc(1)">1</button>
+<button class="calc-key" onclick="appendCalc(2)">2</button>
+<button class="calc-key" onclick="appendCalc(3)">3</button>
+<button class="calc-key" onclick="appendCalc(4)">4</button>
+<button class="calc-key" onclick="appendCalc(5)">5</button>
+<button class="calc-key" onclick="appendCalc(6)">6</button>
+<button class="calc-key" onclick="appendCalc(7)">7</button>
+<button class="calc-key" onclick="appendCalc(8)">8</button>
+<button class="calc-key" onclick="appendCalc(9)">9</button>
+<button class="calc-key" onclick="clearCalc()">C</button>
+<button class="calc-key" onclick="appendCalc(0)">0</button>
+<button class="calc-key" onclick="backspaceCalc()">←</button>
+</div>
+
+<button class="btn pay-btn" style="margin-top:5px; padding:12px; font-size:16px;" onclick="completeCashPayment()">入力完了</button>
+<div style="text-align: left; margin-top: 10px;">
+<button class="modal-btn-back" onclick="openRegisterCouponModal()">← 戻る</button>
+</div>
+</div>
+</div>
+
+<!-- レジ側：お釣り表示画面 -->
+<div class="modal-overlay" id="change-modal">
+<div class="modal-content-box" style="text-align: center;">
+<h2 style="color: #2575fc; margin-bottom: 10px;">お会計完了</h2>
+<div style="font-size: 16px; margin: 10px 0;">
+お支払い方法: <span id="change-pay-method" style="font-weight:bold; color:#2575fc;">現金</span><br>
+お預かり: <span id="change-received">0</span> 円<br>
+合計金額: <span id="change-total">0</span> 円
+</div>
+<hr style="border: none; border-top: 1px dashed #ccc; margin: 15px 0;">
+<div style="font-size: 14px; color: #555;" id="change-title-label">お釣り</div>
+<div style="font-size: 32px; font-weight: bold; color: #ff4757; margin: 10px 0;"><span id="change-amount">0</span> 円</div>
+
+<button class="btn pay-btn" style="margin-top:20px; padding:12px; font-size:16px;" onclick="openReceiptModalFromChange()">完了</button>
+</div>
+</div>
+
+<!-- レジ側：レシート表示画面 -->
+<div class="modal-overlay" id="receipt-modal">
+<div class="modal-content-box">
+<div id="receipt-target" class="receipt-paper">
+<div class="receipt-store-title" id="receipt-store-title-el">KKマート</div>
+<div class="receipt-store-sub" id="receipt-store-sub-el">名古屋東 店</div>
+<div class="receipt-info" id="receipt-date">日時: 2026/01/01 00:00</div>
+<div class="receipt-items-container" id="receipt-items"></div>
+
+<div class="receipt-total-section">
+<div id="receipt-total-text" style="text-align: right; font-size:14px; font-weight:bold;">0点 合計 : ¥0</div>
+<div style="display:flex; justify-content:space-between; margin-top:4px;"><span>8%税抜対象額</span><span id="receipt-tax-target">¥0</span></div>
+<div style="display:flex; justify-content:space-between;"><span>8%税額</span><span id="receipt-tax-amount">¥0</span></div>
+<div style="display:flex; justify-content:space-between; margin-top:4px;"><span>お支払い方法</span><span id="receipt-pay-method-text">現金</span></div>
+<div style="display:flex; justify-content:space-between;"><span>お預かり合計</span><span id="receipt-cash-text">0円</span></div>
+<div style="display:flex; justify-content:space-between;"><span>お釣り</span><span id="receipt-change-text">0円</span></div>
+</div>
+
+<div style="font-size:10px; color:#555; margin-bottom:8px;">※印は軽減税率適用商品です。<br>登録番号 T7240001022681</div>
+
+<div class="receipt-message" id="receipt-message-el">
+<p style="margin: 2px 0;">ご来店ありがとうございました。</p>
+<p style="margin: 2px 0;">またのご利用をお待ちしております！</p>
+</div>
+
+<div class="receipt-barcode-wrapper">
+<svg id="receipt-barcode-element" class="receipt-barcode-svg"></svg>
+<div style="text-align:center; font-size:11px; margin-top:2px;" id="receipt-no-label">店:005013 レシートNo.:2746</div>
+</div>
+</div>
+
+<button class="btn share-btn" onclick="shareReceiptImage()">レシート印刷</button>
+<button class="close-btn" onclick="closeReceiptToRegister()">閉じる</button>
+</div>
+</div>
+
+<!-- ================= 🎁 クーポン作成・管理モーダル群 ================= -->
+<!-- ① クーポンメインメニュー -->
+<div class="modal-overlay" id="coupon-maker-menu-modal">
+<div class="modal-content-box" style="text-align: center;">
+<h3 style="font-size: 18px; margin-bottom: 12px; color: #ff0033;">クーポン作成・管理</h3>
+<p style="font-size: 12px; color: #666; margin-bottom: 15px;">操作を選択してください</p>
+<div class="pay-method-options" style="flex-direction: column; gap: 10px;">
+<button class="pay-method-btn" onclick="openCouponTypeSelectModal()" style="border-color: #ff0033; color: #ff0033;">
+<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+<span>クーポン作成</span>
+</button>
+<button class="pay-method-btn" onclick="openCouponManageListModal()" style="border-color: #34495e; color: #34495e;">
+<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+<span>保存済みクーポン一覧</span>
+</button>
+</div>
+<button class="close-btn" onclick="closeCouponMakerMenuModal()" style="margin-top: 15px;">閉じる</button>
+</div>
+</div>
+
+<!-- ② クーポン作成の種類選択 -->
+<div class="modal-overlay" id="coupon-type-select-modal">
+<div class="modal-content-box" style="text-align: center;">
+<h3 style="font-size: 18px; margin-bottom: 12px; color: #ff0033;">クーポン作成</h3>
+<p style="font-size: 12px; color: #666; margin-bottom: 15px;">作成するクーポンの種類を選択してください</p>
+<div class="pay-method-options" style="flex-direction: column; gap: 10px;">
+<button class="pay-method-btn" onclick="openFreeCouponSelectProductTypeModal()" style="border-color: #20bf6b; color: #20bf6b;">
+<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"/><path d="M4 6v12a2 2 0 0 0 2 2h14v-4"/><path d="M18 12a2 2 0 0 0-2 2c0 1.1.9 2 2 2h4v-4h-4z"/></svg>
+<span>無料クーポン</span>
+</button>
+<button class="pay-method-btn" onclick="openDiscountCouponInputModal()" style="border-color: #e67e22; color: #e67e22;">
+<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
+<span>割引クーポン</span>
+</button>
+</div>
+<div style="text-align: left; margin-top: 15px;">
+<button class="modal-btn-back" onclick="backToCouponMenuModal()">← 戻る</button>
+</div>
+</div>
+</div>
+
+<!-- ③-A 無料クーポン：商品タイプ選択（バーコードあり or なし） -->
+<div class="modal-overlay" id="free-coupon-prod-type-modal">
+<div class="modal-content-box" style="text-align: center;">
+<h3 style="color:#20bf6b;">無料クーポン作成</h3>
+<p style="font-size: 12px; color: #666; margin-bottom: 15px;">対象商品のタイプを選択してください</p>
+<div class="pay-method-options" style="flex-direction: column; gap: 10px;">
+<button class="pay-method-btn" onclick="openFreeCouponScanModal()" style="border-color: #2575fc; color: #2575fc;">
+<span>バーコードのある商品</span>
+</button>
+<button class="pay-method-btn" onclick="openFreeCouponNoBarcodeModal()" style="border-color: #f1c40f; color: #d35400;">
+<span>バーコードの無い商品</span>
+</button>
+</div>
+<div style="text-align: left; margin-top: 15px;">
+<button class="modal-btn-back" onclick="backToCouponTypeSelectFromProdType()">← 戻る</button>
+</div>
+</div>
+</div>
+
+<!-- ③-B 無料クーポン：バーコードの無い商品選択モーダル -->
+<div class="modal-overlay" id="free-coupon-nobarcode-modal">
+<div class="modal-content-box nobarcode-modal">
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+<h3 style="margin:0; font-size:16px; color:#20bf6b;">無料クーポンにする商品を選択</h3>
+<button onclick="closeFreeCouponNoBarcodeModal()" style="background:none; border:none; font-size:18px; cursor:pointer; color:#888;">✕</button>
+</div>
+<div class="tab-container">
+<button class="tab-btn active" onclick="switchFreeCouponCategory('yasai', this)">野菜・果物</button>
+<button class="tab-btn" onclick="switchFreeCouponCategory('niku', this)">肉・魚</button>
+<button class="tab-btn" onclick="switchFreeCouponCategory('sozai', this)">惣菜</button>
+<button class="tab-btn" onclick="switchFreeCouponCategory('sonota', this)">その他</button>
+</div>
+<div class="product-grid" id="free-coupon-nobarcode-grid"></div>
+<button class="close-btn" onclick="closeFreeCouponNoBarcodeModal()" style="margin-top:15px;">閉じる</button>
+</div>
+</div>
+
+<!-- ③-C 無料クーポン：バーコードのある商品スキャンモーダル -->
+<div class="modal-overlay" id="free-coupon-scan-modal">
+<div class="modal-content-box" style="text-align: center;">
+<h3 style="color:#20bf6b;">無料クーポン作成</h3>
+<p style="font-size: 12px; color: #666; margin-bottom: 10px;">無料にする商品のバーコードをかざしてください</p>
+<div class="free-coupon-scanner-wrapper">
+<div id="free-coupon-reader" style="width: 100%; min-height: 180px; background: #222;"></div>
+<button class="scanner-file-btn" onclick="document.getElementById('free-coupon-scan-file-input').click()" title="ファイルから読み込み">📁</button>
+</div>
+<button class="modal-btn-back" style="margin-top: 10px;" onclick="backToProdTypeFromFreeScan()">← 戻る</button>
+</div>
+</div>
+
+<!-- ④ 割引クーポン：入力モーダル -->
+<div class="modal-overlay" id="discount-coupon-input-modal">
+<div class="modal-content-box" style="text-align: center;">
+<h3 style="color:#e67e22;">割引クーポン作成</h3>
+<div style="text-align: left; background: #f8f9fa; padding: 12px; border-radius: 8px; margin: 12px 0;">
+<label style="display:block; font-size:12px; font-weight:bold; margin-bottom:6px;">クーポン名</label>
+<input type="text" id="maker-title" placeholder="例: 特別割引券" style="width:100%; padding:8px; box-sizing:border-box; margin-bottom:10px; border:1px solid #ccc; border-radius:6px; font-size:13px;">
+
+<label style="display:block; font-size:12px; font-weight:bold; margin-bottom:6px;">割引の種類</label>
+<div style="display:flex; gap:15px; margin-bottom:10px;">
+<label><input type="radio" name="maker-disc-type" value="pct" checked onclick="toggleMakerDiscTypeInput()"> % 割引</label>
+<label><input type="radio" name="maker-disc-type" value="yen" onclick="toggleMakerDiscTypeInput()"> 円引き</label>
+</div>
+<label style="display:block; font-size:12px; font-weight:bold; margin-bottom:4px;" id="maker-disc-val-label">割引値</label>
+<input type="number" id="maker-val" value="10" style="width:100%; padding:8px; font-size:16px; border:1px solid #ccc; border-radius:6px; box-sizing:border-box;">
+</div>
+<div style="display:flex; gap:10px;">
+<button class="modal-btn-back" style="flex:1;" onclick="backToCouponTypeSelectFromDiscount()">← 戻る</button>
+<button class="btn pay-btn" style="flex:2; margin:0; padding:10px; background:#e67e22;" onclick="generateDiscountCouponFinal()">完了</button>
+</div>
+</div>
+</div>
+
+<!-- ⑤ 保存済みクーポン一覧モーダル -->
+<div class="modal-overlay" id="coupon-manage-list-modal">
+<div class="modal-content-box" style="text-align: left; font-family: 'Segoe UI', sans-serif;">
+<h2 style="color:#34495e;">保存済みクーポン一覧</h2>
+<div id="saved-coupons-list" style="max-height: 280px; overflow-y: auto; margin: 15px 0; padding-right: 4px;"></div>
+<button class="close-btn" onclick="closeCouponManageListModal()" style="margin-top: 15px;">閉じる</button>
+</div>
+</div>
+
+<!-- ⑥ クーポンQRモーダル -->
+<div class="modal-overlay" id="coupon-view-modal">
+<div class="modal-content-box" style="text-align: center; max-width: 320px;">
+<h3 id="view-coupon-title" style="margin-top:0; font-size:16px; color:#333;">クーポン完成</h3>
+<div id="view-capture-area" style="background:#fff; padding:10px; display:inline-block; border-radius:8px;">
+<p id="view-capture-title" style="font-weight:bold; font-size:14px; margin:0 0 5px 0;"></p>
+<div id="view-qr-img"></div>
+</div>
+<br>
+<button class="btn share-btn" style="margin-top:10px; padding:10px;" onclick="shareSavedCouponImage()">印刷</button>
+<button class="close-btn" onclick="closeCouponViewModal()" style="margin-top:10px;">閉じる</button>
+</div>
+</div>
+
+<!-- ================= 🔄 返金対応専用モーダル群 ================= -->
+<!-- ① 返金メニュー選択モーダル -->
+<div class="modal-overlay" id="refund-menu-modal">
+<div class="modal-content-box" style="text-align: center;">
+<h3 style="font-size: 18px; margin-bottom: 12px; color: #eb4d4b;">返金対応</h3>
+<p style="font-size: 12px; color: #666; margin-bottom: 15px;">返金対応方法を選択してください</p>
+<div class="pay-method-options" style="flex-direction: column; gap: 10px;">
+<button class="pay-method-btn" onclick="openRefundScanModal()" style="border-color: #2575fc; color: #2575fc;">
+<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+<span>読み取り</span>
+</button>
+<button class="pay-method-btn" onclick="openRefundAmountInputModal()" style="border-color: #2575fc; color: #2575fc;">
+<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="16" y1="14" x2="16" y2="18"/><path d="M8 10h.01"/><path d="M12 10h.01"/><path d="M16 10h.01"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/></svg>
+<span>金額入力</span>
+</button>
+<button class="pay-method-btn" onclick="openRefundHistoryModal()" style="border-color: #34495e; color: #34495e;">
+<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+<span>返金対応一覧</span>
+</button>
+</div>
+<button class="close-btn" onclick="closeRefundMenuModal()" style="margin-top: 15px;">閉じる</button>
+</div>
+</div>
+
+<!-- ② レシート読み取りカメラモーダル -->
+<div class="modal-overlay" id="refund-scan-modal">
+<div class="modal-content-box" style="text-align: center;">
+<h3 style="color:#2575fc;">レシートバーコードスキャン</h3>
+<p style="font-size: 12px; color: #666; margin-bottom: 10px;">レシート下部のバーコードをかざしてください</p>
+<div class="refund-scanner-wrapper">
+<div id="refund-reader" style="width: 100%; min-height: 180px; background: #222;"></div>
+<button class="scanner-file-btn" onclick="document.getElementById('refund-scan-file-input').click()" title="ファイルから読み込み">📁</button>
+</div>
+<button class="modal-btn-back" style="margin-top: 10px;" onclick="backToRefundMenuFromScan()">← 戻る</button>
+</div>
+</div>
+
+<!-- ③ 返金金額入力キーボードモーダル -->
+<div class="modal-overlay" id="refund-amount-modal">
+<div class="modal-content-box" style="text-align: center;">
+<h2 style="color:#2575fc;">金額入力</h2>
+<p style="font-size: 12px; color: #666; margin: 5px 0;">返金金額を入力してください</p>
+<div class="calc-display" id="refund-amount-display" style="color:#ff4757;">0</div>
+
+<div class="calculator-pad">
+<button class="calc-key" onclick="appendRefundCalc(1)">1</button>
+<button class="calc-key" onclick="appendRefundCalc(2)">2</button>
+<button class="calc-key" onclick="appendRefundCalc(3)">3</button>
+<button class="calc-key" onclick="appendRefundCalc(4)">4</button>
+<button class="calc-key" onclick="appendRefundCalc(5)">5</button>
+<button class="calc-key" onclick="appendRefundCalc(6)">6</button>
+<button class="calc-key" onclick="appendRefundCalc(7)">7</button>
+<button class="calc-key" onclick="appendRefundCalc(8)">8</button>
+<button class="calc-key" onclick="appendRefundCalc(9)">9</button>
+<button class="calc-key" onclick="clearRefundCalc()">C</button>
+<button class="calc-key" onclick="appendRefundCalc(0)">0</button>
+<button class="calc-key" onclick="backspaceRefundCalc()">←</button>
+</div>
+
+<button class="btn pay-btn" style="margin-top:5px; padding:12px; font-size:16px;" onclick="confirmRefundAmountInput()">入力完了</button>
+<div style="text-align: left; margin-top: 10px;">
+<button class="modal-btn-back" onclick="backToRefundMenuFromInput()">← 戻る</button>
+</div>
+</div>
+</div>
+
+<!-- ④ 返金方式選択モーダル -->
+<div class="modal-overlay" id="refund-pay-method-modal">
+<div class="modal-content-box" style="text-align: center;">
+<h3 style="font-size: 16px; margin-bottom: 10px; color:#ff4757;">返金方法を選択</h3>
+<p style="font-size: 16px; font-weight: bold; color: #ff4757; margin-bottom: 15px;" id="refund-target-amount-text">返金額: 0円</p>
+
+<div class="pay-method-options">
+<button class="pay-method-btn" onclick="selectRefundMethod('cash')" style="border-color:#2575fc; color:#2575fc;">
+<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="3"/><path d="M6 12h.01M18 12h.01"/></svg>
+<span>現金</span>
+</button>
+<button class="pay-method-btn" onclick="selectRefundMethod('11pay')" style="border-color:#2575fc; color:#2575fc;">
+<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/><path d="M9 6h6"/></svg>
+<span>11Pay</span>
+</button>
+</div>
+
+<div style="text-align: left; margin-top: 15px;">
+<button class="modal-btn-back" onclick="backToRefundMenuFromPayMethod()">← 戻る</button>
+</div>
+</div>
+</div>
+
+<!-- ⑤ 現金返金完了確認モーダル -->
+<div class="modal-overlay" id="refund-cash-confirm-modal">
+<div class="modal-content-box" style="text-align: center;">
+<h3 style="color:#ff4757; margin-bottom:10px;">現金返金の確認</h3>
+<p style="font-size:13px; color:#666;">お客様に以下の金額をお渡しください</p>
+<div style="font-size: 32px; font-weight: bold; color: #ff4757; margin: 15px 0;" id="refund-cash-display">0 円</div>
+<button class="btn pay-btn" style="padding:12px; font-size:16px;" onclick="openRefundReasonModal('現金')">完了</button>
+<div style="text-align: left; margin-top: 10px;">
+<button class="modal-btn-back" onclick="backToRefundMethodSelect()">← 戻る</button>
+</div>
+</div>
+</div>
+
+<!-- ⑥ 11Pay返金チャージ用QRコード表示モーダル -->
+<div class="modal-overlay" id="refund-11pay-qr-modal">
+<div class="modal-content-box" style="text-align: center;">
+<h3 style="font-size: 16px; margin-bottom: 8px; color:#ff4757;">11Pay QRコード</h3>
+<p style="font-size: 15px; font-weight: bold; color: #ff4757; margin: 5px 0;" id="refund-11pay-amount-text">返金額: 0円</p>
+<p style="font-size: 11px; color: #666;">お客様の11PayアプリでこのQRコードを読み取ってください</p>
+<div id="refund-11pay-qrcode-target"></div>
+<button class="btn pay-btn" style="margin-top: 10px; padding: 12px;" onclick="openRefundReasonModal('11Pay')">完了</button>
+<div style="text-align: left; margin-top: 10px;">
+<button class="modal-btn-back" onclick="backToRefundMethodSelect()">← 戻る</button>
+</div>
+</div>
+</div>
+
+<!-- ⑦ 返金理由選択モーダル -->
+<div class="modal-overlay" id="refund-reason-modal">
+<div class="modal-content-box" style="text-align: center;">
+<h3 style="font-size: 16px; margin-bottom: 12px; color:#ff4757;">返金理由を選択</h3>
+<p style="font-size: 12px; color: #666; margin-bottom: 15px;">該当する理由をタップしてください</p>
+
+<button class="reason-btn" onclick="finalizeRefundProcess('返品')">返品</button>
+<button class="reason-btn" onclick="finalizeRefundProcess('商品不良')">商品不良</button>
+<button class="reason-btn" onclick="finalizeRefundProcess('打ち間違い')">打ち間違い</button>
+<button class="reason-btn" onclick="finalizeRefundProcess('その他')">その他</button>
+</div>
+</div>
+
+<!-- ⑧ 返金用レシート表示モーダル -->
+<div class="modal-overlay" id="refund-receipt-modal">
+<div class="modal-content-box">
+<div id="refund-receipt-target" class="receipt-paper" style="background:#fff5f5; border-color:#eb4d4b;">
+<div style="text-align:center; color:#eb4d4b; font-weight:bold; font-size:16px; margin-bottom:4px; font-family:'Segoe UI',sans-serif;">【 返 金 レ シ ー ト 】</div>
+<div class="receipt-store-title" id="refund-receipt-store-title-el">KKマート</div>
+<div class="receipt-store-sub" id="refund-receipt-store-sub-el">名古屋東 店</div>
+<div class="receipt-info" id="refund-receipt-date">日時: 2026/01/01 00:00</div>
+
+<div style="border-bottom:1px dashed #333; padding-bottom:8px; margin-bottom:8px;">
+<div style="display:flex; justify-content:space-between; font-weight:bold; font-size:14px; color:#eb4d4b;">
+<span>返金合計金額</span><span id="refund-receipt-amount-text">-¥0</span>
+</div>
+<div style="display:flex; justify-content:space-between; font-size:11px; margin-top:4px;">
+<span>返金方法</span><span id="refund-receipt-method-text">現金</span>
+</div>
+<div style="display:flex; justify-content:space-between; font-size:11px;">
+<span>返金理由</span><span id="refund-receipt-reason-text">返品</span>
+</div>
+</div>
+
+<div class="receipt-message">
+<p style="margin: 2px 0;">上記金額の返金処理が完了いたしました。</p>
+</div>
+</div>
+
+<button class="btn share-btn" onclick="shareRefundReceiptImage()">返金レシート印刷</button>
+<button class="btn close-btn" onclick="closeRefundReceiptToRegister()">閉じる</button>
+</div>
+</div>
+
+<!-- ⑨ 返金対応一覧モーダル -->
+<div class="modal-overlay" id="refund-history-modal">
+<div class="modal-content-box" style="text-align: left; font-family: 'Segoe UI', sans-serif;">
+<h2 style="color:#eb4d4b;">返金対応一覧</h2>
+<div style="margin: 10px 0;">
+<input type="text" id="refund-history-search-input" placeholder="日付、理由、金額で絞り込み..." oninput="filterRefundHistory()" style="width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 5px; font-size: 13px;">
+</div>
+<div id="refund-history-list" style="max-height: 220px; overflow-y: auto; margin-top: 10px; font-size: 13px; border-top: 1px solid #eee; padding-top: 5px;"></div>
+<button class="close-btn" onclick="closeRefundHistoryModal()" style="margin-top: 15px;">閉じる</button>
+</div>
+</div>
+
+<!-- ================= 🏷️ 割引バーコード作成・読み取りモーダル群 ================= -->
+<!-- ① 割引バーコード作成：商品スキャンモーダル -->
+<div class="modal-overlay" id="disc-scan-modal">
+<div class="modal-content-box" style="text-align: center;">
+<h3>割引バーコード</h3>
+<p style="font-size: 12px; color: #666; margin-bottom: 10px;">割引する商品のバーコードをかざしてください</p>
+<div class="refund-scanner-wrapper" style="border-color:#28a745;">
+<div id="disc-reader" style="width: 100%; min-height: 180px; background: #222;"></div>
+<button class="scanner-file-btn" onclick="document.getElementById('disc-scan-file-input').click()" title="ファイルから読み込み">📁</button>
+</div>
+<button class="modal-btn-back" style="margin-top: 10px;" onclick="closeDiscScanModal()">← 戻る</button>
+</div>
+</div>
+
+<!-- ② 割引バーコード作成：割引値入力モーダル -->
+<div class="modal-overlay" id="disc-input-modal">
+<div class="modal-content-box" style="text-align: center;">
+<h3>割引設定</h3>
+<p style="font-size: 13px; font-weight: bold; color: #2575fc; margin: 8px 0;" id="disc-target-product-name">商品名</p>
+<div style="text-align: left; background: #f8f9fa; padding: 12px; border-radius: 8px; margin-bottom: 12px;">
+<label style="display:block; font-size:12px; font-weight:bold; margin-bottom:6px;">割引の種類</label>
+<div style="display:flex; gap:15px; margin-bottom:10px;">
+<label><input type="radio" name="disc-type" value="pct" checked onclick="toggleDiscTypeInput()"> % 割引</label>
+<label><input type="radio" name="disc-type" value="yen" onclick="toggleDiscTypeInput()"> 円引き</label>
+</div>
+<label style="display:block; font-size:12px; font-weight:bold; margin-bottom:4px;" id="disc-val-label">割引値</label>
+<input type="number" id="disc-input-value" value="10" style="width:100%; padding:8px; font-size:16px; border:1px solid #ccc; border-radius:6px; box-sizing:border-box;">
+</div>
+<div style="display:flex; gap:10px;">
+<button class="modal-btn-back" style="flex:1;" onclick="backFromDiscInputToScan()">← 戻る</button>
+<button class="btn pay-btn" style="flex:2; margin:0; padding:10px;" onclick="generateDiscountBarcodeFinal()">完了</button>
+</div>
+</div>
+</div>
+
+<!-- ③ 割引バーコード表示モーダル -->
+<div class="modal-overlay" id="disc-result-modal">
+<div class="modal-content-box" style="text-align: center; position: relative;">
+<div style="position: absolute; top: 15px; right: 15px; display: flex; gap: 5px;">
+<button class="reload-barcode-btn" onclick="promptSaveCurrentDiscDiscBarcode()" title="このバーコードを保存" style="background: #2ed573; color: white;">💾</button>
+</div>
+<h3>割引バーコード完成</h3>
+<p style="font-size:12px; color:#666;" id="disc-result-code-text">コード: </p>
+<div style="background:#fff; padding:15px; border-radius:8px; margin: 15px 0; display:inline-block;" id="disc-result-area">
+<svg id="disc-result-svg" style="max-width:100%; height:70px;"></svg>
+</div>
+<button class="btn share-btn" onclick="shareDiscBarcodeImage()">印刷</button>
+<button class="close-btn" onclick="closeDiscResultModal()">閉じる</button>
+</div>
+</div>
+
+<!-- 設定・管理画面 -->
+<div class="modal-overlay" id="settings-modal">
+<div class="modal-content-box" style="text-align: left; font-family: 'Segoe UI', sans-serif;">
+<h2>管理設定</h2>
+<div style="margin-top: 15px;">
+<div style="background:#f1f2f6; padding:10px; border-radius:8px; margin-bottom:10px;">
+<div style="font-weight:bold; font-size:13px; margin-bottom:8px;">音声機能の設定</div>
+<div style="display:flex; justify-content:space-between; align-items:center; font-size:13px; margin-bottom:6px;">
+<span>読み取り音</span>
+<label class="toggle-switch"><input type="checkbox" id="setting-voice-beep" onchange="saveVoiceSettings()"><span class="toggle-slider"></span></label>
+</div>
+<div style="display:flex; justify-content:space-between; align-items:center; font-size:13px; margin-bottom:6px;">
+<span>音声案内</span>
+<label class="toggle-switch"><input type="checkbox" id="setting-voice-speech" onchange="saveVoiceSettings()"><span class="toggle-slider"></span></label>
+</div>
+<div style="display:flex; justify-content:space-between; align-items:center; font-size:13px;">
+<span>お支払い完了音声</span>
+<label class="toggle-switch"><input type="checkbox" id="setting-voice-thanks" onchange="saveVoiceSettings()"><span class="toggle-slider"></span></label>
+</div>
+</div>
+
+<button id="settings-switch-btn" class="btn" style="background-color: #2575fc; margin-top:5px; font-size:15px; padding:10px;" onclick="toggleModeFromSettings()">スタッフモードへ切替</button>
+<button class="btn" style="background-color: #ff0033; margin-top:10px; font-size:15px; padding:10px;" onclick="openCouponMakerMenuModal()">クーポン作成・管理</button>
+<button class="btn" style="background-color: #00adb5; margin-top:10px; font-size:15px; padding:10px;" onclick="showSalesHistory()">売上履歴</button>
+<button class="btn" style="background-color: #16a085; margin-top:10px; font-size:15px; padding:10px;" onclick="openReceiptSettingsModal()">レシート設定</button>
+<button class="btn" style="background-color: #9b59b6; margin-top:10px; font-size:15px; padding:10px;" onclick="generateUniqueBarcode()">未使用のバーコードを生成</button>
+<button class="btn" style="background-color: #00b894; margin-top:10px; font-size:15px; padding:10px;" onclick="openManualBarcodeModal()">数字でのバーコード作成</button>
+<button class="btn" style="background-color: #34495e; margin-top:10px; font-size:15px; padding:10px;" onclick="openSavedBarcodesModal()">保存したバーコードを見る</button>
+<button class="btn" style="background-color: #ffa502; margin-top:10px; font-size:15px; padding:10px;" onclick="resetSalesOnly()">売上記録のみリセット</button>
+<button class="btn" style="background-color: #ff4757; margin-top:10px; font-size:15px; padding:10px;" onclick="resetAllData()">すべてのデータをリセット</button>
+</div>
+<button class="close-btn" onclick="closeSettings()" style="margin-top: 20px;">閉じる</button>
+</div>
+</div>
+
+<!-- 🧾 レシート設定専用モーダル -->
+<div class="modal-overlay" id="receipt-settings-modal">
+<div class="modal-content-box" style="text-align: left; font-family: 'Segoe UI', sans-serif;">
+<h2>レシート設定</h2>
+<div style="margin-top: 15px;">
+<label style="display:block; font-size:12px; font-weight:bold; color:#555; margin-bottom:3px;">店舗名</label>
+<input type="text" id="setting-store-title" placeholder="KKマート" style="width:100%; padding:8px; font-size:13px; border:1px solid #ccc; border-radius:6px; box-sizing:border-box; margin-bottom:10px;">
+
+<label style="display:block; font-size:12px; font-weight:bold; color:#555; margin-bottom:3px;">支店名・サブタイトル</label>
+<input type="text" id="setting-store-sub" placeholder="名古屋東 店" style="width:100%; padding:8px; font-size:13px; border:1px solid #ccc; border-radius:6px; box-sizing:border-box; margin-bottom:10px;">
+
+<label style="display:block; font-size:12px; font-weight:bold; color:#555; margin-bottom:3px;">下部メッセージ</label>
+<textarea id="setting-receipt-msg" rows="3" style="width:100%; padding:8px; font-size:13px; border:1px solid #ccc; border-radius:6px; box-sizing:border-box; resize:none; margin-bottom:12px;"></textarea>
+
+<button class="btn" style="background-color:#20bf6b; padding:10px; font-size:15px;" onclick="saveReceiptSettings()">保存</button>
+</div>
+<button class="close-btn" onclick="closeReceiptSettingsModal()" style="margin-top: 15px;">閉じる</button>
+</div>
+</div>
+
+<div class="modal-overlay" id="barcode-modal">
+<div class="modal-content-box" style="text-align: center; position: relative;">
+<div style="position: absolute; top: 15px; right: 15px; display: flex; gap: 5px;">
+<button class="reload-barcode-btn" onclick="generateUniqueBarcode()" title="新しいバーコードを生成" style="position: static;">🔄</button>
+<button class="reload-barcode-btn" onclick="promptSaveCurrentBarcode()" title="このバーコードを保存" style="position: static; background: #2ed573; color: white;">💾</button>
+</div>
+<h2>新規バーコード生成</h2>
+<p style="font-size:12px; color:#666;">重複のない13桁のバーコードです</p>
+<div id="barcode-target-area" style="background:#ffffff; padding:15px; border-radius:8px; margin: 15px 0; display:inline-block;">
+<svg id="generated-barcode-svg" style="max-width:100%; height:70px;"></svg>
+</div>
+<button class="btn share-btn" onclick="shareBarcodeImage()" style="margin-top: 10px;">バーコードを印刷</button>
+<button class="close-btn" onclick="closeBarcodeModal()">閉じる</button>
+</div>
+</div>
+
+<div class="modal-overlay" id="saved-barcodes-modal">
+<div class="modal-content-box" style="text-align: left; font-family: 'Segoe UI', sans-serif;">
+<h2>保存したバーコード</h2>
+<div id="saved-barcodes-list" style="max-height: 320px; overflow-y: auto; margin: 15px 0; padding-right: 4px;"></div>
+<button class="close-btn" onclick="closeSavedBarcodesModal()">閉じる</button>
+</div>
+</div>
+
+<div class="modal-overlay" id="manual-barcode-modal">
+<div class="modal-content-box" style="text-align: center; position: relative;">
+<h2>数字でのバーコード作成</h2>
+<p style="font-size:12px; color:#666; margin-bottom: 10px;">数字を入力してください</p>
+<div style="margin-bottom: 10px;">
+<input type="text" id="manual-barcode-input" placeholder="例: 4901234567890" style="width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 5px; font-size: 14px; text-align: center;" oninput="generateManualBarcode()">
+</div>
+<div style="position: absolute; top: 15px; right: 15px; display: flex; gap: 5px;">
+<button class="reload-barcode-btn" onclick="promptSaveManualBarcode()" title="このバーコードを保存" style="position: static; background: #2ed573; color: white;">💾</button>
+</div>
+<div id="manual-barcode-target-area" style="background:#ffffff; padding:15px; border-radius:8px; margin: 10px 0; display:inline-block;">
+<svg id="manual-generated-barcode-svg" style="max-width:100%; height:70px;"></svg>
+</div>
+<button class="btn share-btn" onclick="shareManualBarcodeImage()" style="margin-top: 5px;">バーコードを印刷</button>
+<button class="close-btn" onclick="closeManualBarcodeModal()">閉じる</button>
+</div>
+</div>
+
+<div class="modal-overlay" id="history-modal">
+<div class="modal-content-box" style="text-align: left; font-family: 'Segoe UI', sans-serif;">
+<h2>売上履歴</h2>
+<div style="margin: 10px 0;">
+<input type="text" id="history-search-input" placeholder="日付や商品名で絞り込み..." oninput="filterSalesHistory()" style="width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 5px; font-size: 13px;">
+</div>
+<div id="history-list" style="max-height: 220px; overflow-y: auto; margin-top: 10px; font-size: 13px; border-top: 1px solid #eee; padding-top: 5px;"></div>
+<button class="close-btn" onclick="closeHistory()" style="margin-top: 15px;">閉じる</button>
+</div>
+</div> 
 <script>
 let defaultDatabase = {
 "4901330502880": { name: "ポテトチップス", price: 160, waribiki: 0 },
@@ -1058,7 +2040,7 @@ processScannedBarcode(result.codeResult.code);
 };
 reader.readAsDataURL(file);
 event.target.value = '';
-} 
+}
 
 // -------------------------------------------------------------
 // 🎁 クーポン作成・管理関連
@@ -1089,10 +2071,73 @@ document.getElementById('coupon-manage-list-modal').style.display = 'none';
 openCouponMakerMenuModal();
 }
 
+// 無料クーポン選択分岐モーダルを開く
+function openFreeCouponSelectProductTypeModal() {
+document.getElementById('coupon-type-select-modal').style.display = 'none';
+document.getElementById('free-coupon-prod-type-modal').style.display = 'flex';
+}
+function backToCouponTypeSelectFromProdType() {
+document.getElementById('free-coupon-prod-type-modal').style.display = 'none';
+document.getElementById('coupon-type-select-modal').style.display = 'flex';
+}
+function backToProdTypeFromFreeScan() {
+closeFreeCouponScanModal();
+document.getElementById('free-coupon-prod-type-modal').style.display = 'flex';
+}
+
+// バーコードの無い商品選択モーダルを開く
+function openFreeCouponNoBarcodeModal() {
+document.getElementById('free-coupon-prod-type-modal').style.display = 'none';
+document.getElementById('free-coupon-nobarcode-modal').style.display = 'flex';
+const firstTab = document.querySelector('#free-coupon-nobarcode-modal .tab-btn');
+switchFreeCouponCategory('yasai', firstTab);
+}
+function closeFreeCouponNoBarcodeModal() {
+document.getElementById('free-coupon-nobarcode-modal').style.display = 'none';
+document.getElementById('free-coupon-prod-type-modal').style.display = 'flex';
+}
+
+function switchFreeCouponCategory(categoryKey, btnElement) {
+const modalBox = document.getElementById('free-coupon-nobarcode-modal');
+modalBox.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+if (btnElement) btnElement.classList.add('active');
+const grid = document.getElementById('free-coupon-nobarcode-grid');
+grid.innerHTML = '';
+for (let code in itemDatabase) {
+let item = itemDatabase[code];
+if (item.category === categoryKey) {
+grid.innerHTML += `
+<div class="product-card" onclick="selectFreeCouponItemNoBarcode('${code}')">
+<div class="product-card-name">${item.name}</div>
+<div class="product-card-bottom">
+<span class="product-card-price">¥${item.price}</span>
+<div class="product-add-badge">🎁</div>
+</div>
+</div>
+`;
+}
+}
+}
+
+function selectFreeCouponItemNoBarcode(code) {
+const item = itemDatabase[code];
+if (!item) return;
+closeFreeCouponNoBarcodeModal();
+document.getElementById('free-coupon-prod-type-modal').style.display = 'none';
+
+const couponTitle = `${item.name}無料クーポン`;
+const couponVal = `${code}_0`;
+const newC = { id: Date.now(), title: couponTitle, val: couponVal };
+savedCoupons.unshift(newC);
+localStorage.setItem('myPosMakerCoupons', JSON.stringify(savedCoupons));
+
+showSavedCouponQRDirect(couponTitle, couponVal);
+}
+
 // 無料クーポン作成用スキャナー
 let freeCouponScanner = null;
 function openFreeCouponScanModal() {
-document.getElementById('coupon-type-select-modal').style.display = 'none';
+document.getElementById('free-coupon-prod-type-modal').style.display = 'none';
 document.getElementById('free-coupon-scan-modal').style.display = 'flex';
 const readerDiv = document.getElementById('free-coupon-reader');
 readerDiv.innerHTML = "";
@@ -1123,11 +2168,6 @@ document.getElementById('free-coupon-scan-modal').style.display = 'none';
 } else {
 document.getElementById('free-coupon-scan-modal').style.display = 'none';
 }
-}
-
-function backToCouponTypeSelectFromFree() {
-closeFreeCouponScanModal();
-document.getElementById('coupon-type-select-modal').style.display = 'flex';
 }
 
 function handleFreeCouponScanFile(event) {

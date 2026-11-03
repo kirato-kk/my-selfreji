@@ -1022,22 +1022,21 @@ let defaultDatabase = {
 
 // -------------------------------------------------------------
 // 🛍️ まとめ買い（バンドル割引）グループルール設定
-// ここにコード（バーコード番号・ノーコード番号）と個数・セット価格を追加できます！
 // -------------------------------------------------------------
 const bundleRules = [
   {
     id: "bundle_noodle",
     name: "麺類よりどり3点まとめ買い",
-    items: ["4902105001569", "49698633", "4902105034095", "4902881048651"], // カップヌードル、シーフード、U.F.O.、一平ちゃんなど
+    items: ["4902105001569", "49698633", "4902105034095", "4902881048651"],
     count: 3,
-    setPrice: 300 // 3個で税抜300円
+    setPrice: 300
   },
   {
     id: "bundle_yasai",
     name: "野菜どれでも3点まとめ買い",
-    items: ["100003", "100004", "100006", "100007", "100008", "100009"], // なす、ピーマン、ジャガイモ、たまねぎ、にんじん、トマト
+    items: ["100003", "100004", "100006", "100007", "100008", "100009"],
     count: 3,
-    setPrice: 150 // 3個で税抜150円
+    setPrice: 150
   }
 ];
 
@@ -2155,7 +2154,7 @@ saveCartToStorage(); renderCart();
 }
 
 // -------------------------------------------------------------
-// 🛒 カート描画（まとめ買い割引・枠囲みロジック搭載）
+// 🛒 カート描画（1セット単位でピンク枠を複数個独立表示）
 // -------------------------------------------------------------
 function renderCart() {
 const container = document.getElementById('cart-list');
@@ -2169,12 +2168,11 @@ container.innerHTML = '';
 totalPrice = 0; totalCount = 0;
 
 // 1. 各ルールごとに該当するアイテムを展開
-let bundleRenderGroups = []; // { rule, appliedSets, bundleItems: [], unitPriceTax }
-let regularItems = [];       // まとめ買いから漏れた商品
+let individualBundleBoxes = []; // 1セットごとの枠データ [{ rule, units: [], bundleTaxTotal, unitPriceTax }]
+let regularItems = [];
 
-// 各ルール適用計算
 bundleRules.forEach(rule => {
-let matchedUnits = []; // 該当する商品単位 [{ cartIndex, item }]
+let matchedUnits = []; // [{ cartIndex, item }]
 cartItems.forEach((item, index) => {
 if (item.code && rule.items.includes(item.code)) {
 for (let u = 0; u < item.quantity; u++) {
@@ -2185,38 +2183,36 @@ matchedUnits.push({ cartIndex: index, item: item });
 
 const sets = Math.floor(matchedUnits.length / rule.count);
 if (sets > 0) {
-const takeCount = sets * rule.count;
-const takenUnits = matchedUnits.slice(0, takeCount);
-const bundleTaxTotal = Math.round(rule.setPrice * 1.1) * sets;
-const unitPriceTax = Math.round(bundleTaxTotal / takeCount);
+const bundleTaxTotal = Math.round(rule.setPrice * 1.1);
+const unitPriceTax = Math.round(bundleTaxTotal / rule.count);
 
-bundleRenderGroups.push({
+for (let s = 0; s < sets; s++) {
+const setUnits = matchedUnits.slice(s * rule.count, (s + 1) * rule.count);
+individualBundleBoxes.push({
 rule: rule,
-appliedSets: sets,
-units: takenUnits,
+units: setUnits,
 bundleTaxTotal: bundleTaxTotal,
 unitPriceTax: unitPriceTax
 });
 }
+}
 });
 
-// まとめ買いに組み込まれたユニットを追跡
+// 枠に使われたユニット数を追跡
 let usedUnitCountMap = {}; // cartIndex -> count
-
-bundleRenderGroups.forEach(bg => {
-bg.units.forEach(u => {
+individualBundleBoxes.forEach(box => {
+box.units.forEach(u => {
 usedUnitCountMap[u.cartIndex] = (usedUnitCountMap[u.cartIndex] || 0) + 1;
 });
 });
 
-// 2. ピンク枠（まとめ買いグループ）の描画
-bundleRenderGroups.forEach(bg => {
+// 2. 1セットごとのピンク枠を描画
+individualBundleBoxes.forEach(box => {
 let groupHtml = `<div class="bundle-group-box">`;
-groupHtml += `<div class="bundle-group-title"><span>🎁 ${bg.rule.name} (${bg.appliedSets}セット適用)</span></div>`;
+groupHtml += `<div class="bundle-group-title"><span>🎁 ${box.rule.name}</span></div>`;
 
-// 枠内の各商品グループ集計
 let itemGroupMap = {};
-bg.units.forEach(u => {
+box.units.forEach(u => {
 const item = u.item;
 const key = `${u.cartIndex}_${item.name}`;
 if (!itemGroupMap[key]) {
@@ -2227,14 +2223,13 @@ itemGroupMap[key].count++;
 
 for (let k in itemGroupMap) {
 const gItem = itemGroupMap[k];
-const itemTotalTax = bg.unitPriceTax * gItem.count;
 groupHtml += `
 <div class="cart-item-row" style="border-bottom: 1px dashed #ffccd5;">
 <div class="cart-item-left">
 <span>▶ ${gItem.name}</span>
 <small style="color: #666;">
 単価: <s style="color:#ff4757; margin-right:4px;">${gItem.origPrice}円</s>
-<b style="color:#ff4757; font-size:13px;">税込${bg.unitPriceTax}円</b>
+<b style="color:#ff4757; font-size:13px;">税込${box.unitPriceTax}円</b>
 </small>
 </div>
 <div class="cart-item-right">
@@ -2245,14 +2240,14 @@ groupHtml += `
 `;
 }
 
-groupHtml += `<div class="bundle-group-footer">小計: 税込${bg.bundleTaxTotal}円</div></div>`;
+groupHtml += `<div class="bundle-group-footer">小計: 税込${box.bundleTaxTotal}円</div></div>`;
 container.innerHTML += groupHtml;
 
-totalPrice += bg.bundleTaxTotal;
-totalCount += bg.units.length;
+totalPrice += box.bundleTaxTotal;
+totalCount += box.units.length;
 });
 
-// 3. 通常商品（まとめ買い枠外・ハブられた分）の描画
+// 3. 通常商品（まとめ買い枠外・余り分）の描画
 cartItems.forEach((item, index) => {
 const usedQty = usedUnitCountMap[index] || 0;
 const remainQty = item.quantity - usedQty;
@@ -2376,21 +2371,6 @@ scannedCartDataForRegister = { items: [], total: 0 };
 return;
 }
 let regTotal = 0, regCount = 0;
-
-// まとめ買い金額修正計算
-let bundleDiscountTotal = 0;
-bundleRules.forEach(rule => {
-let matchedCount = 0;
-registerParsedCartItems.forEach(item => {
-if (item.code && rule.items.includes(item.code)) {
-matchedCount += item.quantity;
-}
-});
-const sets = Math.floor(matchedCount / rule.count);
-if (sets > 0) {
-const normalTaxPerUnit = Math.round(rule.setPrice * 1.1) / rule.count;
-}
-});
 
 container.innerHTML = registerParsedCartItems.map((item, index) => {
 const itemTotal = item.taxPrice * item.quantity;
@@ -2632,9 +2612,6 @@ alert("レシートの設定を保存しました！");
 closeReceiptSettingsModal();
 }
 
-// -------------------------------------------------------------
-// 📄 レシート発行（まとめ買い打消し線印字搭載）
-// -------------------------------------------------------------
 function openReceiptModalFromChange() {
 document.getElementById('change-modal').style.display = 'none';
 const currentDate = new Date().toLocaleString();

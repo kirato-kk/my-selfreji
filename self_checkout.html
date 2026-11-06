@@ -20,7 +20,7 @@
 body { font-family: 'Segoe UI', sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; background-color: #f7f9fc; color: #333333; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
 .header-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
 h1 { color: #2575fc; margin: 0; font-size: 24px; cursor: pointer; user-select: none; }
-.settings-btn { background: none; border: none; font-size: 24px; cursor: pointer; padding: 0; color: #555; display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; }
+.settings-btn { background: none; border: none; font-size: 24px; cursor: pointer; padding: 0; color: #555; }
 .status { text-align: center; color: #2575fc; margin-bottom: 10px; font-weight: bold; }
 #interactive.viewport { width: 100%; height: 250px; background-color: #2f3542; border: 2px solid #2575fc; border-radius: 10px; overflow: hidden; margin-bottom: 20px; position: relative; }
 #interactive.viewport video { width: 100%; height: 100%; object-fit: cover; }
@@ -46,7 +46,6 @@ h2 { font-size: 18px; color: #444; margin: 0; }
 .cart-item-left { display: flex; flex-direction: column; }
 .cart-item-right { display: flex; align-items: center; gap: 8px; }
 
-/* 🎁 まとめ買いピンク枠スタイル */
 .bundle-group-box {
 background-color: #fff0f5;
 border: 2px dashed #ff6b81;
@@ -121,6 +120,33 @@ align-items: center; justify-content: center; color: white; font-size: 10px; poi
 .product-card-price { font-size: 13px; color: #ff4757; font-weight: bold; }
 .product-add-badge { background: #2ed573; color: white; border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; }
 
+/* 🌟 スタッフメニューグリッドスタイル（ご指定の写真の形に完全対応） */
+.staff-grid-container {
+display: grid;
+grid-template-columns: repeat(3, 1fr);
+gap: 10px;
+margin: 15px 0;
+text-align: left;
+}
+.staff-grid-card {
+background: #ffffff;
+border: 2px solid #cbd5e1;
+border-radius: 12px;
+padding: 12px 6px;
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+gap: 6px;
+cursor: pointer;
+transition: all 0.2s;
+min-height: 75px;
+box-sizing: border-box;
+}
+.staff-grid-card:hover { border-color: #2575fc; background: #f8fafc; }
+.staff-grid-card svg { width: 28px; height: 28px; stroke: #334155; }
+.staff-grid-card span { font-size: 11px; font-weight: bold; color: #334155; text-align: center; line-height: 1.2; }
+
 .receipt-paper {
 background: #fffdf9; color: #111111; font-family: 'Courier New', Courier, monospace;
 padding: 25px 15px; border: 1px dashed #cccccc; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
@@ -171,45 +197,6 @@ display: flex; flex-direction: column; align-items: center; gap: 6px; transition
 .modal-btn-back { background: #747d8c; color: white; border: none; padding: 10px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; }
 .modal-btn-back:hover { background: #57606f; }
 
-.refund-scanner-wrapper, .free-coupon-scanner-wrapper {
-position: relative;
-width: 100%;
-max-width: 320px;
-margin: 0 auto 10px auto;
-border-radius: 12px;
-overflow: hidden;
-border: 3px solid #2575fc;
-}
-
-.scanner-file-btn {
-position: absolute;
-right: 12px;
-bottom: 12px;
-width: 42px;
-height: 42px;
-border-radius: 50%;
-background: #ffffff;
-border: none;
-font-size: 20px;
-display: flex;
-align-items: center;
-justify-content: center;
-box-shadow: 0 3px 8px rgba(0,0,0,0.3);
-cursor: pointer;
-z-index: 10;
-}
-.scanner-file-btn:active { transform: scale(0.95); }
-
-.reload-barcode-btn {
-background: #f1f2f6; border: 1px solid #ccc; border-radius: 6px; padding: 4px 8px; cursor: pointer; font-size: 14px;
-}
-
-.reason-btn {
-width: 100%; padding: 12px; font-size: 15px; font-weight: bold; color: #2c3e50;
-background: #f1f2f6; border: 1px solid #dfe4ea; border-radius: 8px; margin-bottom: 8px; cursor: pointer;
-}
-.reason-btn:active { background: #e2e6ea; }
-
 .action-btn-item {
 width: 60px !important;
 height: 32px !important;
@@ -223,35 +210,6 @@ border-radius: 6px !important;
 margin: 0 !important;
 box-sizing: border-box !important;
 }
-
-/* スタッフメニュー専用グリッドスタイル（ユーザー様提示画像準拠） */
-.staff-menu-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  margin: 15px 0;
-  max-height: 380px;
-  overflow-y: auto;
-}
-.staff-menu-card {
-  background: #ffffff;
-  border: 1px solid #cbd5e1;
-  border-radius: 12px;
-  aspect-ratio: 1 / 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  cursor: pointer;
-  padding: 8px;
-  transition: all 0.2s;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-}
-.staff-menu-card:hover { background: #f8fafc; border-color: #94a3b8; }
-.staff-menu-card:active { transform: scale(0.96); background: #f1f5f9; }
-.staff-menu-icon { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: #334155; }
-.staff-menu-text { font-size: 11px; font-weight: bold; color: #1e293b; text-align: center; line-height: 1.2; }
 </style>
 </head>
 <body>
@@ -267,13 +225,11 @@ box-sizing: border-box !important;
 <div id="customer-view" class="view-container active">
 <div class="header-container">
 <h1 id="app-title-header" onclick="handleTitleClick()">ピピッとカート 🛒</h1>
-<button class="settings-btn" onclick="handleCustomerSettingsClick()" title="スタッフメニュー">
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-</button>
+<button class="settings-btn" onclick="handleSettingsClick()" title="スタッフメニュー">⚙️</button>
 </div>
 
 <div class="camera-control-bar">
-<div class="status" id="status-msg" style="margin-bottom: 0; text-align: left; color: #747d8c;">カメラはOFFです</div>
+<div class="status" id="status-msg" style="margin-bottom: 0; text-align: left; color: #a4b0be;">カメラはOFFです</div>
 <label class="toggle-switch">
 <input type="checkbox" id="customer-camera-toggle" onchange="toggleCustomerCamera(this)">
 <span class="toggle-slider"></span>
@@ -285,7 +241,7 @@ box-sizing: border-box !important;
 </div>
 
 <div class="section-header">
-<h2 id="purchase-list-title" ondblclick="handlePurchaseListDblClick()" style="cursor: pointer; user-select: none;" title="ダブルタップでスタッフモード">購入リスト（ダブルタップでスタッフモード）</h2>
+<h2 id="purchase-list-title" ondblclick="handlePurchaseListDblClick()" style="cursor: pointer; user-select: none;" title="ダブルタップでスタッフモードへ">購入リスト（ダブルタップでモード切替）</h2>
 <button class="add-nobarcode-btn" onclick="openNoBarcodeModal()">＋ バーコードの無い商品を追加</button>
 </div>
 
@@ -299,13 +255,11 @@ box-sizing: border-box !important;
 <div id="register-view" class="view-container">
 <div class="header-container">
 <h1>スタッフモード</h1>
-<button class="settings-btn" onclick="openStaffMenuModal()" title="スタッフメニュー">
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-</button>
+<button class="settings-btn" onclick="handleSettingsClick()" title="スタッフメニュー">⚙️</button>
 </div>
 
 <div class="camera-control-bar">
-<div class="status" id="register-status-msg" style="color: #747d8c; margin-bottom: 0; text-align: left;">カメラはOFFです</div>
+<div class="status" id="register-status-msg" style="color: #a4b0be; margin-bottom: 0; text-align: left;">カメラはOFFです</div>
 <label class="toggle-switch">
 <input type="checkbox" id="register-camera-toggle" onchange="toggleRegisterCamera(this)">
 <span class="toggle-slider"></span>
@@ -318,174 +272,141 @@ box-sizing: border-box !important;
 <div id="register-camera-off-overlay" style="display: none; width: 100%; height: 100%; background-color: #2f3542; color: #a4b0be; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; position: absolute; top: 0; left: 0; z-index: 10;">カメラはOFFです</div>
 </div>
 
-<!-- 縦並びのスタッフメニュー・モード切替ボタン -->
 <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
 <button class="btn" style="background-color: #2d3436; margin: 0; display: flex; align-items: center; justify-content: center; gap: 8px;" onclick="openStaffMenuModal()">
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-  <span>スタッフメニュー</span>
+<span>📋</span> スタッフメニュー
 </button>
 <button id="mode-switch-btn" class="btn" style="background-color: #ff4757; margin: 0; display: flex; align-items: center; justify-content: center; gap: 8px;" onclick="toggleModeFromSettings()">
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-  <span id="mode-switch-label">お客様モードに切替</span>
+<span>👤</span> <span id="mode-switch-label">お客様モードに切替</span>
 </button>
 </div>
 </div>
 
-<!-- ================= 📋 スタッフメニューモーダル（3×3グリッド） ================= -->
+<!-- ================= 📸 スタッフスキャン専用画面 ================= -->
+<div id="staff-scan-view" class="view-container">
+<div class="header-container">
+<h1 style="color: #20bf6b;">スタッフスキャン</h1>
+<button class="settings-btn" onclick="backToRegisterFromStaffScan()" title="戻る">✕</button>
+</div>
+<div style="background: #20bf6b; color: white; padding: 10px; border-radius: 8px; text-align: center; font-weight: bold; margin-bottom: 10px; font-size: 14px;">
+商品コードや客用QRコードを読み取ってください
+</div>
+<div id="staff-scan-viewport-container" style="width: 100%; height: 260px; background-color: #2f3542; border: 2px solid #20bf6b; border-radius: 10px; overflow: hidden; position: relative;">
+<video id="staff-scan-video" playsinline autoplay muted style="width:100%; height:100%; object-fit:cover;"></video>
+<canvas id="staff-scan-canvas" style="display:none;"></canvas>
+</div>
+<button class="btn modal-btn-back" style="background: #747d8c; margin-top: 15px;" onclick="backToRegisterFromStaffScan()">← スタッフモードに戻る</button>
+</div>
+
+<!-- ================= 📋 スタッフメニューモーダル（アイコン＋テキスト・グリッド型） ================= -->
 <div class="modal-overlay" id="staff-menu-screen">
-<div class="modal-content-box" style="text-align: center; max-width: 380px; padding: 20px;">
+<div class="modal-content-box" style="text-align: center; max-width: 365px;">
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-<h3 style="font-size: 18px; margin: 0; color: #2d3436;">スタッフメニュー</h3>
-<button class="modal-btn-back" onclick="closeStaffMenuModal()" style="padding: 6px 12px; font-size: 12px;">← 戻る</button>
+<h3 style="font-size: 17px; margin: 0; color: #2d3436;">スタッフメニュー</h3>
+<button class="modal-btn-back" onclick="closeStaffMenuModal()" style="padding: 6px 10px; font-size: 12px;">← 戻る</button>
 </div>
+<p style="font-size: 11px; color: #666; margin-bottom: 5px;">操作を選択してください</p>
 
-<div class="staff-menu-grid">
-  <!-- 1: モード切替 -->
-  <div class="staff-menu-card" onclick="execStaffMenu(1)">
-    <div class="staff-menu-icon">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
-    </div>
-    <div class="staff-menu-text" id="staff-menu-mode-text">お客様モードに切替</div>
-  </div>
-  <!-- 2: スタッフスキャン -->
-  <div class="staff-menu-card" onclick="execStaffMenu(2)">
-    <div class="staff-menu-icon">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-    </div>
-    <div class="staff-menu-text">スタッフスキャン</div>
-  </div>
-  <!-- 3: クーポン作成・管理 -->
-  <div class="staff-menu-card" onclick="execStaffMenu(3)">
-    <div class="staff-menu-icon">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-    </div>
-    <div class="staff-menu-text">クーポン作成・管理</div>
-  </div>
-  <!-- 4: 割引バーコード作成 -->
-  <div class="staff-menu-card" onclick="execStaffMenu(4)">
-    <div class="staff-menu-icon">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
-    </div>
-    <div class="staff-menu-text">割引バーコード作成</div>
-  </div>
-  <!-- 5: バーコード生成 -->
-  <div class="staff-menu-card" onclick="execStaffMenu(5)">
-    <div class="staff-menu-icon">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5v14h2V5H3zm4 0v14h1V5H7zm3 0v14h3V5h-3zm5 0v14h2V5h-2zm4 0v14h3V5h-3z"/></svg>
-    </div>
-    <div class="staff-menu-text">バーコード生成</div>
-  </div>
-  <!-- 6: 返金対応 -->
-  <div class="staff-menu-card" onclick="execStaffMenu(6)">
-    <div class="staff-menu-icon">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
-    </div>
-    <div class="staff-menu-text">返金対応</div>
-  </div>
-  <!-- 7: レシート設定 -->
-  <div class="staff-menu-card" onclick="execStaffMenu(7)">
-    <div class="staff-menu-icon">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-    </div>
-    <div class="staff-menu-text">レシート設定</div>
-  </div>
-  <!-- 8: 売上履歴 -->
-  <div class="staff-menu-card" onclick="execStaffMenu(8)">
-    <div class="staff-menu-icon">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
-    </div>
-    <div class="staff-menu-text">売上履歴</div>
-  </div>
-  <!-- 9: 音声設定 -->
-  <div class="staff-menu-card" onclick="execStaffMenu(9)">
-    <div class="staff-menu-icon">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
-    </div>
-    <div class="staff-menu-text">音声設定</div>
-  </div>
-  <!-- 10: カメラ切替 -->
-  <div class="staff-menu-card" onclick="execStaffMenu(11)">
-    <div class="staff-menu-icon">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-    </div>
-    <div class="staff-menu-text">カメラ切替</div>
-  </div>
-  <!-- 11: データ初期化・リセット -->
-  <div class="staff-menu-card" onclick="execStaffMenu(10)">
-    <div class="staff-menu-icon">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/><line x1="18" y1="9" x2="12" y2="15"/><line x1="12" y1="9" x2="18" y2="15"/></svg>
-    </div>
-    <div class="staff-menu-text">データ初期化</div>
-  </div>
+<div class="staff-grid-container">
+<!-- 1: 切替 -->
+<div class="staff-grid-card" onclick="execStaffMenu(1)">
+<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5"/><path d="M4 20L21 3"/><path d="M21 16v5h-5"/><path d="M15 15l6 6"/><path d="M4 4l5 5"/></svg>
+<span id="staff-menu-mode-text">お客様モードに切替</span>
 </div>
+<!-- 2: スキャン -->
+<div class="staff-grid-card" onclick="execStaffMenu(2)">
+<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><line x1="7" y1="12" x2="17" y2="12"/></svg>
+<span>スタッフスキャン</span>
+</div>
+<!-- 3: クーポン -->
+<div class="staff-grid-card" onclick="execStaffMenu(3)">
+<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12V8H6a2 2 0 0 1-2-2c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2v-4"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></svg>
+<span>クーポン作成・管理</span>
+</div>
+<!-- 4: 割引バーコード作成 -->
+<div class="staff-grid-card" onclick="execStaffMenu(4)">
+<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
+<span>割引バーコード作成</span>
+</div>
+<!-- 5: バーコード生成 -->
+<div class="staff-grid-card" onclick="execStaffMenu(5)">
+<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5v14"/><path d="M7 5v14"/><path d="M10 5v14"/><path d="M14 5v14"/><path d="M18 5v14"/><path d="M21 5v14"/></svg>
+<span>バーコード生成</span>
+</div>
+<!-- 6: 返金対応 -->
+<div class="staff-grid-card" onclick="execStaffMenu(6)">
+<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+<span>返金対応</span>
+</div>
+<!-- 7: レシート設定 -->
+<div class="staff-grid-card" onclick="execStaffMenu(7)">
+<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+<span>レシート設定</span>
+</div>
+<!-- 8: 売上履歴 -->
+<div class="staff-grid-card" onclick="execStaffMenu(8)">
+<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+<span>売上履歴</span>
+</div>
+<!-- 9: 音声設定 -->
+<div class="staff-grid-card" onclick="execStaffMenu(9)">
+<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+<span>音声設定</span>
+</div>
+<!-- 10: データ初期化 -->
+<div class="staff-grid-card" onclick="execStaffMenu(10)">
+<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/><line x1="18" y1="9" x2="12" y2="15"/><line x1="12" y1="9" x2="18" y2="15"/></svg>
+<span>データ初期化・リセット</span>
+</div>
+<!-- 11: カメラ切替 -->
+<div class="staff-grid-card" onclick="execStaffMenu(11)">
+<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+<span>カメラ切替</span>
 </div>
 </div>
 
-<!-- ================= 🔒 パスワード入力モーダル ================= -->
-<div class="modal-overlay" id="password-modal">
+<button class="close-btn" onclick="closeStaffMenuModal()" style="margin-top: 5px;">閉じる</button>
+</div>
+</div>
+
+<!-- ================= ⚙️ パスワード入力モーダル（お客様モード時の設定ボタン用） ================= -->
+<div class="modal-overlay" id="password-prompt-modal">
 <div class="modal-content-box" style="text-align: center; max-width: 300px;">
-<h3 style="font-size: 16px; margin-bottom: 8px; color: #2d3436;">スタッフパスワード入力</h3>
-<p style="font-size: 12px; color: #666; margin-bottom: 12px;">パスワードを入力してください</p>
-<div class="calc-display" id="password-display" style="font-size: 20px; letter-spacing: 4px; text-align: center;">****</div>
+<h3 style="color: #ff4757; margin-bottom: 10px;">スタッフパスワード</h3>
+<p style="font-size: 12px; color: #666; margin-bottom: 15px;">スタッフモードを開くにはパスワードを入力してください (初期: 4869)</p>
+<div class="calc-display" id="pwd-display" style="letter-spacing: 5px;">----</div>
 <div class="calculator-pad">
-<button class="calc-key" onclick="appendPassword(1)">1</button>
-<button class="calc-key" onclick="appendPassword(2)">2</button>
-<button class="calc-key" onclick="appendPassword(3)">3</button>
-<button class="calc-key" onclick="appendPassword(4)">4</button>
-<button class="calc-key" onclick="appendPassword(5)">5</button>
-<button class="calc-key" onclick="appendPassword(6)">6</button>
-<button class="calc-key" onclick="appendPassword(7)">7</button>
-<button class="calc-key" onclick="appendPassword(8)">8</button>
-<button class="calc-key" onclick="appendPassword(9)">9</button>
-<button class="calc-key" onclick="clearPassword()">C</button>
-<button class="calc-key" onclick="appendPassword(0)">0</button>
-<button class="calc-key" onclick="backspacePassword()">←</button>
+<button class="calc-key" onclick="appendPwd('1')">1</button>
+<button class="calc-key" onclick="appendPwd('2')">2</button>
+<button class="calc-key" onclick="appendPwd('3')">3</button>
+<button class="calc-key" onclick="appendPwd('4')">4</button>
+<button class="calc-key" onclick="appendPwd('5')">5</button>
+<button class="calc-key" onclick="appendPwd('6')">6</button>
+<button class="calc-key" onclick="appendPwd('7')">7</button>
+<button class="calc-key" onclick="appendPwd('8')">8</button>
+<button class="calc-key" onclick="appendPwd('9')">9</button>
+<button class="calc-key" onclick="clearPwd()">C</button>
+<button class="calc-key" onclick="appendPwd('0')">0</button>
+<button class="calc-key" onclick="backspacePwd()">←</button>
 </div>
 <div style="display: flex; gap: 8px; margin-top: 10px;">
-<button class="modal-btn-back" style="flex: 1;" onclick="closePasswordModal()">キャンセル</button>
-<button class="btn pay-btn" style="flex: 2; margin: 0; padding: 10px;" onclick="confirmPassword()">OK</button>
+<button class="modal-btn-back" style="flex: 1;" onclick="closePasswordPromptModal()">キャンセル</button>
+<button class="btn pay-btn" style="flex: 2; margin: 0; padding: 10px;" onclick="verifyPasswordInput()">OK</button>
 </div>
 </div>
 </div>
 
-<!-- ================= 📦 バーコード作成 3択選択モーダル ================= -->
-<div class="modal-overlay" id="barcode-create-select-modal">
-<div class="modal-content-box" style="text-align: center;">
-<h3 style="font-size: 18px; margin-bottom: 12px; color: #9b59b6;">バーコード生成</h3>
-<p style="font-size: 12px; color: #666; margin-bottom: 15px;">作成・選択方法を選んでください</p>
-<div class="pay-method-options" style="flex-direction: column; gap: 10px;">
-<button class="pay-method-btn" onclick="selectBarcodeCreateMethod('unused')" style="border-color: #9b59b6; color: #9b59b6;">
-<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 7h10M7 12h10M7 17h10"/></svg>
-<span>未使用のバーコードを生成</span>
-</button>
-<button class="pay-method-btn" onclick="selectBarcodeCreateMethod('manual')" style="border-color: #00b894; color: #00b894;">
-<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-<span>数字から作成</span>
-</button>
-<button class="pay-method-btn" onclick="selectBarcodeCreateMethod('saved')" style="border-color: #34495e; color: #34495e;">
-<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-<span>保存済みのやつ</span>
-</button>
-</div>
-<div style="text-align: left; margin-top: 15px;">
-<button class="modal-btn-back" onclick="closeBarcodeCreateSelectModal()">← 戻る</button>
-</div>
-</div>
-</div>
-
-<!-- ================= 🔄 データリセット専用モーダル（クーポン風デザイン） ================= -->
+<!-- ================= 🎁 クーポン風デザインのデータ初期化モーダル ================= -->
 <div class="modal-overlay" id="reset-menu-modal">
-<div class="modal-content-box" style="text-align: center;">
-<h3 style="font-size: 18px; margin-bottom: 6px; color: #d63031;">データ初期化・リセット</h3>
+<div class="modal-content-box" style="text-align: center; max-width: 340px; background: #fffdf9; border: 2px dashed #ff4757;">
+<div style="background: #ff4757; color: white; padding: 8px; border-radius: 6px; font-weight: bold; font-size: 15px; margin-bottom: 12px;">データ初期化・リセット</div>
 <p style="font-size: 12px; color: #666; margin-bottom: 15px;">処理を選択してください</p>
 <div class="pay-method-options" style="flex-direction: column; gap: 10px;">
-<button class="pay-method-btn" onclick="executeResetSalesOnly()" style="border-color: #ffa502; color: #ffa502; flex-direction: row; padding: 12px 15px; align-items: center; justify-content: flex-start; gap: 12px;">
-<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-<span style="font-size: 15px;">売上記録のみリセット</span>
+<button class="pay-method-btn" onclick="executeResetSalesOnly()" style="border-color: #ffa502; color: #d35400; background: #fffdf9; border-style: dashed;">
+<span style="font-size: 13px;">売上記録のみリセット</span>
 </button>
-<button class="pay-method-btn" onclick="executeResetAllData()" style="border-color: #ff4757; color: #ff4757; flex-direction: row; padding: 12px 15px; align-items: center; justify-content: flex-start; gap: 12px;">
-<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="14" y2="17"/><line x1="14" y1="11" x2="10" y2="17"/></svg>
-<span style="font-size: 15px;">すべてのデータをリセット</span>
+<button class="pay-method-btn" onclick="executeResetAllData()" style="border-color: #ff4757; color: #ff4757; background: #fffdf9; border-style: dashed;">
+<span style="font-size: 13px;">すべてのデータをリセット</span>
 </button>
 </div>
 <div style="text-align: left; margin-top: 15px;">
@@ -751,84 +672,6 @@ box-sizing: border-box !important;
 
 <button class="btn share-btn" onclick="shareReceiptImage()">レシート印刷</button>
 <button class="btn close-btn" onclick="closeReceiptToRegister()">閉じる</button>
-</div>
-</div>
-
-<!-- ================= 🎁 クーポン作成・管理モーダル群 ================= -->
-<!-- ① クーポンメインメニュー -->
-<div class="modal-overlay" id="coupon-maker-menu-modal">
-<div class="modal-content-box" style="text-align: center;">
-<h3 style="font-size: 18px; margin-bottom: 12px; color: #ff0033;">クーポン作成・管理</h3>
-<p style="font-size: 12px; color: #666; margin-bottom: 15px;">操作を選択してください</p>
-<div class="pay-method-options" style="flex-direction: column; gap: 10px;">
-<button class="pay-method-btn" onclick="openCouponTypeSelectModal()" style="border-color: #ff0033; color: #ff0033;">
-<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
-<span>クーポン作成</span>
-</button>
-<button class="pay-method-btn" onclick="openCouponManageListModal()" style="border-color: #34495e; color: #34495e;">
-<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-<span>保存済みクーポン一覧</span>
-</button>
-</div>
-<button class="close-btn" onclick="closeCouponMakerMenuModal()" style="margin-top: 15px;">閉じる</button>
-</div>
-</div>
-
-<!-- ② クーポン作成の種類選択 -->
-<div class="modal-overlay" id="coupon-type-select-modal">
-<div class="modal-content-box" style="text-align: center;">
-<h3 style="font-size: 18px; margin-bottom: 12px; color: #ff0033;">クーポン作成</h3>
-<p style="font-size: 12px; color: #666; margin-bottom: 15px;">作成するクーポンの種類を選択してください</p>
-<div class="pay-method-options" style="flex-direction: column; gap: 10px;">
-<button class="pay-method-btn" onclick="openFreeCouponSelectProductTypeModal()" style="border-color: #20bf6b; color: #20bf6b;">
-<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"/><path d="M4 6v12a2 2 0 0 0 2 2h14v-4"/><path d="M18 12a2 2 0 0 0-2 2c0 1.1.9 2 2 2h4v-4h-4z"/></svg>
-<span>無料クーポン</span>
-</button>
-<button class="pay-method-btn" onclick="openDiscountCouponInputModal()" style="border-color: #e67e22; color: #e67e22;">
-<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
-<span>割引クーポン</span>
-</button>
-</div>
-<div style="text-align: left; margin-top: 15px;">
-<button class="modal-btn-back" onclick="backToCouponMenuModal()">← 戻る</button>
-</div>
-</div>
-</div>
-
-<!-- ③-A 無料クーポン：商品タイプ選択（バーコードあり or なし） -->
-<div class="modal-overlay" id="free-coupon-prod-type-modal">
-<div class="modal-content-box" style="text-align: center;">
-<h3 style="color:#20bf6b;">無料クーポン作成</h3>
-<p style="font-size: 12px; color: #666; margin-bottom: 15px;">対象商品のタイプを選択してください</p>
-<div class="pay-method-options" style="flex-direction: column; gap: 10px;">
-<button class="pay-method-btn" onclick="openFreeCouponScanModal()" style="border-color: #2575fc; color: #2575fc;">
-<span>バーコードのある商品</span>
-</button>
-<button class="pay-method-btn" onclick="openFreeCouponNoBarcodeModal()" style="border-color: #f1c40f; color: #d35400;">
-<span>バーコードの無い商品</span>
-</button>
-</div>
-<div style="text-align: left; margin-top: 15px;">
-<button class="modal-btn-back" onclick="backToCouponTypeSelectFromProdType()">← 戻る</button>
-</div>
-</div>
-</div>
-
-<!-- ③-B 無料クーポン：バーコードの無い商品選択モーダル -->
-<div class="modal-overlay" id="free-coupon-nobarcode-modal">
-<div class="modal-content-box nobarcode-modal">
-<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-<h3 style="margin:0; font-size:16px; color:#20bf6b;">無料クーポンにする商品を選択</h3>
-<button onclick="closeFreeCouponNoBarcodeModal()" style="background:none; border:none; font-size:18px; cursor:pointer; color:#888;">✕</button>
-</div>
-<div class="tab-container">
-<button class="tab-btn active" onclick="switchFreeCouponCategory('yasai', this)">野菜・果物</button>
-<button class="tab-btn" onclick="switchFreeCouponCategory('niku', this)">肉・魚</button>
-<button class="tab-btn" onclick="switchFreeCouponCategory('sozai', this)">惣菜</button>
-<button class="tab-btn" onclick="switchFreeCouponCategory('sonota', this)">その他</button>
-</div>
-<div class="product-grid" id="free-coupon-nobarcode-grid"></div>
-<button class="close-btn" onclick="closeFreeCouponNoBarcodeModal()" style="margin-top:15px;">閉じる</button>
 </div>
 </div> 
 <script>

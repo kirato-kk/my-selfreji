@@ -905,9 +905,9 @@ let scannedCartDataForRegister = { items: [], total: 0 };
 let selectedPayMethod = '現金';
 
 let appliedCouponList = [];
-let voiceSettings = JSON.parse(localStorage.getItem('myPosVoiceSettings')) || { beep: true, speech: true, thanks: true };
+let voiceSettings = JSON.parse(localStorage.getItem('myPosVoiceSettings')) || { beep: true, speech: false, thanks: true };
 
-// モードごとのカメラ切替設定（'phone' 内蔵 / 'external' 外部）
+// カメラ設定（'phone' 内蔵 / 'external' 外部）
 let cameraSettings = JSON.parse(localStorage.getItem('myPosCameraSettings')) || {
   customer: 'phone',
   staff: 'phone'
@@ -921,10 +921,6 @@ let couponScanInterval = null;
 let currentMode = 'customer';
 let currentGeneratedCode = "";
 let isStaffDirectScanMode = false;
-
-let settingsClickCount = 0, settingsClickTimer = null;
-let titleClickCount = 0, titleClickTimer = null;
-let purchaseListClickCount = 0, purchaseListClickTimer = null;
 
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
@@ -966,44 +962,25 @@ totalCount = 0;
 renderCart();
 }
 
-function handlePurchaseListTitleClick() {
-purchaseListClickCount++;
-if (purchaseListClickCount === 1) {
-purchaseListClickTimer = setTimeout(() => { purchaseListClickCount = 0; }, 400);
-} else if (purchaseListClickCount === 2) {
-clearTimeout(purchaseListClickTimer);
-purchaseListClickCount = 0;
-switchView('register');
-}
-}
-
-function handleTitleClick() {
-titleClickCount++;
-if (titleClickCount === 1) {
-titleClickTimer = setTimeout(() => { titleClickCount = 0; }, 400);
-} else if (titleClickCount === 2) {
-clearTimeout(titleClickTimer);
-titleClickCount = 0;
-document.getElementById('customer-file-input').click();
-}
-}
+function handlePurchaseListTitleClick() { switchView('register'); }
+function handleTitleClick() { document.getElementById('customer-file-input').click(); }
 
 function handleCustomerImageFile(event) {
-const file = event.target.files[0];
-if (!file) return;
-const reader = new FileReader();
-reader.onload = function(e) {
-Quagga.decodeSingle({
-src: e.target.result, numOfWorkers: 0,
-decoder: { readers: ["ean_reader", "ean_8_reader", "code_128_reader", "code_39_reader"] }
-}, function(result) {
-if (result && result.codeResult) {
-processScannedBarcode(result.codeResult.code);
-} else { alert("画像からバーコードを読み取れませんでした。"); }
-});
-};
-reader.readAsDataURL(file);
-event.target.value = '';
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    Quagga.decodeSingle({
+      src: e.target.result, numOfWorkers: 0,
+      decoder: { readers: ["ean_reader", "ean_8_reader", "code_128_reader", "code_39_reader"] }
+    }, function(result) {
+      if (result && result.codeResult) {
+        processScannedBarcode(result.codeResult.code);
+      } else { alert("画像からバーコードを読み取れませんでした。"); }
+    });
+  };
+  reader.readAsDataURL(file);
+  event.target.value = '';
 }
 
 /* ================= 📱 スタッフメニュー機能 ================= */
@@ -1017,12 +994,20 @@ function closeStaffMenuModal() {
 function execStaffMenu(menuNumber) {
   closeStaffMenuModal();
   switch(menuNumber) {
-    case 1:
-      speakText("スタッフモードです");
-      alert("スタッフモードに切り替えました");
+    case 1: // スタッフ切替・モード切替
+      if (currentMode === 'customer') {
+        switchView('register');
+      } else {
+        switchView('customer');
+      }
       break;
-    case 2:
-      startStaffDirectScanMode();
+    case 2: // スタッフスキャン（専用ページに行かずそのままトグル）
+      isStaffDirectScanMode = !isStaffDirectScanMode;
+      if (isStaffDirectScanMode) {
+        alert("スタッフスキャンON：バーコードを読み取ると確認をスキップしてお支払い選択画面へ進みます。");
+      } else {
+        alert("スタッフスキャンOFFに戻しました。");
+      }
       break;
     case 3:
       openCouponMakerMenuModal();
@@ -1030,8 +1015,8 @@ function execStaffMenu(menuNumber) {
     case 4:
       openDiscountBarcodeScanModal();
       break;
-    case 5:
-      openManualBarcodeModal();
+    case 5: // バーコード作成の選択メニューを開く
+      openBarcodeCreateSelectModal();
       break;
     case 6:
       openRefundMenuModal();
@@ -1043,21 +1028,34 @@ function execStaffMenu(menuNumber) {
       showSalesHistory();
       break;
     case 9:
-      openSettings();
+      openVoiceSettingsModal();
       break;
     case 10:
       openResetMenuModal();
       break;
     case 11:
-      openSettings();
+      openCameraSettingsModal();
       break;
   }
 }
 
-function startStaffDirectScanMode() {
-  isStaffDirectScanMode = true;
-  speakText("スタッフスキャンモード");
-  alert("スタッフスキャン：バーコードを読み取ると確認をスキップしてお支払い選択画面へ進みます。");
+/* ================= 📦 バーコード作成 3択選択メニュー ================= */
+function openBarcodeCreateSelectModal() {
+  document.getElementById('barcode-create-select-modal').style.display = 'flex';
+}
+function closeBarcodeCreateSelectModal() {
+  document.getElementById('barcode-create-select-modal').style.display = 'none';
+  openStaffMenuModal();
+}
+function selectBarcodeCreateMethod(type) {
+  document.getElementById('barcode-create-select-modal').style.display = 'none';
+  if (type === 'unused') {
+    generateUniqueBarcode();
+  } else if (type === 'manual') {
+    openManualBarcodeModal();
+  } else if (type === 'saved') {
+    openSavedBarcodesModal();
+  }
 }
 
 /* ================= 🔄 リセットメニュー ================= */
@@ -1066,6 +1064,7 @@ function openResetMenuModal() {
 }
 function closeResetMenuModal() {
   document.getElementById('reset-menu-modal').style.display = 'none';
+  openStaffMenuModal();
 }
 function executeResetSalesOnly() {
   if (confirm("本当に販売履歴のみを削除しますか？")) {
@@ -1083,9 +1082,60 @@ function executeResetAllData() {
   }
 }
 
+/* ================= 🔊 音声設定専用モーダル ================= */
+function openVoiceSettingsModal() {
+  document.getElementById('setting-voice-beep').checked = voiceSettings.beep;
+  document.getElementById('setting-voice-speech').checked = voiceSettings.speech;
+  document.getElementById('setting-voice-thanks').checked = voiceSettings.thanks;
+  document.getElementById('voice-settings-modal').style.display = 'flex';
+}
+function closeVoiceSettingsModal() {
+  document.getElementById('voice-settings-modal').style.display = 'none';
+  openStaffMenuModal();
+}
+function saveVoiceSettings() {
+  voiceSettings.beep = document.getElementById('setting-voice-beep').checked;
+  voiceSettings.speech = document.getElementById('setting-voice-speech').checked;
+  voiceSettings.thanks = document.getElementById('setting-voice-thanks').checked;
+  localStorage.setItem('myPosVoiceSettings', JSON.stringify(voiceSettings));
+  alert("音声設定を保存しました！");
+  closeVoiceSettingsModal();
+}
+
+/* ================= 📹 カメラ設定専用モーダル ================= */
+function openCameraSettingsModal() {
+  document.getElementById('setting-cam-customer').checked = (cameraSettings.customer === 'external');
+  document.getElementById('setting-cam-staff').checked = (cameraSettings.staff === 'external');
+  document.getElementById('camera-settings-modal').style.display = 'flex';
+}
+function closeCameraSettingsModal() {
+  document.getElementById('camera-settings-modal').style.display = 'none';
+  openStaffMenuModal();
+}
+function saveCameraSettings() {
+  const customerIsExternal = document.getElementById('setting-cam-customer').checked;
+  const staffIsExternal = document.getElementById('setting-cam-staff').checked;
+
+  cameraSettings.customer = customerIsExternal ? 'external' : 'phone';
+  cameraSettings.staff = staffIsExternal ? 'external' : 'phone';
+
+  localStorage.setItem('myPosCameraSettings', JSON.stringify(cameraSettings));
+
+  if (currentMode === 'customer') {
+    startCustomerScanner();
+  } else {
+    startRegisterScanner();
+  }
+  alert("カメラ設定を保存しました！");
+  closeCameraSettingsModal();
+}
+
 /* ================= 🎟️ クーポン作成・管理 ================= */
 function openCouponMakerMenuModal() { document.getElementById('coupon-maker-menu-modal').style.display = 'flex'; }
-function closeCouponMakerMenuModal() { document.getElementById('coupon-maker-menu-modal').style.display = 'none'; }
+function closeCouponMakerMenuModal() {
+  document.getElementById('coupon-maker-menu-modal').style.display = 'none';
+  openStaffMenuModal();
+}
 function openCouponTypeSelectModal() {
   document.getElementById('coupon-maker-menu-modal').style.display = 'none';
   document.getElementById('coupon-type-select-modal').style.display = 'flex';
@@ -1303,7 +1353,7 @@ function shareSavedCouponImage() {
   });
 }
 
-/* ================= 🏷️ 画像②のポップ風割引バーコード機能 ================= */
+/* ================= 🏷️ 割引バーコード機能 ================= */
 let discSelectedProduct = null;
 let discScanner = null;
 let currentDiscBarcode = "";
@@ -1456,7 +1506,10 @@ let refundScanner = null;
 let currentRefundCalcInput = "0";
 
 function openRefundMenuModal() { document.getElementById('refund-menu-modal').style.display = 'flex'; }
-function closeRefundMenuModal() { document.getElementById('refund-menu-modal').style.display = 'none'; }
+function closeRefundMenuModal() {
+  document.getElementById('refund-menu-modal').style.display = 'none';
+  openStaffMenuModal();
+}
 function openRefundScanModal() {
   document.getElementById('refund-menu-modal').style.display = 'none';
   document.getElementById('refund-scan-modal').style.display = 'flex';
@@ -1744,13 +1797,7 @@ function speakText(text) {
 }
 
 function handleSettingsClick() {
-  settingsClickCount++;
-  if (settingsClickCount === 1) {
-    settingsClickTimer = setTimeout(() => { settingsClickCount = 0; openSettings(); }, 400);
-  } else if (settingsClickCount === 3) {
-    clearTimeout(settingsClickTimer); settingsClickCount = 0;
-    speakText("係員をお呼びください。");
-  }
+  openStaffMenuModal();
 }
 
 function openNoBarcodeModal() {
@@ -1844,62 +1891,10 @@ function switchView(viewName) {
 }
 
 function openSettings() {
-  if (currentMode === 'register') { proceedToSettings(); return; }
-  const input = prompt("パスワードを入力してください");
-  if (input !== SALES_PASSWORD) {
-    if (input !== null) alert("パスワードが違います");
-    return;
-  }
-  proceedToSettings();
+  openStaffMenuModal();
 }
-
-/* ================= ⚙️ 設定画面 ＆ カメラ個別切替 ================= */
-function proceedToSettings() {
-  document.getElementById('setting-voice-beep').checked = voiceSettings.beep;
-  document.getElementById('setting-voice-speech').checked = voiceSettings.speech;
-  document.getElementById('setting-voice-thanks').checked = voiceSettings.thanks;
- 
-  // 各モードのカメラ設定ボトムスイッチ（OFF: phone / ON: external）
-  if(document.getElementById('setting-cam-customer')) {
-    document.getElementById('setting-cam-customer').checked = (cameraSettings.customer === 'external');
-  }
-  if(document.getElementById('setting-cam-staff')) {
-    document.getElementById('setting-cam-staff').checked = (cameraSettings.staff === 'external');
-  }
-
-  const switchBtn = document.getElementById('settings-switch-btn');
-  switchBtn.textContent = (currentMode === 'customer') ? "スタッフモードへ切替" : "お客様モードへ切替";
-  document.getElementById('settings-modal').style.display = 'flex';
-}
-
-function saveCameraSettings() {
-  const customerIsExternal = document.getElementById('setting-cam-customer').checked;
-  const staffIsExternal = document.getElementById('setting-cam-staff').checked;
-
-  cameraSettings.customer = customerIsExternal ? 'external' : 'phone';
-  cameraSettings.staff = staffIsExternal ? 'external' : 'phone';
-
-  localStorage.setItem('myPosCameraSettings', JSON.stringify(cameraSettings));
-
-  // 現在アクティブなモードのカメラを即座に再起動して反映
-  if (currentMode === 'customer') {
-    startCustomerScanner();
-  } else {
-    startRegisterScanner();
-  }
-}
-
 function closeSettings() { document.getElementById('settings-modal').style.display = 'none'; }
-
-function saveVoiceSettings() {
-  voiceSettings.beep = document.getElementById('setting-voice-beep').checked;
-  voiceSettings.speech = document.getElementById('setting-voice-speech').checked;
-  voiceSettings.thanks = document.getElementById('setting-voice-thanks').checked;
-  localStorage.setItem('myPosVoiceSettings', JSON.stringify(voiceSettings));
-}
-
-function closePaymentModal() { document.getElementById('payment-modal').style.display = 'none'; clearCartFromStorage(); }
-function closeHistory() { document.getElementById('history-modal').style.display = 'none'; document.getElementById('settings-modal').style.display = 'flex'; }
+function closeHistory() { document.getElementById('history-modal').style.display = 'none'; }
 function closeRegisterConfirm() { document.getElementById('register-confirm-modal').style.display = 'none'; startRegisterScanner(); }
 
 function closeReceiptToRegister() {
@@ -1909,7 +1904,6 @@ function closeReceiptToRegister() {
 }
 
 function toggleModeFromSettings() {
-  closeSettings();
   if (currentMode === 'customer') { switchView('register'); }
   else { switchView('customer'); }
 }
@@ -1947,7 +1941,7 @@ function shareBarcodeImage() {
 
 function closeBarcodeModal() {
   document.getElementById('barcode-modal').style.display = 'none';
-  document.getElementById('settings-modal').style.display = 'flex';
+  openStaffMenuModal();
 }
 
 function addItem(name, price, code = "") {
@@ -1974,13 +1968,11 @@ function changeQuantity(index, newQty) {
   let qty = parseInt(newQty);
   if (qty <= 0) { cartItems.splice(index, 1); }
   else { cartItems[index].quantity = qty; }
-  speakText("数量を変更しました。");
   saveCartToStorage(); renderCart();
 }
 
 function removeCartItem(index) {
   cartItems.splice(index, 1);
-  speakText("商品を削除しました。商品は元の棚にお戻しください。");
   saveCartToStorage(); renderCart();
 }
 
@@ -2118,12 +2110,10 @@ function changeRegisterItemQuantity(index, newQty) {
   let qty = parseInt(newQty);
   if (qty <= 0) { registerParsedCartItems.splice(index, 1); }
   else { registerParsedCartItems[index].quantity = qty; }
-  speakText("数量を変更しました。");
   renderRegisterConfirmList();
 }
 function removeRegisterItem(index) {
   registerParsedCartItems.splice(index, 1);
-  speakText("商品を削除しました。");
   renderRegisterConfirmList();
 }
 
@@ -2372,7 +2362,6 @@ let receiptSettings = JSON.parse(localStorage.getItem('myPosReceiptSettings')) |
   message: "ご来店ありがとうございました。\nまたのご利用をお待ちしております！"
 };
 function openReceiptSettingsModal() {
-  document.getElementById('settings-modal').style.display = 'none';
   document.getElementById('setting-store-title').value = receiptSettings.storeTitle;
   document.getElementById('setting-store-sub').value = receiptSettings.storeSub;
   document.getElementById('setting-receipt-msg').value = receiptSettings.message;
@@ -2380,7 +2369,7 @@ function openReceiptSettingsModal() {
 }
 function closeReceiptSettingsModal() {
   document.getElementById('receipt-settings-modal').style.display = 'none';
-  document.getElementById('settings-modal').style.display = 'flex';
+  openStaffMenuModal();
 }
 function saveReceiptSettings() {
   const title = document.getElementById('setting-store-title').value.trim();
@@ -2519,8 +2508,11 @@ function shareReceiptImage() {
 function showSalesHistory() {
   document.getElementById('history-search-input').value = '';
   renderHistoryList(salesHistory);
-  document.getElementById('settings-modal').style.display = 'none';
   document.getElementById('history-modal').style.display = 'flex';
+}
+function closeHistory() {
+  document.getElementById('history-modal').style.display = 'none';
+  openStaffMenuModal();
 }
 function renderHistoryList(data) {
   const historyContainer = document.getElementById('history-list');
@@ -2547,20 +2539,12 @@ function filterSalesHistory() {
   });
   renderHistoryList(filtered);
 }
-function resetSalesOnly() {
-  if(confirm("売上記録を削除しますか？")){ localStorage.removeItem('myPosSalesHistory'); salesHistory = []; alert("売上記録をリセットしました。"); closeSettings(); }
-}
-function resetAllData() {
-  if(confirm("すべてのデータをリセットしますか？")){ localStorage.clear(); location.reload(); }
-}
 
-/* ================= 📷 カメラ起動・検出制御（個別カメラ切替対応） ================= */
+/* ================= 📷 カメラ起動・検出制御 ================= */
 async function startCustomerScanner() {
   if (typeof Quagga !== 'undefined') { Quagga.stop(); }
 
   let videoConstraints = { facingMode: "environment" };
-
-  // 設定で外部カメラが選択されている場合
   if (cameraSettings.customer === 'external') {
     try {
       const devices = await navigator.mediaDevices.enumerateDevices();
@@ -2594,8 +2578,6 @@ async function startRegisterScanner() {
   const canvas = canvasElement.getContext('2d');
  
   let videoConstraints = { facingMode: "environment" };
-
-  // 設定で外部カメラが選択されている場合
   if (cameraSettings.staff === 'external') {
     try {
       const devices = await navigator.mediaDevices.enumerateDevices();
@@ -2664,7 +2646,6 @@ function handleRegisterQRCode(codeData) {
     stopRegisterScanner(); playSound(1200, 0.1);
    
     if (isStaffDirectScanMode) {
-      isStaffDirectScanMode = false;
       parseQRToCartData(codeData);
       openPaymentMethodModal();
       return;
@@ -2764,13 +2745,13 @@ function promptSaveCurrentBarcode() {
   alert("バーコードを保存しました！");
 }
 function openSavedBarcodesModal() {
-  document.getElementById('settings-modal').style.display = 'none';
+  document.getElementById('barcode-create-select-modal').style.display = 'none';
   renderSavedBarcodesList();
   document.getElementById('saved-barcodes-modal').style.display = 'flex';
 }
 function closeSavedBarcodesModal() {
   document.getElementById('saved-barcodes-modal').style.display = 'none';
-  document.getElementById('settings-modal').style.display = 'flex';
+  openStaffMenuModal();
 }
 function renderSavedBarcodesList() {
   const container = document.getElementById('saved-barcodes-list');
@@ -2809,15 +2790,14 @@ switchView(savedMode);
 
 let currentManualCode = "";
 function openManualBarcodeModal() {
-  if (document.getElementById('settings-modal').style.display === 'flex') {
-    document.getElementById('settings-modal').style.display = 'none';
-  }
+  document.getElementById('barcode-create-select-modal').style.display = 'none';
   document.getElementById('manual-barcode-input').value = "4901234567890";
   generateManualBarcode();
   document.getElementById('manual-barcode-modal').style.display = 'flex';
 }
 function closeManualBarcodeModal() {
   document.getElementById('manual-barcode-modal').style.display = 'none';
+  openStaffMenuModal();
 }
 function generateManualBarcode() {
   const inputVal = document.getElementById('manual-barcode-input').value.trim();

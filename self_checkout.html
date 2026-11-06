@@ -106,8 +106,8 @@ align-items: center; justify-content: center; color: white; font-size: 10px; poi
 .pay-btn { background-color: #ff4757; }
 .share-btn { background-color: #00b894; margin-bottom: 10px; }
 
-.modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); justify-content: center; align-items: center; z-index: 100; }
-.modal-content-box { background: #ffffff; padding: 25px; width: 340px; max-height: 90vh; overflow-y: auto; border-radius: 10px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.3); position: relative; }
+.modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); justify-content: center; align-items: center; z-index: 100; pointer-events: auto; }
+.modal-content-box { background: #ffffff; padding: 25px; width: 340px; max-height: 90vh; overflow-y: auto; border-radius: 10px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.3); position: relative; pointer-events: auto; }
 
 .nobarcode-modal { width: 380px; max-height: 85vh; display: flex; flex-direction: column; padding: 20px; }
 .tab-container { display: flex; background: #f1f2f6; border-radius: 8px; padding: 4px; margin-bottom: 15px; }
@@ -291,7 +291,7 @@ box-sizing: border-box !important;
 <span style="font-size: 20px;">📋</span> スタッフメニュー
 </button>
 <button id="mode-switch-btn" class="btn" style="background-color: #ff4757; margin: 0; display: flex; align-items: center; justify-content: center; gap: 8px;" onclick="toggleModeFromSettings()">
-<span style="font-size: 20px;">👤</span> お客様モードに切替
+<span style="font-size: 20px;">👤</span> <span id="mode-switch-label">お客様モードに切替</span>
 </button>
 </div>
 </div>
@@ -721,305 +721,6 @@ box-sizing: border-box !important;
 <button class="close-btn" onclick="closeFreeCouponNoBarcodeModal()" style="margin-top:15px;">閉じる</button>
 </div>
 </div> 
-<script>
-let defaultDatabase = {
-"4901330502880": { name: "ポテトチップス", price: 160, waribiki: 0 },
-"4902105001569": { name: "カップヌードル", price: 210, waribiki: 0 },
-"4902402928837": { name: "とんがりCORN", price: 150, waribiki: 0 },
-"958412687453": { name: "コーラ", price: 350, waribiki: 0 },
-"4903110002222": { name: "ロイヤルブレッド", price: 390, waribiki: 0 },
-"4902555170893": { name: "カントリーマアム", price: 320, waribiki: 0 },
-"4901313256015": { name: "こつぶっこ", price: 240, waribiki: 0 },
-"4901005532595": { name: "クリーム コロン", price: 260, waribiki: 0 },
-"4901626025353": { name: "ぱりんこ", price: 180, waribiki: 0 },
-"4903333252725": { name: "小さな チョコパイ", price: 150, waribiki: 0 },
-"4901111959798": { name: "Blendy stick カフェオレ", price: 260, waribiki: 0 },
-"4901777018686": { name: "SUNTORY 天然水 2L", price: 120, waribiki: 0 },
-"4902888218842": { name: "森永 チョコチップクッキー", price: 220, waribiki: 0 },
-"49715590": { name: "スパイスクッキング ハンバーグ", price: 140, waribiki: 0 },
-"49698633": { name: "カップヌードル シーフード", price: 160, waribiki: 0 },
-"4902471102541": { name: "じっくりコトコトこんがりパン 濃厚コーンポタージュ", price: 160, waribiki: 0 },
-"4902105034095": { name: "U.F.O.プチ", price: 110, waribiki: 0 },
-"4902881048651": { name: "一平ちゃん", price: 160, waribiki: 0 },
-
-"100001": { name: "葉しょうが", price: 158, waribiki: 0, category: "yasai" },
-"100002": { name: "ズッキーニ", price: 198, waribiki: 0, category: "yasai" },
-"100003": { name: "なす", price: 78, waribiki: 0, category: "yasai" },
-"100004": { name: "ピーマン", price: 38, waribiki: 0, category: "yasai" },
-"100005": { name: "さつまいも", price: 198, waribiki: 0, category: "yasai" },
-"100006": { name: "ジャガイモ", price: 58, waribiki: 0, category: "yasai" },
-"100007": { name: "たまねぎ", price: 48, waribiki: 0, category: "yasai" },
-"100008": { name: "にんじん", price: 58, waribiki: 0, category: "yasai" },
-"100009": { name: "トマト", price: 58, waribiki: 0, category: "yasai" },
-"100010": { name: "りんご", price: 98, waribiki: 0, category: "yasai" },
-"100011": { name: "オレンジ", price: 135, waribiki: 0, category: "yasai" },
-"100012": { name: "バナナ", price: 129, waribiki: 0, category: "yasai" },
-"100013": { name: "イチゴ", price: 267, waribiki: 0, category: "yasai" },
-
-"200001": { name: "国産牛ステーキ用", price: 980, waribiki: 100, category: "niku" },
-"200002": { name: "豚ロース薄切り", price: 398, waribiki: 0, category: "niku" },
-"200003": { name: "鶏もも肉(カット)", price: 298, waribiki: 10, category: "niku" },
-"200004": { name: "生鮭切り身", price: 450, waribiki: 0, category: "niku" },
-
-"300001": { name: "特製から揚げ弁当", price: 550, waribiki: 0, category: "sozai" },
-"300002": { name: "ロースカツサンド", price: 380, waribiki: 0, category: "sozai" },
-"300003": { name: "お寿司盛り合わせ", price: 880, waribiki: 0, category: "sozai" },
-
-"400001": { name: "ペットボトル緑茶", price: 120, waribiki: 0, category: "sonota" },
-"400002": { name: "手巻きおにぎり(梅)", price: 130, waribiki: 0, category: "sonota" }
-};
-
-const bundleRules = [
-{
-id: "bundle_noodle",
-name: "麺類よりどり3点まとめ買い",
-items: ["4902105001569", "49698633", "4902105034095", "4902881048651"],
-count: 3,
-setPrice: 300
-},
-{
-id: "bundle_yasai",
-name: "野菜どれでも3点まとめ買い",
-items: ["100003", "100004", "100006", "100007", "100008", "100009"],
-count: 3,
-setPrice: 150
-}
-];
-
-let itemDatabase = defaultDatabase;
-localStorage.setItem('myPosDatabase', JSON.stringify(defaultDatabase));
-
-const SALES_PASSWORD = "4869";
-let canScan = true, totalPrice = 0, totalCount = 0;
-
-let cartItems = JSON.parse(localStorage.getItem('myPosCartItems')) || [];
-let salesHistory = JSON.parse(localStorage.getItem('myPosSalesHistory')) || [];
-let refundHistory = JSON.parse(localStorage.getItem('myPosRefundHistory')) || [];
-let savedCoupons = JSON.parse(localStorage.getItem('myPosMakerCoupons')) || [];
-
-let registerParsedCartItems = [];
-let scannedCartDataForRegister = { items: [], total: 0 };
-let selectedPayMethod = '現金';
-
-let appliedCouponList = [];
-let voiceSettings = JSON.parse(localStorage.getItem('myPosVoiceSettings')) || { beep: true, speech: false, thanks: true };
-
-let cameraSettings = JSON.parse(localStorage.getItem('myPosCameraSettings')) || {
-  customer: 'phone',
-  staff: 'phone'
-};
-
-let registerStream = null;
-let registerScanInterval = null;
-let couponStream = null;
-let couponScanInterval = null;
-
-let currentMode = 'customer';
-let currentGeneratedCode = "";
-let isStaffDirectScanMode = false;
-
-const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
-function playTapSound() {
-if (audioCtx.state === 'suspended') audioCtx.resume();
-const osc = audioCtx.createOscillator();
-const gain = audioCtx.createGain();
-osc.type = 'sine';
-osc.frequency.setValueAtTime(600, audioCtx.currentTime);
-osc.frequency.exponentialRampToValueAtTime(200, audioCtx.currentTime + 0.05);
-gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
-osc.connect(gain); gain.connect(audioCtx.destination);
-osc.start(); osc.stop(audioCtx.currentTime + 0.05);
-}
-
-function playSound(freq, duration, type = 'sine') {
-if (!voiceSettings.beep) return;
-if (audioCtx.state === 'suspended') audioCtx.resume();
-const osc = audioCtx.createOscillator();
-const gain = audioCtx.createGain();
-osc.type = type; osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-osc.connect(gain); gain.connect(audioCtx.destination);
-osc.start(); osc.stop(audioCtx.currentTime + duration);
-}
-
-document.addEventListener('click', (e) => {
-const target = e.target.closest('button, .product-card, .tab-btn, .pay-method-btn, h1');
-if (target) { playTapSound(); }
-});
-
-function saveCartToStorage() { localStorage.setItem('myPosCartItems', JSON.stringify(cartItems)); }
-function clearCartFromStorage() {
-cartItems = [];
-localStorage.removeItem('myPosCartItems');
-totalPrice = 0;
-totalCount = 0;
-renderCart();
-}
-
-function handlePurchaseListTitleClick() { switchView('register'); }
-function handleTitleClick() { document.getElementById('customer-file-input').click(); }
-
-function handleCustomerImageFile(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    Quagga.decodeSingle({
-      src: e.target.result, numOfWorkers: 0,
-      decoder: { readers: ["ean_reader", "ean_8_reader", "code_128_reader", "code_39_reader"] }
-    }, function(result) {
-      if (result && result.codeResult) {
-        processScannedBarcode(result.codeResult.code);
-      } else { alert("画像からバーコードを読み取れませんでした。"); }
-    });
-  };
-  reader.readAsDataURL(file);
-  event.target.value = '';
-}
-
-function openStaffMenuModal() {
-  document.getElementById('staff-menu-screen').style.display = 'flex';
-}
-function closeStaffMenuModal() {
-  document.getElementById('staff-menu-screen').style.display = 'none';
-}
-
-function execStaffMenu(menuNumber) {
-  closeStaffMenuModal();
-  switch(menuNumber) {
-    case 1:
-      if (currentMode === 'customer') {
-        switchView('register');
-      } else {
-        switchView('customer');
-      }
-      break;
-    case 2:
-      isStaffDirectScanMode = !isStaffDirectScanMode;
-      if (isStaffDirectScanMode) {
-        alert("スタッフスキャンON：バーコードを読み取ると確認をスキップしてお支払い選択画面へ進みます。");
-      } else {
-        alert("スタッフスキャンOFFに戻しました。");
-      }
-      break;
-    case 3:
-      openCouponMakerMenuModal();
-      break;
-    case 4:
-      openDiscountBarcodeScanModal();
-      break;
-    case 5:
-      openBarcodeCreateSelectModal();
-      break;
-    case 6:
-      openRefundMenuModal();
-      break;
-    case 7:
-      openReceiptSettingsModal();
-      break;
-    case 8:
-      showSalesHistory();
-      break;
-    case 9:
-      openVoiceSettingsModal();
-      break;
-    case 10:
-      openResetMenuModal();
-      break;
-    case 11:
-      openCameraSettingsModal();
-      break;
-  }
-}
-
-function openBarcodeCreateSelectModal() {
-  document.getElementById('barcode-create-select-modal').style.display = 'flex';
-}
-function closeBarcodeCreateSelectModal() {
-  document.getElementById('barcode-create-select-modal').style.display = 'none';
-  openStaffMenuModal();
-}
-function selectBarcodeCreateMethod(type) {
-  document.getElementById('barcode-create-select-modal').style.display = 'none';
-  if (type === 'unused') {
-    generateUniqueBarcode();
-  } else if (type === 'manual') {
-    openManualBarcodeModal();
-  } else if (type === 'saved') {
-    openSavedBarcodesModal();
-  }
-}
-
-function openResetMenuModal() {
-  document.getElementById('reset-menu-modal').style.display = 'flex';
-}
-function closeResetMenuModal() {
-  document.getElementById('reset-menu-modal').style.display = 'none';
-  openStaffMenuModal();
-}
-function executeResetSalesOnly() {
-  if (confirm("本当に販売履歴のみを削除しますか？")) {
-    localStorage.removeItem('myPosSalesHistory');
-    salesHistory = [];
-    alert("販売履歴をリセットしました。");
-    closeResetMenuModal();
-  }
-}
-function executeResetAllData() {
-  if (confirm("【警告】すべてのデータ（商品データ、履歴、設定など）が初期化されます。本当によろしいですか？")) {
-    localStorage.clear();
-    alert("初期化が完了しました。システムを再読み込みします。");
-    location.reload();
-  }
-}
-
-function openVoiceSettingsModal() {
-  document.getElementById('setting-voice-beep').checked = voiceSettings.beep;
-  document.getElementById('setting-voice-speech').checked = voiceSettings.speech;
-  document.getElementById('setting-voice-thanks').checked = voiceSettings.thanks;
-  document.getElementById('voice-settings-modal').style.display = 'flex';
-}
-function closeVoiceSettingsModal() {
-  document.getElementById('voice-settings-modal').style.display = 'none';
-  openStaffMenuModal();
-}
-function saveVoiceSettings() {
-  voiceSettings.beep = document.getElementById('setting-voice-beep').checked;
-  voiceSettings.speech = document.getElementById('setting-voice-speech').checked;
-  voiceSettings.thanks = document.getElementById('setting-voice-thanks').checked;
-  localStorage.setItem('myPosVoiceSettings', JSON.stringify(voiceSettings));
-  alert("音声設定を保存しました！");
-  closeVoiceSettingsModal();
-}
-
-function openCameraSettingsModal() {
-  document.getElementById('setting-cam-customer').checked = (cameraSettings.customer === 'external');
-  document.getElementById('setting-cam-staff').checked = (cameraSettings.staff === 'external');
-  document.getElementById('camera-settings-modal').style.display = 'flex';
-}
-function closeCameraSettingsModal() {
-  document.getElementById('camera-settings-modal').style.display = 'none';
-  openStaffMenuModal();
-}
-function saveCameraSettings() {
-  const customerIsExternal = document.getElementById('setting-cam-customer').checked;
-  const staffIsExternal = document.getElementById('setting-cam-staff').checked;
-
-  cameraSettings.customer = customerIsExternal ? 'external' : 'phone';
-  cameraSettings.staff = staffIsExternal ? 'external' : 'phone';
-
-  localStorage.setItem('myPosCameraSettings', JSON.stringify(cameraSettings));
-
-  if (currentMode === 'customer') {
-    startCustomerScanner();
-  } else {
-    startRegisterScanner();
-  }
-  alert("カメラ設定を保存しました！");
-  closeCameraSettingsModal();
-} 
 <script>
 let defaultDatabase = {
 "4901330502880": { name: "ポテトチップス", price: 160, waribiki: 0 },
@@ -2032,8 +1733,14 @@ function switchView(viewName) {
   currentMode = viewName;
   localStorage.setItem('myPosCurrentMode', viewName);
   document.querySelectorAll('.view-container').forEach(el => el.classList.remove('active'));
+ 
+  const modeSwitchLabel = document.getElementById('mode-switch-label');
+  const staffMenuModeText = document.getElementById('staff-menu-mode-text');
+ 
   if (viewName === 'customer') {
     document.getElementById('customer-view').classList.add('active');
+    if (modeSwitchLabel) modeSwitchLabel.textContent = "スタッフモードに切替";
+    if (staffMenuModeText) staffMenuModeText.textContent = "スタッフモードに切替";
     stopRegisterScanner(); stopCouponScanner();
     const savedCustomerState = localStorage.getItem('customerCameraOn');
     const toggle = document.getElementById('customer-camera-toggle');
@@ -2054,6 +1761,8 @@ function switchView(viewName) {
     }
   } else if (viewName === 'register') {
     document.getElementById('register-view').classList.add('active');
+    if (modeSwitchLabel) modeSwitchLabel.textContent = "お客様モードに切替";
+    if (staffMenuModeText) staffMenuModeText.textContent = "お客様モードに切替";
     stopCustomerScanner(); stopCouponScanner();
     const savedRegisterState = localStorage.getItem('registerCameraOn');
     const toggle = document.getElementById('register-camera-toggle');

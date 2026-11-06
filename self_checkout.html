@@ -20,16 +20,16 @@
 body { font-family: 'Segoe UI', sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; background-color: #f7f9fc; color: #333333; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
 .header-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
 h1 { color: #2575fc; margin: 0; font-size: 24px; cursor: pointer; user-select: none; }
-.settings-btn { background: none; border: none; font-size: 24px; cursor: pointer; padding: 0; color: #555; }
+.settings-btn { background: none; border: none; font-size: 24px; cursor: pointer; padding: 0; color: #555; display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; }
 .status { text-align: center; color: #2575fc; margin-bottom: 10px; font-weight: bold; }
-#interactive.viewport { width: 100%; height: 250px; background-color: #000; border: 2px solid #2575fc; border-radius: 10px; overflow: hidden; margin-bottom: 20px; position: relative; }
+#interactive.viewport { width: 100%; height: 250px; background-color: #2f3542; border: 2px solid #2575fc; border-radius: 10px; overflow: hidden; margin-bottom: 20px; position: relative; }
 #interactive.viewport video { width: 100%; height: 100%; object-fit: cover; }
 
-#register-viewport-container { width: 100%; height: 200px; background-color: #000; border: 2px solid #ff4757; border-radius: 10px; overflow: hidden; margin-bottom: 15px; position: relative; }
+#register-viewport-container { width: 100%; height: 200px; background-color: #2f3542; border: 2px solid #ff4757; border-radius: 10px; overflow: hidden; margin-bottom: 15px; position: relative; }
 #register-video { width: 100%; height: 100%; object-fit: cover; }
 #register-canvas { display: none; }
 
-#coupon-viewport-container, #free-coupon-viewport-container { width: 100%; height: 180px; background-color: #000; border: 2px solid #ff4757; border-radius: 10px; overflow: hidden; margin-bottom: 12px; position: relative; }
+#coupon-viewport-container, #free-coupon-viewport-container { width: 100%; height: 180px; background-color: #2f3542; border: 2px solid #ff4757; border-radius: 10px; overflow: hidden; margin-bottom: 12px; position: relative; }
 #coupon-video, #free-coupon-video { width: 100%; height: 100%; object-fit: cover; }
 #coupon-canvas, #free-coupon-canvas { display: none; }
 .coupon-file-btn { position: absolute; bottom: 10px; right: 10px; width: 40px; height: 40px; background: rgba(255,255,255,0.9); border: none; border-radius: 50%; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.3); z-index: 20; }
@@ -223,6 +223,35 @@ border-radius: 6px !important;
 margin: 0 !important;
 box-sizing: border-box !important;
 }
+
+/* スタッフメニュー専用グリッドスタイル（ユーザー様提示画像準拠） */
+.staff-menu-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin: 15px 0;
+  max-height: 380px;
+  overflow-y: auto;
+}
+.staff-menu-card {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  aspect-ratio: 1 / 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  padding: 8px;
+  transition: all 0.2s;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+.staff-menu-card:hover { background: #f8fafc; border-color: #94a3b8; }
+.staff-menu-card:active { transform: scale(0.96); background: #f1f5f9; }
+.staff-menu-icon { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: #334155; }
+.staff-menu-text { font-size: 11px; font-weight: bold; color: #1e293b; text-align: center; line-height: 1.2; }
 </style>
 </head>
 <body>
@@ -238,7 +267,9 @@ box-sizing: border-box !important;
 <div id="customer-view" class="view-container active">
 <div class="header-container">
 <h1 id="app-title-header" onclick="handleTitleClick()">ピピッとカート 🛒</h1>
-<button class="settings-btn" onclick="handleSettingsClick()" title="スタッフメニュー">⚙️</button>
+<button class="settings-btn" onclick="handleCustomerSettingsClick()" title="スタッフメニュー">
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+</button>
 </div>
 
 <div class="camera-control-bar">
@@ -250,11 +281,11 @@ box-sizing: border-box !important;
 </div>
 
 <div id="interactive" class="viewport">
-<div id="customer-camera-off-overlay" style="display: none; width: 100%; height: 100%; background-color: #000; color: #747d8c; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; position: absolute; top: 0; left: 0; z-index: 10;">カメラはOFFです</div>
+<div id="customer-camera-off-overlay" style="display: none; width: 100%; height: 100%; background-color: #2f3542; color: #a4b0be; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; position: absolute; top: 0; left: 0; z-index: 10;">カメラはOFFです</div>
 </div>
 
 <div class="section-header">
-<h2 id="purchase-list-title" onclick="handlePurchaseListTitleClick()" style="cursor: pointer; user-select: none;" title="2回タップでスタッフモード">購入リスト</h2>
+<h2 id="purchase-list-title" ondblclick="handlePurchaseListDblClick()" style="cursor: pointer; user-select: none;" title="ダブルタップでスタッフモード">購入リスト（ダブルタップでスタッフモード）</h2>
 <button class="add-nobarcode-btn" onclick="openNoBarcodeModal()">＋ バーコードの無い商品を追加</button>
 </div>
 
@@ -268,7 +299,9 @@ box-sizing: border-box !important;
 <div id="register-view" class="view-container">
 <div class="header-container">
 <h1>スタッフモード</h1>
-<button class="settings-btn" onclick="handleSettingsClick()" title="スタッフメニュー">⚙️</button>
+<button class="settings-btn" onclick="openStaffMenuModal()" title="スタッフメニュー">
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+</button>
 </div>
 
 <div class="camera-control-bar">
@@ -282,61 +315,136 @@ box-sizing: border-box !important;
 <div id="register-viewport-container">
 <video id="register-video" playsinline autoplay muted></video>
 <canvas id="register-canvas"></canvas>
-<div id="register-camera-off-overlay" style="display: none; width: 100%; height: 100%; background-color: #000; color: #747d8c; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; position: absolute; top: 0; left: 0; z-index: 10;">カメラはOFFです</div>
+<div id="register-camera-off-overlay" style="display: none; width: 100%; height: 100%; background-color: #2f3542; color: #a4b0be; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; position: absolute; top: 0; left: 0; z-index: 10;">カメラはOFFです</div>
 </div>
 
 <!-- 縦並びのスタッフメニュー・モード切替ボタン -->
 <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
 <button class="btn" style="background-color: #2d3436; margin: 0; display: flex; align-items: center; justify-content: center; gap: 8px;" onclick="openStaffMenuModal()">
-<span style="font-size: 20px;">📋</span> スタッフメニュー
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+  <span>スタッフメニュー</span>
 </button>
 <button id="mode-switch-btn" class="btn" style="background-color: #ff4757; margin: 0; display: flex; align-items: center; justify-content: center; gap: 8px;" onclick="toggleModeFromSettings()">
-<span style="font-size: 20px;">👤</span> <span id="mode-switch-label">お客様モードに切替</span>
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+  <span id="mode-switch-label">お客様モードに切替</span>
 </button>
 </div>
 </div>
 
-<!-- ================= 📋 スタッフメニューモーダル ================= -->
+<!-- ================= 📋 スタッフメニューモーダル（3×3グリッド） ================= -->
 <div class="modal-overlay" id="staff-menu-screen">
-<div class="modal-content-box" style="text-align: center; max-width: 360px;">
-<h3 style="font-size: 18px; margin-bottom: 12px; color: #2d3436;">スタッフメニュー</h3>
-<p style="font-size: 12px; color: #666; margin-bottom: 15px;">操作を選択してください</p>
-<div class="pay-method-options" style="flex-direction: column; gap: 8px;">
-<button class="pay-method-btn" onclick="execStaffMenu(1)" style="border-color: #2d3436; color: #2d3436; flex-direction: row; padding: 12px 15px; align-items: center; justify-content: flex-start; gap: 12px;">
-<span style="font-size: 22px;">🔄</span> <span id="staff-menu-mode-text" style="font-size: 15px;">お客様モードに切替</span>
-</button>
-<button class="pay-method-btn" onclick="execStaffMenu(2)" style="border-color: #20bf6b; color: #20bf6b; flex-direction: row; padding: 12px 15px; align-items: center; justify-content: flex-start; gap: 12px;">
-<span style="font-size: 22px;">📷</span> <span style="font-size: 15px;">スタッフスキャン</span>
-</button>
-<button class="pay-method-btn" onclick="execStaffMenu(3)" style="border-color: #ff4757; color: #ff4757; flex-direction: row; padding: 12px 15px; align-items: center; justify-content: flex-start; gap: 12px;">
-<span style="font-size: 22px;">🎟️</span> <span style="font-size: 15px;">クーポン作成・管理</span>
-</button>
-<button class="pay-method-btn" onclick="execStaffMenu(4)" style="border-color: #e67e22; color: #e67e22; flex-direction: row; padding: 12px 15px; align-items: center; justify-content: flex-start; gap: 12px;">
-<span style="font-size: 22px;">🏷️</span> <span style="font-size: 15px;">割引バーコード作成</span>
-</button>
-<button class="pay-method-btn" onclick="execStaffMenu(5)" style="border-color: #9b59b6; color: #9b59b6; flex-direction: row; padding: 12px 15px; align-items: center; justify-content: flex-start; gap: 12px;">
-<span style="font-size: 22px;">🖨️</span> <span style="font-size: 15px;">バーコード生成</span>
-</button>
-<button class="pay-method-btn" onclick="execStaffMenu(6)" style="border-color: #eb4d4b; color: #eb4d4b; flex-direction: row; padding: 12px 15px; align-items: center; justify-content: flex-start; gap: 12px;">
-<span style="font-size: 22px;">💸</span> <span style="font-size: 15px;">返金対応</span>
-</button>
-<button class="pay-method-btn" onclick="execStaffMenu(7)" style="border-color: #16a085; color: #16a085; flex-direction: row; padding: 12px 15px; align-items: center; justify-content: flex-start; gap: 12px;">
-<span style="font-size: 22px;">🧾</span> <span style="font-size: 15px;">レシート設定</span>
-</button>
-<button class="pay-method-btn" onclick="execStaffMenu(8)" style="border-color: #00adb5; color: #00adb5; flex-direction: row; padding: 12px 15px; align-items: center; justify-content: flex-start; gap: 12px;">
-<span style="font-size: 22px;">📊</span> <span style="font-size: 15px;">売上履歴</span>
-</button>
-<button class="pay-method-btn" onclick="execStaffMenu(9)" style="border-color: #e84393; color: #e84393; flex-direction: row; padding: 12px 15px; align-items: center; justify-content: flex-start; gap: 12px;">
-<span style="font-size: 22px;">🔊</span> <span style="font-size: 15px;">音声設定</span>
-</button>
-<button class="pay-method-btn" onclick="execStaffMenu(11)" style="border-color: #0984e3; color: #0984e3; flex-direction: row; padding: 12px 15px; align-items: center; justify-content: flex-start; gap: 12px;">
-<span style="font-size: 22px;">📹</span> <span style="font-size: 15px;">カメラ切替</span>
-</button>
-<button class="pay-method-btn" onclick="execStaffMenu(10)" style="border-color: #d63031; color: #d63031; flex-direction: row; padding: 12px 15px; align-items: center; justify-content: flex-start; gap: 12px;">
-<span style="font-size: 22px;">⚙️</span> <span style="font-size: 15px;">データ初期化・リセット</span>
-</button>
+<div class="modal-content-box" style="text-align: center; max-width: 380px; padding: 20px;">
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+<h3 style="font-size: 18px; margin: 0; color: #2d3436;">スタッフメニュー</h3>
+<button class="modal-btn-back" onclick="closeStaffMenuModal()" style="padding: 6px 12px; font-size: 12px;">← 戻る</button>
 </div>
-<button class="close-btn" onclick="closeStaffMenuModal()" style="margin-top: 10px;">閉じる</button>
+
+<div class="staff-menu-grid">
+  <!-- 1: モード切替 -->
+  <div class="staff-menu-card" onclick="execStaffMenu(1)">
+    <div class="staff-menu-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
+    </div>
+    <div class="staff-menu-text" id="staff-menu-mode-text">お客様モードに切替</div>
+  </div>
+  <!-- 2: スタッフスキャン -->
+  <div class="staff-menu-card" onclick="execStaffMenu(2)">
+    <div class="staff-menu-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+    </div>
+    <div class="staff-menu-text">スタッフスキャン</div>
+  </div>
+  <!-- 3: クーポン作成・管理 -->
+  <div class="staff-menu-card" onclick="execStaffMenu(3)">
+    <div class="staff-menu-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+    </div>
+    <div class="staff-menu-text">クーポン作成・管理</div>
+  </div>
+  <!-- 4: 割引バーコード作成 -->
+  <div class="staff-menu-card" onclick="execStaffMenu(4)">
+    <div class="staff-menu-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
+    </div>
+    <div class="staff-menu-text">割引バーコード作成</div>
+  </div>
+  <!-- 5: バーコード生成 -->
+  <div class="staff-menu-card" onclick="execStaffMenu(5)">
+    <div class="staff-menu-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5v14h2V5H3zm4 0v14h1V5H7zm3 0v14h3V5h-3zm5 0v14h2V5h-2zm4 0v14h3V5h-3z"/></svg>
+    </div>
+    <div class="staff-menu-text">バーコード生成</div>
+  </div>
+  <!-- 6: 返金対応 -->
+  <div class="staff-menu-card" onclick="execStaffMenu(6)">
+    <div class="staff-menu-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+    </div>
+    <div class="staff-menu-text">返金対応</div>
+  </div>
+  <!-- 7: レシート設定 -->
+  <div class="staff-menu-card" onclick="execStaffMenu(7)">
+    <div class="staff-menu-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+    </div>
+    <div class="staff-menu-text">レシート設定</div>
+  </div>
+  <!-- 8: 売上履歴 -->
+  <div class="staff-menu-card" onclick="execStaffMenu(8)">
+    <div class="staff-menu-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+    </div>
+    <div class="staff-menu-text">売上履歴</div>
+  </div>
+  <!-- 9: 音声設定 -->
+  <div class="staff-menu-card" onclick="execStaffMenu(9)">
+    <div class="staff-menu-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+    </div>
+    <div class="staff-menu-text">音声設定</div>
+  </div>
+  <!-- 10: カメラ切替 -->
+  <div class="staff-menu-card" onclick="execStaffMenu(11)">
+    <div class="staff-menu-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+    </div>
+    <div class="staff-menu-text">カメラ切替</div>
+  </div>
+  <!-- 11: データ初期化・リセット -->
+  <div class="staff-menu-card" onclick="execStaffMenu(10)">
+    <div class="staff-menu-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/><line x1="18" y1="9" x2="12" y2="15"/><line x1="12" y1="9" x2="18" y2="15"/></svg>
+    </div>
+    <div class="staff-menu-text">データ初期化</div>
+  </div>
+</div>
+</div>
+</div>
+
+<!-- ================= 🔒 パスワード入力モーダル ================= -->
+<div class="modal-overlay" id="password-modal">
+<div class="modal-content-box" style="text-align: center; max-width: 300px;">
+<h3 style="font-size: 16px; margin-bottom: 8px; color: #2d3436;">スタッフパスワード入力</h3>
+<p style="font-size: 12px; color: #666; margin-bottom: 12px;">パスワードを入力してください</p>
+<div class="calc-display" id="password-display" style="font-size: 20px; letter-spacing: 4px; text-align: center;">****</div>
+<div class="calculator-pad">
+<button class="calc-key" onclick="appendPassword(1)">1</button>
+<button class="calc-key" onclick="appendPassword(2)">2</button>
+<button class="calc-key" onclick="appendPassword(3)">3</button>
+<button class="calc-key" onclick="appendPassword(4)">4</button>
+<button class="calc-key" onclick="appendPassword(5)">5</button>
+<button class="calc-key" onclick="appendPassword(6)">6</button>
+<button class="calc-key" onclick="appendPassword(7)">7</button>
+<button class="calc-key" onclick="appendPassword(8)">8</button>
+<button class="calc-key" onclick="appendPassword(9)">9</button>
+<button class="calc-key" onclick="clearPassword()">C</button>
+<button class="calc-key" onclick="appendPassword(0)">0</button>
+<button class="calc-key" onclick="backspacePassword()">←</button>
+</div>
+<div style="display: flex; gap: 8px; margin-top: 10px;">
+<button class="modal-btn-back" style="flex: 1;" onclick="closePasswordModal()">キャンセル</button>
+<button class="btn pay-btn" style="flex: 2; margin: 0; padding: 10px;" onclick="confirmPassword()">OK</button>
+</div>
 </div>
 </div>
 
@@ -365,17 +473,19 @@ box-sizing: border-box !important;
 </div>
 </div>
 
-<!-- ================= 🔄 データリセット専用モーダル ================= -->
+<!-- ================= 🔄 データリセット専用モーダル（クーポン風デザイン） ================= -->
 <div class="modal-overlay" id="reset-menu-modal">
 <div class="modal-content-box" style="text-align: center;">
-<h3 style="font-size: 18px; margin-bottom: 12px; color: #d63031;">データ初期化・リセット</h3>
+<h3 style="font-size: 18px; margin-bottom: 6px; color: #d63031;">データ初期化・リセット</h3>
 <p style="font-size: 12px; color: #666; margin-bottom: 15px;">処理を選択してください</p>
 <div class="pay-method-options" style="flex-direction: column; gap: 10px;">
-<button class="pay-method-btn" onclick="executeResetSalesOnly()" style="border-color: #ffa502; color: #ffa502;">
-<span>売上記録のみリセット</span>
+<button class="pay-method-btn" onclick="executeResetSalesOnly()" style="border-color: #ffa502; color: #ffa502; flex-direction: row; padding: 12px 15px; align-items: center; justify-content: flex-start; gap: 12px;">
+<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+<span style="font-size: 15px;">売上記録のみリセット</span>
 </button>
-<button class="pay-method-btn" onclick="executeResetAllData()" style="border-color: #ff4757; color: #ff4757;">
-<span>すべてのデータをリセット</span>
+<button class="pay-method-btn" onclick="executeResetAllData()" style="border-color: #ff4757; color: #ff4757; flex-direction: row; padding: 12px 15px; align-items: center; justify-content: flex-start; gap: 12px;">
+<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="14" y2="17"/><line x1="14" y1="11" x2="10" y2="17"/></svg>
+<span style="font-size: 15px;">すべてのデータをリセット</span>
 </button>
 </div>
 <div style="text-align: left; margin-top: 15px;">
@@ -811,12 +921,14 @@ let cameraSettings = JSON.parse(localStorage.getItem('myPosCameraSettings')) || 
 
 let registerStream = null;
 let registerScanInterval = null;
+let staffScanStream = null;
+let staffScanInterval = null;
 let couponStream = null;
 let couponScanInterval = null;
 
 let currentMode = 'customer';
 let currentGeneratedCode = "";
-let isStaffDirectScanMode = false;
+let currentPasswordInput = "";
 
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
@@ -845,7 +957,7 @@ osc.start(); osc.stop(audioCtx.currentTime + duration);
 }
 
 document.addEventListener('click', (e) => {
-const target = e.target.closest('button, .product-card, .tab-btn, .pay-method-btn, h1');
+const target = e.target.closest('button, .product-card, .tab-btn, .pay-method-btn, h1, .staff-grid-card');
 if (target) { playTapSound(); }
 });
 
@@ -858,7 +970,10 @@ totalCount = 0;
 renderCart();
 }
 
-function handlePurchaseListTitleClick() { switchView('register'); }
+/* 購入リストダブルタップでスタッフモードへ */
+function handlePurchaseListDblClick() {
+  switchView('register');
+}
 function handleTitleClick() { document.getElementById('customer-file-input').click(); }
 
 function handleCustomerImageFile(event) {
@@ -879,6 +994,48 @@ function handleCustomerImageFile(event) {
   event.target.value = '';
 }
 
+function handleSettingsClick() {
+  if (currentMode === 'customer') {
+    openPasswordPromptModal();
+  } else {
+    openStaffMenuModal();
+  }
+}
+
+function openPasswordPromptModal() {
+  currentPasswordInput = "";
+  document.getElementById('pwd-display').textContent = "----";
+  document.getElementById('password-prompt-modal').style.display = 'flex';
+}
+function closePasswordPromptModal() {
+  document.getElementById('password-prompt-modal').style.display = 'none';
+}
+function appendPwd(num) {
+  if (currentPasswordInput.length < 4) {
+    currentPasswordInput += num;
+    document.getElementById('pwd-display').textContent = "*".repeat(currentPasswordInput.length) + "-".repeat(4 - currentPasswordInput.length);
+  }
+}
+function clearPwd() {
+  currentPasswordInput = "";
+  document.getElementById('pwd-display').textContent = "----";
+}
+function backspacePwd() {
+  if (currentPasswordInput.length > 0) {
+    currentPasswordInput = currentPasswordInput.slice(0, -1);
+    document.getElementById('pwd-display').textContent = "*".repeat(currentPasswordInput.length) + "-".repeat(4 - currentPasswordInput.length);
+  }
+}
+function verifyPasswordInput() {
+  if (currentPasswordInput === SALES_PASSWORD) {
+    closePasswordPromptModal();
+    switchView('register');
+  } else {
+    alert("パスワードが違います。");
+    clearPwd();
+  }
+}
+
 function openStaffMenuModal() {
   document.getElementById('staff-menu-screen').style.display = 'flex';
 }
@@ -897,30 +1054,25 @@ function execStaffMenu(menuNumber) {
       }
       break;
     case 2:
-      isStaffDirectScanMode = !isStaffDirectScanMode;
-      if (isStaffDirectScanMode) {
-        alert("スタッフスキャンON：バーコードを読み取ると確認をスキップしてお支払い選択画面へ進みます。");
-      } else {
-        alert("スタッフスキャンOFFに戻しました。");
-      }
+      openStaffScanView();
       break;
     case 3:
-      openCouponMakerMenuModal();
+      alert("クーポン作成・管理画面は未作成です。");
       break;
     case 4:
-      openDiscountBarcodeScanModal();
+      alert("割引バーコード作成画面は未作成です。");
       break;
     case 5:
-      openBarcodeCreateSelectModal();
+      alert("バーコード生成画面は未作成です。");
       break;
     case 6:
-      openRefundMenuModal();
+      alert("返金対応画面は未作成です。");
       break;
     case 7:
-      openReceiptSettingsModal();
+      alert("レシート設定画面は未作成です。");
       break;
     case 8:
-      showSalesHistory();
+      alert("売上履歴画面は未作成です。");
       break;
     case 9:
       openVoiceSettingsModal();
@@ -931,24 +1083,6 @@ function execStaffMenu(menuNumber) {
     case 11:
       openCameraSettingsModal();
       break;
-  }
-}
-
-function openBarcodeCreateSelectModal() {
-  document.getElementById('barcode-create-select-modal').style.display = 'flex';
-}
-function closeBarcodeCreateSelectModal() {
-  document.getElementById('barcode-create-select-modal').style.display = 'none';
-  openStaffMenuModal();
-}
-function selectBarcodeCreateMethod(type) {
-  document.getElementById('barcode-create-select-modal').style.display = 'none';
-  if (type === 'unused') {
-    generateUniqueBarcode();
-  } else if (type === 'manual') {
-    openManualBarcodeModal();
-  } else if (type === 'saved') {
-    openSavedBarcodesModal();
   }
 }
 
@@ -1020,672 +1154,6 @@ function saveCameraSettings() {
   alert("カメラ設定を保存しました！");
   closeCameraSettingsModal();
 } 
-function openCouponMakerMenuModal() { document.getElementById('coupon-maker-menu-modal').style.display = 'flex'; }
-function closeCouponMakerMenuModal() {
-  document.getElementById('coupon-maker-menu-modal').style.display = 'none';
-  openStaffMenuModal();
-}
-function openCouponTypeSelectModal() {
-  document.getElementById('coupon-maker-menu-modal').style.display = 'none';
-  document.getElementById('coupon-type-select-modal').style.display = 'flex';
-}
-function backToCouponMenuModal() {
-  document.getElementById('coupon-type-select-modal').style.display = 'none';
-  openCouponMakerMenuModal();
-}
-function openCouponManageListModal() {
-  document.getElementById('coupon-maker-menu-modal').style.display = 'none';
-  renderSavedCouponsMakerList();
-  document.getElementById('coupon-manage-list-modal').style.display = 'flex';
-}
-function closeCouponManageListModal() {
-  document.getElementById('coupon-manage-list-modal').style.display = 'none';
-  openCouponMakerMenuModal();
-}
-function openFreeCouponSelectProductTypeModal() {
-  document.getElementById('coupon-type-select-modal').style.display = 'none';
-  document.getElementById('free-coupon-prod-type-modal').style.display = 'flex';
-}
-function backToCouponTypeSelectFromProdType() {
-  document.getElementById('free-coupon-prod-type-modal').style.display = 'none';
-  document.getElementById('coupon-type-select-modal').style.display = 'flex';
-}
-function backToProdTypeFromFreeScan() {
-  closeFreeCouponScanModal();
-  document.getElementById('free-coupon-prod-type-modal').style.display = 'flex';
-}
-function openFreeCouponNoBarcodeModal() {
-  document.getElementById('free-coupon-prod-type-modal').style.display = 'none';
-  document.getElementById('free-coupon-nobarcode-modal').style.display = 'flex';
-  const firstTab = document.querySelector('#free-coupon-nobarcode-modal .tab-btn');
-  switchFreeCouponCategory('yasai', firstTab);
-}
-function closeFreeCouponNoBarcodeModal() {
-  document.getElementById('free-coupon-nobarcode-modal').style.display = 'none';
-  document.getElementById('free-coupon-prod-type-modal').style.display = 'flex';
-}
-function switchFreeCouponCategory(categoryKey, btnElement) {
-  const modalBox = document.getElementById('free-coupon-nobarcode-modal');
-  modalBox.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  if (btnElement) btnElement.classList.add('active');
-  const grid = document.getElementById('free-coupon-nobarcode-grid');
-  grid.innerHTML = '';
-  for (let code in itemDatabase) {
-    let item = itemDatabase[code];
-    if (item.category === categoryKey) {
-      grid.innerHTML += `
-        <div class="product-card" onclick="selectFreeCouponItemNoBarcode('${code}')">
-          <div class="product-card-name">${item.name}</div>
-          <div class="product-card-bottom">
-            <span class="product-card-price">¥${item.price}</span>
-            <div class="product-add-badge">🎁</div>
-          </div>
-        </div>
-      `;
-    }
-  }
-}
-function selectFreeCouponItemNoBarcode(code) {
-  const item = itemDatabase[code];
-  if (!item) return;
-  closeFreeCouponNoBarcodeModal();
-  document.getElementById('free-coupon-prod-type-modal').style.display = 'none';
-  const couponTitle = `${item.name}無料クーポン`;
-  const couponVal = `${code}_0`;
-  const newC = { id: Date.now(), title: couponTitle, val: couponVal };
-  savedCoupons.unshift(newC);
-  localStorage.setItem('myPosMakerCoupons', JSON.stringify(savedCoupons));
-  showSavedCouponQRDirect(couponTitle, couponVal);
-}
-
-let freeCouponScanner = null;
-function openFreeCouponScanModal() {
-  document.getElementById('free-coupon-prod-type-modal').style.display = 'none';
-  document.getElementById('free-coupon-scan-modal').style.display = 'flex';
-  const readerDiv = document.getElementById('free-coupon-reader');
-  readerDiv.innerHTML = "";
-  if (freeCouponScanner) { try { freeCouponScanner.clear(); } catch(e){} freeCouponScanner = null; }
-  freeCouponScanner = new Html5Qrcode("free-coupon-reader");
-  freeCouponScanner.start(
-    { facingMode: "environment" },
-    { fps: 10, qrbox: { width: 200, height: 150 } },
-    (decodedText) => { playSound(1200, 0.08); handleFreeCouponScannedCode(decodedText); },
-    (error) => {}
-  ).catch(err => console.log("無料クーポンカメラ起動エラー", err));
-}
-function closeFreeCouponScanModal() {
-  if (freeCouponScanner) {
-    freeCouponScanner.stop().then(() => {
-      try { freeCouponScanner.clear(); } catch(e){}
-      freeCouponScanner = null;
-      document.getElementById('free-coupon-scan-modal').style.display = 'none';
-    }).catch(() => {
-      freeCouponScanner = null;
-      document.getElementById('free-coupon-scan-modal').style.display = 'none';
-    });
-  } else {
-    document.getElementById('free-coupon-scan-modal').style.display = 'none';
-  }
-}
-function handleFreeCouponScanFile(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  const html5QrCodeForFile = new Html5Qrcode("free-coupon-reader");
-  html5QrCodeForFile.scanFile(file, true)
-    .then(decodedText => { playSound(1200, 0.08); handleFreeCouponScannedCode(decodedText); })
-    .catch(err => alert("画像からバーコードを検出しませんでした"));
-  event.target.value = '';
-}
-function handleFreeCouponScannedCode(code) {
-  closeFreeCouponScanModal();
-  let prodName = "商品";
-  if (itemDatabase[code]) { prodName = itemDatabase[code].name; }
-  else {
-    for (let orig in itemDatabase) {
-      if (code.startsWith(orig)) { prodName = itemDatabase[orig].name; code = orig; break; }
-    }
-  }
-  const couponTitle = `${prodName}無料クーポン`;
-  const couponVal = `${code}_0`;
-  const newC = { id: Date.now(), title: couponTitle, val: couponVal };
-  savedCoupons.unshift(newC);
-  localStorage.setItem('myPosMakerCoupons', JSON.stringify(savedCoupons));
-  showSavedCouponQRDirect(couponTitle, couponVal);
-}
-
-function openDiscountCouponInputModal() {
-  document.getElementById('coupon-type-select-modal').style.display = 'none';
-  document.getElementById('maker-title').value = '';
-  document.getElementById('maker-val').value = '10';
-  document.getElementById('discount-coupon-input-modal').style.display = 'flex';
-}
-function backToCouponTypeSelectFromDiscount() {
-  document.getElementById('discount-coupon-input-modal').style.display = 'none';
-  document.getElementById('coupon-type-select-modal').style.display = 'flex';
-}
-function toggleMakerDiscTypeInput() {
-  const type = document.querySelector('input[name="maker-disc-type"]:checked').value;
-  const label = document.getElementById('maker-disc-val-label');
-  if (type === 'pct') {
-    label.textContent = "割引率 (1〜2桁: 例 10)";
-    document.getElementById('maker-val').value = "10";
-  } else {
-    label.textContent = "割引金額 (例 200)";
-    document.getElementById('maker-val').value = "200";
-  }
-}
-function generateDiscountCouponFinal() {
-  const title = document.getElementById('maker-title').value.trim();
-  const val = document.getElementById('maker-val').value.trim();
-  if (!title || !val || isNaN(val)) { alert("正しいタイトルと数値を入力してください"); return; }
-  const couponVal = `${val}${document.querySelector('input[name="maker-disc-type"]:checked').value === 'pct' ? '%' : '円'}`;
-  const newC = { id: Date.now(), title: title, val: couponVal };
-  savedCoupons.unshift(newC);
-  localStorage.setItem('myPosMakerCoupons', JSON.stringify(savedCoupons));
-  document.getElementById('discount-coupon-input-modal').style.display = 'none';
-  showSavedCouponQRDirect(title, couponVal);
-}
-function showSavedCouponQRDirect(title, val) {
-  const qrData = `COUPON_${val}`;
-  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(qrData)}`;
-  document.getElementById('view-capture-title').textContent = title;
-  document.getElementById('view-qr-img').innerHTML = `<img src="${qrUrl}" width="140" height="140" style="border-radius:6px; display:block; margin:0 auto;" crossorigin="anonymous">`;
-  document.getElementById('coupon-view-modal').style.display = 'flex';
-}
-function closeCouponViewModal() {
-  document.getElementById('coupon-view-modal').style.display = 'none';
-  openCouponMakerMenuModal();
-}
-function renderSavedCouponsMakerList() {
-  const container = document.getElementById('saved-coupons-list');
-  if (savedCoupons.length === 0) {
-    container.innerHTML = '<div style="color:#999; font-size:12px; text-align:center; padding:10px;">保存されたクーポンはありません</div>';
-    return;
-  }
-  container.innerHTML = savedCoupons.map((c) => `
-    <div style="background:#fff; border:1px solid #ddd; border-radius:6px; padding:8px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center;">
-      <div>
-        <div style="font-weight:bold; font-size:13px;">${c.title}</div>
-        <div style="font-size:11px; color:#666;">値: ${c.val}</div>
-      </div>
-      <div style="display:flex; gap:4px;">
-        <button class="btn action-btn-item" style="background:#0984e3;" onclick="viewSavedCouponQR(${c.id})">表示</button>
-        <button class="btn action-btn-item" style="background:#ff7675;" onclick="deleteSavedMakerCoupon(${c.id})">削除</button>
-      </div>
-    </div>
-  `).join('');
-}
-function deleteSavedMakerCoupon(id) {
-  if (confirm("このクーポンを削除しますか？")) {
-    savedCoupons = savedCoupons.filter(c => c.id !== id);
-    localStorage.setItem('myPosMakerCoupons', JSON.stringify(savedCoupons));
-    renderSavedCouponsMakerList();
-  }
-}
-function viewSavedCouponQR(id) {
-  const c = savedCoupons.find(item => item.id === id);
-  if (!c) return;
-  document.getElementById('coupon-manage-list-modal').style.display = 'none';
-  showSavedCouponQRDirect(c.title, c.val);
-}
-function shareSavedCouponImage() {
-  const captureArea = document.getElementById('view-capture-area');
-  html2canvas(captureArea, { scale: 2, useCORS: true, backgroundColor: '#ffffff' }).then(canvas => {
-    canvas.toBlob(blob => {
-      const file = new File([blob], "coupon_qr.jpg", { type: "image/jpeg" });
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        navigator.share({ title: 'クーポンQRコード', text: '11Pay用クーポンQRコードです', files: [file] }).catch(err => console.log('共有キャンセル'));
-      } else {
-        const link = document.createElement('a'); link.download = 'coupon_qr.jpg'; link.href = canvas.toDataURL('image/jpeg', 0.9); link.click();
-      }
-    }, 'image/jpeg', 0.9);
-  });
-}
-
-let discSelectedProduct = null;
-let discScanner = null;
-let currentDiscBarcode = "";
-
-function openDiscountBarcodeScanModal() {
-  document.getElementById('disc-scan-modal').style.display = 'flex';
-  const readerDiv = document.getElementById('disc-reader');
-  readerDiv.innerHTML = "";
-  if (discScanner) { try { discScanner.clear(); } catch(e){} discScanner = null; }
-  discScanner = new Html5Qrcode("disc-reader");
-  discScanner.start(
-    { facingMode: "environment" },
-    { fps: 10, qrbox: { width: 200, height: 150 } },
-    (decodedText) => { playSound(1200, 0.08); handleDiscScannedCode(decodedText); },
-    (error) => {}
-  ).catch(err => console.log("割引カメラ起動エラー", err));
-}
-function closeDiscScanModal() {
-  if (discScanner) {
-    discScanner.stop().then(() => {
-      try { discScanner.clear(); } catch(e){}
-      discScanner = null;
-      document.getElementById('disc-scan-modal').style.display = 'none';
-    }).catch(() => {
-      discScanner = null;
-      document.getElementById('disc-scan-modal').style.display = 'none';
-    });
-  } else {
-    document.getElementById('disc-scan-modal').style.display = 'none';
-  }
-}
-function backFromDiscInputToScan() {
-  document.getElementById('disc-input-modal').style.display = 'none';
-  openDiscountBarcodeScanModal();
-}
-function handleDiscScanFile(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  const html5QrCodeForFile = new Html5Qrcode("disc-reader");
-  html5QrCodeForFile.scanFile(file, true)
-    .then(decodedText => { playSound(1200, 0.08); handleDiscScannedCode(decodedText); })
-    .catch(err => alert("画像からバーコードを検出できませんでした"));
-  event.target.value = '';
-}
-function handleDiscScannedCode(code) {
-  if (discScanner) {
-    discScanner.stop().then(() => {
-      try { discScanner.clear(); } catch(e){}
-      discScanner = null;
-      processDiscProductSelection(code);
-    }).catch(() => {
-      discScanner = null;
-      processDiscProductSelection(code);
-    });
-  } else {
-    processDiscProductSelection(code);
-  }
-}
-function processDiscProductSelection(code) {
-  document.getElementById('disc-scan-modal').style.display = 'none';
-  let prodName = "不明な商品";
-  let basePrice = 100;
-  if (itemDatabase[code]) {
-    prodName = itemDatabase[code].name;
-    basePrice = itemDatabase[code].price;
-  } else {
-    for (let originalCode in itemDatabase) {
-      if (code.startsWith(originalCode)) {
-        prodName = itemDatabase[originalCode].name;
-        basePrice = itemDatabase[originalCode].price;
-        code = originalCode;
-        break;
-      }
-    }
-  }
-  discSelectedProduct = { code: code, name: prodName, price: basePrice };
-  document.getElementById('disc-target-product-name').textContent = `${prodName} (¥${basePrice})`;
-  document.getElementById('disc-input-value').value = "10";
-  document.getElementById('disc-input-modal').style.display = 'flex';
-}
-function toggleDiscTypeInput() {
-  const type = document.querySelector('input[name="disc-type"]:checked').value;
-  const label = document.getElementById('disc-val-label');
-  if (type === 'pct') {
-    label.textContent = "割引率";
-    document.getElementById('disc-input-value').value = "10";
-  } else {
-    label.textContent = "割引金額";
-    document.getElementById('disc-input-value').value = "200";
-  }
-}
-function generateDiscountBarcodeFinal() {
-  const type = document.querySelector('input[name="disc-type"]:checked').value;
-  const val = document.getElementById('disc-input-value').value.trim();
-  if (!val || isNaN(val)) { alert("有効な数値を入力してください"); return; }
-  const numVal = parseInt(val);
-  let suffix = "";
-  if (type === 'pct') {
-    if (numVal < 1 || numVal > 99) { alert("割引率は1〜99の間で入力してください"); return; }
-    suffix = String(numVal).padStart(2, '0');
-  } else {
-    if (numVal < 100 || numVal > 9999) { alert("円引きは3〜4桁(100〜9999)で入力してください"); return; }
-    suffix = String(numVal);
-  }
-  currentDiscBarcode = `${discSelectedProduct.code}${suffix}`;
-  document.getElementById('disc-input-modal').style.display = 'none';
-  document.getElementById('disc-result-code-text').textContent = `${discSelectedProduct.name} [コード: ${currentDiscBarcode}]`;
- 
-  const displayText = type === 'pct' ? `${numVal}%引き` : `${numVal}円引き`;
-  const circleText = type === 'pct' ? `${numVal}%` : `${numVal}円`;
-  document.getElementById('disc-pop-text').textContent = displayText;
-  document.getElementById('disc-pop-circle').textContent = circleText;
-
-  try {
-    JsBarcode("#disc-result-svg", currentDiscBarcode, { format: "CODE128", width: 1.5, height: 45, displayValue: true, fontSize: 11 });
-  } catch(e) { console.error(e); }
-
-  document.getElementById('disc-result-modal').style.display = 'flex';
-}
-function promptSaveCurrentDiscDiscBarcode() {
-  if (!currentDiscBarcode) return;
-  const nameInput = prompt("この割引バーコードの名前を入力してください", `${discSelectedProduct.name}_割引`);
-  if (nameInput === null) return;
-  const barcodeName = nameInput.trim() === "" ? "割引バーコード" : nameInput.trim();
-  savedBarcodes.unshift({ name: barcodeName, code: currentDiscBarcode });
-  localStorage.setItem('myPosSavedBarcodes', JSON.stringify(savedBarcodes));
-  alert("割引バーコードを保存しました！");
-}
-function shareDiscBarcodeImage() {
-  const area = document.getElementById('disc-result-area');
-  html2canvas(area, { scale: 2.0, backgroundColor: '#ff0000', logging: false }).then(canvas => {
-    canvas.toBlob(blob => {
-      const file = new File([blob], `discount_${currentDiscBarcode}.jpg`, { type: "image/jpeg" });
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        navigator.share({ title: '割引バーコード', text: `割引コード: ${currentDiscBarcode}`, files: [file] }).catch(err => console.log('共有キャンセル'));
-      } else {
-        const link = document.createElement('a'); link.download = `discount_${currentDiscBarcode}.jpg`; link.href = canvas.toDataURL('image/jpeg', 0.9); link.click();
-      }
-    }, 'image/jpeg', 0.9);
-  });
-}
-function closeDiscResultModal() {
-  document.getElementById('disc-result-modal').style.display = 'none';
-}
-
-let refundTargetAmount = 0;
-let refundSelectedMethod = "現金";
-let refundScanner = null;
-let currentRefundCalcInput = "0";
-
-function openRefundMenuModal() { document.getElementById('refund-menu-modal').style.display = 'flex'; }
-function closeRefundMenuModal() {
-  document.getElementById('refund-menu-modal').style.display = 'none';
-  openStaffMenuModal();
-}
-function openRefundScanModal() {
-  document.getElementById('refund-menu-modal').style.display = 'none';
-  document.getElementById('refund-scan-modal').style.display = 'flex';
-  const readerDiv = document.getElementById('refund-reader');
-  readerDiv.innerHTML = "";
-  if (refundScanner) { try { refundScanner.clear(); } catch(e){} refundScanner = null; }
-  refundScanner = new Html5Qrcode("refund-reader");
-  refundScanner.start(
-    { facingMode: "environment" },
-    { fps: 10, qrbox: { width: 220, height: 120 } },
-    (decodedText) => { playSound(1200, 0.08); handleRefundScannedCode(decodedText); },
-    (error) => {}
-  ).catch(err => console.log("返金カメラ起動エラー", err));
-}
-function closeRefundScanModal() {
-  if (refundScanner) {
-    refundScanner.stop().then(() => {
-      try { refundScanner.clear(); } catch(e){}
-      refundScanner = null;
-      document.getElementById('refund-scan-modal').style.display = 'none';
-    }).catch(() => {
-      refundScanner = null;
-      document.getElementById('refund-scan-modal').style.display = 'none';
-    });
-  } else {
-    document.getElementById('refund-scan-modal').style.display = 'none';
-  }
-}
-function backToRefundMenuFromScan() { closeRefundScanModal(); openRefundMenuModal(); }
-function handleRefundScanFile(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  const html5QrCodeForFile = new Html5Qrcode("refund-reader");
-  html5QrCodeForFile.scanFile(file, true)
-    .then(decodedText => { playSound(1200, 0.08); handleRefundScannedCode(decodedText); })
-    .catch(err => alert("レシートバーコードを検出できませんでした"));
-  event.target.value = '';
-}
-function handleRefundScannedCode(code) {
-  closeRefundScanModal();
-  if (code.startsWith("20") && code.length === 12) {
-    const amountStr = code.substring(2);
-    const amount = parseInt(amountStr);
-    if (!isNaN(amount) && amount > 0) {
-      refundTargetAmount = amount;
-      openRefundPayMethodModal();
-      return;
-    }
-  }
-  alert("有効なレシートバーコードではありません。");
-  openRefundScanModal();
-}
-function openRefundAmountInputModal() {
-  document.getElementById('refund-menu-modal').style.display = 'none';
-  currentRefundCalcInput = "0";
-  document.getElementById('refund-amount-display').textContent = "0";
-  document.getElementById('refund-amount-modal').style.display = 'flex';
-}
-function appendRefundCalc(num) {
-  if (currentRefundCalcInput === "0") { currentRefundCalcInput = String(num); }
-  else { currentRefundCalcInput += String(num); }
-  document.getElementById('refund-amount-display').textContent = currentRefundCalcInput;
-}
-function clearRefundCalc() { currentRefundCalcInput = "0"; document.getElementById('refund-amount-display').textContent = "0"; }
-function backspaceRefundCalc() {
-  if (currentRefundCalcInput.length > 1) { currentRefundCalcInput = currentRefundCalcInput.slice(0, -1); }
-  else { currentRefundCalcInput = "0"; }
-  document.getElementById('refund-amount-display').textContent = currentRefundCalcInput;
-}
-function confirmRefundAmountInput() {
-  const amount = parseInt(currentRefundCalcInput);
-  if (isNaN(amount) || amount <= 0) { alert("有効な金額を入力してください。"); return; }
-  refundTargetAmount = amount;
-  document.getElementById('refund-amount-modal').style.display = 'none';
-  openRefundPayMethodModal();
-}
-function backToRefundMenuFromInput() { document.getElementById('refund-amount-modal').style.display = 'none'; openRefundMenuModal(); }
-function openRefundPayMethodModal() {
-  document.getElementById('refund-target-amount-text').textContent = `返金額: ${refundTargetAmount}円`;
-  document.getElementById('refund-pay-method-modal').style.display = 'flex';
-}
-function backToRefundMenuFromPayMethod() { document.getElementById('refund-pay-method-modal').style.display = 'none'; openRefundMenuModal(); }
-function selectRefundMethod(method) {
-  refundSelectedMethod = (method === 'cash') ? '現金' : '11Pay';
-  document.getElementById('refund-pay-method-modal').style.display = 'none';
-  if (method === 'cash') {
-    document.getElementById('refund-cash-display').textContent = `${refundTargetAmount} 円`;
-    document.getElementById('refund-cash-confirm-modal').style.display = 'flex';
-  } else {
-    const qrData = `CHARGE_${refundTargetAmount}`;
-    const target = document.getElementById('refund-11pay-qrcode-target');
-    target.innerHTML = '';
-    try {
-      const qr = qrcode(0, 'M'); qr.addData(qrData); qr.make();
-      target.innerHTML = qr.createImgTag(6);
-    } catch (e) { target.innerHTML = "QR生成エラー"; }
-    document.getElementById('refund-11pay-amount-text').textContent = `返金額: ${refundTargetAmount}円`;
-    document.getElementById('refund-11pay-qr-modal').style.display = 'flex';
-  }
-}
-function backToRefundMethodSelect() {
-  document.getElementById('refund-cash-confirm-modal').style.display = 'none';
-  document.getElementById('refund-11pay-qr-modal').style.display = 'none';
-  openRefundPayMethodModal();
-}
-function openRefundReasonModal(methodText) {
-  document.getElementById('refund-cash-confirm-modal').style.display = 'none';
-  document.getElementById('refund-11pay-qr-modal').style.display = 'none';
-  document.getElementById('refund-reason-modal').style.display = 'flex';
-}
-function finalizeRefundProcess(reason) {
-  document.getElementById('refund-reason-modal').style.display = 'none';
-  const currentDate = new Date().toLocaleString();
-  document.getElementById('refund-receipt-store-title-el').textContent = receiptSettings.storeTitle;
-  document.getElementById('refund-receipt-store-sub-el').textContent = receiptSettings.storeSub;
-  document.getElementById('refund-receipt-date').textContent = `日時: ${currentDate}`;
-  document.getElementById('refund-receipt-amount-text').textContent = `-¥${refundTargetAmount}`;
-  document.getElementById('refund-receipt-method-text').textContent = refundSelectedMethod;
-  document.getElementById('refund-receipt-reason-text').textContent = reason;
- 
-  const refundRecord = { date: currentDate, amount: refundTargetAmount, payMethod: refundSelectedMethod, reason: reason };
-  refundHistory.unshift(refundRecord);
-  localStorage.setItem('myPosRefundHistory', JSON.stringify(refundHistory));
- 
-  salesHistory.push({ date: currentDate, count: 0, total: -refundTargetAmount, items: `返金 (${reason})`, payMethod: refundSelectedMethod });
-  localStorage.setItem('myPosSalesHistory', JSON.stringify(salesHistory));
-  document.getElementById('refund-receipt-modal').style.display = 'flex';
-}
-function shareRefundReceiptImage() {
-  const receiptElement = document.getElementById('refund-receipt-target');
-  html2canvas(receiptElement, { scale: 1.0, useCORS: true, logging: false }).then(canvas => {
-    canvas.toBlob(blob => {
-      const file = new File([blob], "refund_receipt.jpg", { type: "image/jpeg" });
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        navigator.share({ title: '返金レシート', text: '返金レシート画像です', files: [file] }).catch(err => console.log('共有キャンセル'));
-      } else {
-        const link = document.createElement('a'); link.download = 'refund_receipt.jpg'; link.href = canvas.toDataURL('image/jpeg', 0.85); link.click();
-      }
-    }, 'image/jpeg', 0.85);
-  });
-}
-function closeRefundReceiptToRegister() {
-  document.getElementById('refund-receipt-modal').style.display = 'none';
-  switchView('register');
-}
-function openRefundHistoryModal() {
-  document.getElementById('refund-menu-modal').style.display = 'none';
-  document.getElementById('refund-history-search-input').value = '';
-  renderRefundHistoryList(refundHistory);
-  document.getElementById('refund-history-modal').style.display = 'flex';
-}
-function closeRefundHistoryModal() {
-  document.getElementById('refund-history-modal').style.display = 'none';
-  openRefundMenuModal();
-}
-function renderRefundHistoryList(data) {
-  const container = document.getElementById('refund-history-list');
-  if (data.length === 0) {
-    container.innerHTML = '<div style="color:#888; text-align:center; padding:10px;">返金履歴はありません</div>';
-    return;
-  }
-  container.innerHTML = data.map(r => `
-    <div style="margin-bottom: 10px; border-bottom: 1px dashed #ccc; padding-bottom: 5px;">
-      <strong>${r.date}</strong><br>
-      <span style="color:#eb4d4b; font-weight:bold;">-[${r.payMethod}] ¥${r.amount}</span>
-      <span style="font-size:11px; color:#555; margin-left:6px;">(理由: ${r.reason})</span>
-    </div>
-  `).join('');
-}
-function filterRefundHistory() {
-  const query = document.getElementById('refund-history-search-input').value.toLowerCase();
-  const filtered = refundHistory.filter(r => {
-    const dateStr = r.date.toLowerCase();
-    const amountStr = String(r.amount);
-    const methodStr = r.payMethod.toLowerCase();
-    const reasonStr = r.reason.toLowerCase();
-    return dateStr.includes(query) || amountStr.includes(query) || methodStr.includes(query) || reasonStr.includes(query);
-  });
-  renderRefundHistoryList(filtered);
-}
-
-function processScannedBarcode(code) {
-  if (itemDatabase[code]) {
-    const item = itemDatabase[code];
-    if (code.endsWith("_0")) {
-      addItem(item.name, 0, code);
-    } else if (item.waribiki && item.waribiki > 0) {
-      let discPrice = item.price;
-      if (item.waribiki <= 99) { discPrice = Math.round(item.price * (1 - item.waribiki / 100)); }
-      else { discPrice = Math.max(0, item.price - item.waribiki); }
-      addItemCustomPrice(item.name, item.price, discPrice, code);
-    } else {
-      addItem(item.name, item.price, code);
-    }
-    setTimeout(() => { canScan = true; }, 1500);
-    return;
-  }
-  if (code.endsWith("_0")) {
-    const baseCode = code.replace("_0", "");
-    if (itemDatabase[baseCode]) {
-      addItem(`${itemDatabase[baseCode].name}無料`, 0, code);
-      setTimeout(() => { canScan = true; }, 1500);
-      return;
-    }
-  }
-  let matchedOriginalCode = null;
-  let matchedValStr = "";
-  for (let originalCode in itemDatabase) {
-    if (code.startsWith(originalCode) && code.length > originalCode.length) {
-      matchedOriginalCode = originalCode;
-      matchedValStr = code.substring(originalCode.length);
-      break;
-    }
-  }
-  if (matchedOriginalCode) {
-    const baseItem = itemDatabase[matchedOriginalCode];
-    const valNum = parseInt(matchedValStr);
-    let discountedPrice = baseItem.price;
-    if (matchedValStr.length <= 2) {
-      discountedPrice = Math.round(baseItem.price * (1 - valNum / 100));
-    } else {
-      discountedPrice = Math.max(0, baseItem.price - valNum);
-    }
-    addItemCustomPrice(baseItem.name, baseItem.price, discountedPrice, code);
-    setTimeout(() => { canScan = true; }, 1500);
-    return;
-  }
-  playSound(300, 0.2, 'sawtooth');
-  setTimeout(() => { canScan = true; }, 1500);
-}
-
-function handleRegisterImageFile(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    const img = new Image();
-    img.onload = function() {
-      const canvas = document.createElement('canvas');
-      canvas.width = img.width; canvas.height = img.height;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0, img.width, img.height);
-      const imageData = ctx.getImageData(0, 0, img.width, img.height);
-      const code = jsQR(imageData.data, imageData.width, imageData.height);
-      if (code) { handleRegisterQRCode(code.data); }
-      else { alert("画像からQRコードを読み取れませんでした。"); }
-    };
-    img.src = e.target.result;
-  };
-  reader.readAsDataURL(file);
-  event.target.value = '';
-}
-
-function handleCouponImageFile(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    const img = new Image();
-    img.onload = function() {
-      const canvas = document.createElement('canvas');
-      canvas.width = img.width; canvas.height = img.height;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0, img.width, img.height);
-      const imageData = ctx.getImageData(0, 0, img.width, img.height);
-      const code = jsQR(imageData.data, imageData.width, imageData.height);
-      if (code) { processCouponData(code.data); }
-      else { alert("画像からQRコードを読み取れませんでした。"); }
-    };
-    img.src = e.target.result;
-  };
-  reader.readAsDataURL(file);
-  event.target.value = '';
-}
-
-function speakText(text) {
-  if (!voiceSettings.speech) return;
-  if ('speechSynthesis' in window) {
-    window.speechSynthesis.cancel();
-    const utter = new SpeechSynthesisUtterance(text);
-    utter.lang = 'ja-JP'; utter.rate = 1.0;
-    window.speechSynthesis.speak(utter);
-  }
-}
-
-function handleSettingsClick() {
-  openStaffMenuModal();
-}
-
 function openNoBarcodeModal() {
   document.getElementById('nobarcode-modal').style.display = 'flex';
   const firstTab = document.querySelector('.tab-btn');
@@ -1740,8 +1208,8 @@ function switchView(viewName) {
   if (viewName === 'customer') {
     document.getElementById('customer-view').classList.add('active');
     if (modeSwitchLabel) modeSwitchLabel.textContent = "スタッフモードに切替";
-    if (staffMenuModeText) staffMenuModeText.textContent = "スタッフモードに切替";
-    stopRegisterScanner(); stopCouponScanner();
+    if (staffMenuModeText) staffMenuModeText.textContent = "お客様モードに切替";
+    stopRegisterScanner(); stopCouponScanner(); stopStaffScanView();
     const savedCustomerState = localStorage.getItem('customerCameraOn');
     const toggle = document.getElementById('customer-camera-toggle');
     const offOverlay = document.getElementById('customer-camera-off-overlay');
@@ -1757,13 +1225,13 @@ function switchView(viewName) {
       stopCustomerScanner();
       offOverlay.style.display = 'flex';
       statusMsg.textContent = "カメラはOFFです";
-      statusMsg.style.color = "#747d8c";
+      statusMsg.style.color = "#a4b0be";
     }
   } else if (viewName === 'register') {
     document.getElementById('register-view').classList.add('active');
     if (modeSwitchLabel) modeSwitchLabel.textContent = "お客様モードに切替";
     if (staffMenuModeText) staffMenuModeText.textContent = "お客様モードに切替";
-    stopCustomerScanner(); stopCouponScanner();
+    stopCustomerScanner(); stopCouponScanner(); stopStaffScanView();
     const savedRegisterState = localStorage.getItem('registerCameraOn');
     const toggle = document.getElementById('register-camera-toggle');
     const offOverlay = document.getElementById('register-camera-off-overlay');
@@ -1779,61 +1247,57 @@ function switchView(viewName) {
       stopRegisterScanner();
       offOverlay.style.display = 'flex';
       regStatusMsg.textContent = "カメラはOFFです";
-      regStatusMsg.style.color = "#747d8c";
+      regStatusMsg.style.color = "#a4b0be";
     }
   }
 }
 
-function openSettings() { openStaffMenuModal(); }
-function closeSettings() { document.getElementById('settings-modal').style.display = 'none'; }
-function closeHistory() { document.getElementById('history-modal').style.display = 'none'; }
-function closeRegisterConfirm() { document.getElementById('register-confirm-modal').style.display = 'none'; startRegisterScanner(); }
-
-function closeReceiptToRegister() {
-  if (voiceSettings.thanks) { speakText("ありがとうございました。"); }
-  document.getElementById('receipt-modal').style.display = 'none';
-  clearCartFromStorage(); switchView('register');
+/* スタッフスキャン別画面処理 */
+function openStaffScanView() {
+  document.querySelectorAll('.view-container').forEach(el => el.classList.remove('active'));
+  document.getElementById('staff-scan-view').classList.add('active');
+  stopRegisterScanner(); stopCustomerScanner();
+  startStaffScanCamera();
+}
+function backToRegisterFromStaffScan() {
+  stopStaffScanView();
+  switchView('register');
+}
+function startStaffScanCamera() {
+  const video = document.getElementById('staff-scan-video');
+  const canvasElement = document.getElementById('staff-scan-canvas');
+  const canvas = canvasElement.getContext('2d');
+ 
+  navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }).then((stream) => {
+    staffScanStream = stream; video.srcObject = stream; video.setAttribute("playsinline", true);
+    video.onloadedmetadata = () => {
+      video.play().then(() => {
+        if (staffScanInterval) clearInterval(staffScanInterval);
+        staffScanInterval = setInterval(() => {
+          if (video.readyState === video.HAVE_ENOUGH_DATA) {
+            canvasElement.height = video.videoHeight; canvasElement.width = video.videoWidth;
+            canvas.drawImage(video, 0, 0, canvasElement.width, canvasElement.height);
+            var imageData = canvas.getImageData(0, 0, canvasElement.width, canvasElement.height);
+            var code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: "dontInvert" });
+            if (code) {
+              stopStaffScanView();
+              playSound(1200, 0.1);
+              handleRegisterQRCode(code.data);
+            }
+          }
+        }, 300);
+      }).catch(e => console.error(e));
+    };
+  }).catch((err) => { console.error(err); alert("スタッフスキャンカメラを起動できませんでした。"); });
+}
+function stopStaffScanView() {
+  if (staffScanInterval) { clearInterval(staffScanInterval); staffScanInterval = null; }
+  if (staffScanStream) { staffScanStream.getTracks().forEach(track => track.stop()); staffScanStream = null; }
 }
 
 function toggleModeFromSettings() {
   if (currentMode === 'customer') { switchView('register'); }
   else { switchView('customer'); }
-}
-
-function generateUniqueBarcode() {
-  let code = "", isDuplicate = true;
-  while (isDuplicate) {
-    let randomDigits = "";
-    for (let i = 0; i < 11; i++) { randomDigits += Math.floor(Math.random() * 10); }
-    code = "49" + randomDigits;
-    if (!itemDatabase[code]) { isDuplicate = false; }
-  }
-  currentGeneratedCode = code;
-  try {
-    JsBarcode("#generated-barcode-svg", code, { format: "EAN13", width: 1.8, height: 50, displayValue: true, fontSize: 12 });
-  } catch (e) {
-    JsBarcode("#generated-barcode-svg", code, { format: "CODE128", width: 1.8, height: 50, displayValue: true, fontSize: 12 });
-  }
-  document.getElementById('barcode-modal').style.display = 'flex';
-}
-
-function shareBarcodeImage() {
-  const targetArea = document.getElementById('barcode-target-area');
-  html2canvas(targetArea, { scale: 1.0, backgroundColor: '#ffffff', logging: false }).then(canvas => {
-    canvas.toBlob(blob => {
-      const file = new File([blob], `barcode_${currentGeneratedCode}.jpg`, { type: "image/jpeg" });
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        navigator.share({ title: 'バーコード画像', text: `バーコード番号: ${currentGeneratedCode}`, files: [file] }).catch(err => console.log('共有キャンセル'));
-      } else {
-        const link = document.createElement('a'); link.download = `barcode_${currentGeneratedCode}.jpg`; link.href = canvas.toDataURL('image/jpeg', 0.85); link.click();
-      }
-    }, 'image/jpeg', 0.85);
-  });
-}
-
-function closeBarcodeModal() {
-  document.getElementById('barcode-modal').style.display = 'none';
-  openStaffMenuModal();
 }
 
 function addItem(name, price, code = "") {
@@ -2253,25 +1717,6 @@ let receiptSettings = JSON.parse(localStorage.getItem('myPosReceiptSettings')) |
   storeTitle: "KKマート", storeSub: "名古屋東 店",
   message: "ご来店ありがとうございました。\nまたのご利用をお待ちしております！"
 };
-function openReceiptSettingsModal() {
-  document.getElementById('setting-store-title').value = receiptSettings.storeTitle;
-  document.getElementById('setting-store-sub').value = receiptSettings.storeSub;
-  document.getElementById('setting-receipt-msg').value = receiptSettings.message;
-  document.getElementById('receipt-settings-modal').style.display = 'flex';
-}
-function closeReceiptSettingsModal() {
-  document.getElementById('receipt-settings-modal').style.display = 'none';
-  openStaffMenuModal();
-}
-function saveReceiptSettings() {
-  const title = document.getElementById('setting-store-title').value.trim();
-  const sub = document.getElementById('setting-store-sub').value.trim();
-  const msg = document.getElementById('setting-receipt-msg').value.trim();
-  receiptSettings = { storeTitle: title || "KKマート", storeSub: sub || "", message: msg || "ご来店ありがとうございました。" };
-  localStorage.setItem('myPosReceiptSettings', JSON.stringify(receiptSettings));
-  alert("レシートの設定を保存しました！");
-  closeReceiptSettingsModal();
-}
 
 function openReceiptModalFromChange() {
   document.getElementById('change-modal').style.display = 'none';
@@ -2397,39 +1842,20 @@ function shareReceiptImage() {
   });
 }
 
-function showSalesHistory() {
-  document.getElementById('history-search-input').value = '';
-  renderHistoryList(salesHistory);
-  document.getElementById('history-modal').style.display = 'flex';
+function closeReceiptToRegister() {
+  if (voiceSettings.thanks) { speakText("ありがとうございました。"); }
+  document.getElementById('receipt-modal').style.display = 'none';
+  clearCartFromStorage(); switchView('register');
 }
-function closeHistory() {
-  document.getElementById('history-modal').style.display = 'none';
-  openStaffMenuModal();
-}
-function renderHistoryList(data) {
-  const historyContainer = document.getElementById('history-list');
-  if (data.length === 0) { historyContainer.innerHTML = "該当する履歴はありません"; }
-  else {
-    historyContainer.innerHTML = data.map(s => {
-      const itemList = s.items ? `<br><small style="color:#666;">内訳: ${s.items}</small>` : '';
-      const countInfo = s.count ? `${s.count}点 ` : '';
-      const methodInfo = s.payMethod ? `[${s.payMethod}] ` : '';
-      const colorStyle = s.total < 0 ? 'color:#eb4d4b; font-weight:bold;' : '';
-      return `<div style="margin-bottom: 10px; border-bottom: 1px dashed #ccc; padding-bottom: 5px;"><strong>${s.date}</strong><br>${methodInfo}${countInfo}<span style="${colorStyle}">合計: ${s.total}円</span> ${itemList}</div>`;
-    }).join('');
+
+function speakText(text) {
+  if (!voiceSettings.speech) return;
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = 'ja-JP'; utter.rate = 1.0;
+    window.speechSynthesis.speak(utter);
   }
-}
-function filterSalesHistory() {
-  const query = document.getElementById('history-search-input').value.toLowerCase();
-  const filtered = salesHistory.filter(s => {
-    const dateStr = s.date.toLowerCase();
-    const itemStr = s.items ? s.items.toLowerCase() : '';
-    const totalStr = String(s.total);
-    const countStr = s.count ? String(s.count) : '';
-    const methodStr = s.payMethod ? s.payMethod.toLowerCase() : '';
-    return dateStr.includes(query) || itemStr.includes(query) || totalStr.includes(query) || countStr.includes(query) || methodStr.includes(query);
-  });
-  renderHistoryList(filtered);
 }
 
 async function startCustomerScanner() {
@@ -2535,13 +1961,6 @@ function stopCouponScanner() {
 function handleRegisterQRCode(codeData) {
   if (codeData && codeData.startsWith("LUCKY_")) {
     stopRegisterScanner(); playSound(1200, 0.1);
-   
-    if (isStaffDirectScanMode) {
-      parseQRToCartData(codeData);
-      openPaymentMethodModal();
-      return;
-    }
-
     parseQRToCartData(codeData);
     renderRegisterConfirmList();
     document.getElementById('register-confirm-modal').style.display = 'flex';
@@ -2591,6 +2010,56 @@ function parseQRToCartData(codeData) {
   registerParsedCartItems = Object.values(parsedItemsMap);
 }
 
+function processScannedBarcode(code) {
+  if (itemDatabase[code]) {
+    const item = itemDatabase[code];
+    if (code.endsWith("_0")) {
+      addItem(item.name, 0, code);
+    } else if (item.waribiki && item.waribiki > 0) {
+      let discPrice = item.price;
+      if (item.waribiki <= 99) { discPrice = Math.round(item.price * (1 - item.waribiki / 100)); }
+      else { discPrice = Math.max(0, item.price - item.waribiki); }
+      addItemCustomPrice(item.name, item.price, discPrice, code);
+    } else {
+      addItem(item.name, item.price, code);
+    }
+    setTimeout(() => { canScan = true; }, 1500);
+    return;
+  }
+  if (code.endsWith("_0")) {
+    const baseCode = code.replace("_0", "");
+    if (itemDatabase[baseCode]) {
+      addItem(`${itemDatabase[baseCode].name}無料`, 0, code);
+      setTimeout(() => { canScan = true; }, 1500);
+      return;
+    }
+  }
+  let matchedOriginalCode = null;
+  let matchedValStr = "";
+  for (let originalCode in itemDatabase) {
+    if (code.startsWith(originalCode) && code.length > originalCode.length) {
+      matchedOriginalCode = originalCode;
+      matchedValStr = code.substring(originalCode.length);
+      break;
+    }
+  }
+  if (matchedOriginalCode) {
+    const baseItem = itemDatabase[matchedOriginalCode];
+    const valNum = parseInt(matchedValStr);
+    let discountedPrice = baseItem.price;
+    if (matchedValStr.length <= 2) {
+      discountedPrice = Math.round(baseItem.price * (1 - valNum / 100));
+    } else {
+      discountedPrice = Math.max(0, baseItem.price - valNum);
+    }
+    addItemCustomPrice(baseItem.name, baseItem.price, discountedPrice, code);
+    setTimeout(() => { canScan = true; }, 1500);
+    return;
+  }
+  playSound(300, 0.2, 'sawtooth');
+  setTimeout(() => { canScan = true; }, 1500);
+}
+
 function toggleCustomerCamera(checkbox) {
   const offOverlay = document.getElementById('customer-camera-off-overlay');
   const statusMsg = document.getElementById('status-msg');
@@ -2604,7 +2073,7 @@ function toggleCustomerCamera(checkbox) {
     stopCustomerScanner();
     offOverlay.style.display = 'flex';
     statusMsg.textContent = "カメラはOFFです";
-    statusMsg.style.color = "#747d8c";
+    statusMsg.style.color = "#a4b0be";
   }
 }
 
@@ -2621,57 +2090,7 @@ function toggleRegisterCamera(checkbox) {
     stopRegisterScanner();
     offOverlay.style.display = 'flex';
     regStatusMsg.textContent = "カメラはOFFです";
-    regStatusMsg.style.color = "#747d8c";
-  }
-}
-
-let savedBarcodes = JSON.parse(localStorage.getItem('myPosSavedBarcodes')) || [];
-function promptSaveCurrentBarcode() {
-  if (!currentGeneratedCode) { alert("保存するバーコードがありません。"); return; }
-  const nameInput = prompt("このバーコードの名前を入力してください", "");
-  if (nameInput === null) return;
-  const barcodeName = nameInput.trim() === "" ? "名無し" : nameInput.trim();
-  savedBarcodes.unshift({ name: barcodeName, code: currentGeneratedCode });
-  localStorage.setItem('myPosSavedBarcodes', JSON.stringify(savedBarcodes));
-  alert("バーコードを保存しました！");
-}
-function openSavedBarcodesModal() {
-  document.getElementById('barcode-create-select-modal').style.display = 'none';
-  renderSavedBarcodesList();
-  document.getElementById('saved-barcodes-modal').style.display = 'flex';
-}
-function closeSavedBarcodesModal() {
-  document.getElementById('saved-barcodes-modal').style.display = 'none';
-  openStaffMenuModal();
-}
-function renderSavedBarcodesList() {
-  const container = document.getElementById('saved-barcodes-list');
-  if (savedBarcodes.length === 0) { container.innerHTML = '<p style="color: #888; text-align: center; font-size: 13px;">保存されたバーコードはありません</p>'; return; }
-  container.innerHTML = savedBarcodes.map((item, index) => `
-    <div style="background:#f8f9fa; border:1px solid #dfe4ea; border-radius:8px; padding:12px; margin-bottom:10px;">
-      <div style="font-size:13px; font-weight:bold; margin-bottom:8px;">名前: ${item.name}　番号: ${item.code}</div>
-      <div style="display:flex; gap:8px;">
-        <button class="btn action-btn-item" style="background:#ff7675;" onclick="deleteSavedBarcode(${index})">削除</button>
-        <button class="btn action-btn-item" style="background:#0984e3;" onclick="openSavedBarcodeModal(${index})">開く</button>
-      </div>
-    </div>
-  `).join('');
-}
-function openSavedBarcodeModal(index) {
-  const target = savedBarcodes[index]; currentGeneratedCode = target.code;
-  try {
-    JsBarcode("#generated-barcode-svg", target.code, { format: "EAN13", width: 1.8, height: 50, displayValue: true, fontSize: 12 });
-  } catch (e) {
-    JsBarcode("#generated-barcode-svg", target.code, { format: "CODE128", width: 1.8, height: 50, displayValue: true, fontSize: 12 });
-  }
-  document.getElementById('saved-barcodes-modal').style.display = 'none';
-  document.getElementById('barcode-modal').style.display = 'flex';
-}
-function deleteSavedBarcode(index) {
-  if (confirm(`「${savedBarcodes[index].name}」を削除しますか？`)) {
-    savedBarcodes.splice(index, 1);
-    localStorage.setItem('myPosSavedBarcodes', JSON.stringify(savedBarcodes));
-    renderSavedBarcodesList();
+    regStatusMsg.style.color = "#a4b0be";
   }
 }
 
@@ -2679,49 +2098,8 @@ renderCart();
 const savedMode = localStorage.getItem('myPosCurrentMode') || 'customer';
 switchView(savedMode);
 
-let currentManualCode = "";
-function openManualBarcodeModal() {
-  document.getElementById('barcode-create-select-modal').style.display = 'none';
-  document.getElementById('manual-barcode-input').value = "4901234567890";
-  generateManualBarcode();
-  document.getElementById('manual-barcode-modal').style.display = 'flex';
-}
-function closeManualBarcodeModal() {
-  document.getElementById('manual-barcode-modal').style.display = 'none';
-  openStaffMenuModal();
-}
-function generateManualBarcode() {
-  const inputVal = document.getElementById('manual-barcode-input').value.trim();
-  currentManualCode = inputVal !== "" ? inputVal : "0000000000000";
-  try {
-    const formatType = currentManualCode.length === 13 ? "EAN13" : "CODE128";
-    JsBarcode("#manual-generated-barcode-svg", currentManualCode, { format: formatType, width: 1.8, height: 50, displayValue: true, fontSize: 12 });
-  } catch (e) { console.error(e); }
-}
-function promptSaveManualBarcode() {
-  if (!currentManualCode) { alert("保存するバーコードがありません。"); return; }
-  const nameInput = prompt("このバーコードの名前を入力してください（例: 特売品ラベル）", "");
-  if (nameInput === null) return;
-  const barcodeName = nameInput.trim() === "" ? "名無し" : nameInput.trim();
-  savedBarcodes.unshift({ name: barcodeName, code: currentManualCode });
-  localStorage.setItem('myPosSavedBarcodes', JSON.stringify(savedBarcodes));
-  alert("バーコードを保存しました！");
-}
-function shareManualBarcodeImage() {
-  const targetArea = document.getElementById('manual-barcode-target-area');
-  html2canvas(targetArea, { scale: 1.0, backgroundColor: '#ffffff', logging: false }).then(canvas => {
-    canvas.toBlob(blob => {
-      const file = new File([blob], `barcode_${currentManualCode}.jpg`, { type: "image/jpeg" });
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        navigator.share({ title: 'バーコード画像', text: `バーコード番号: ${currentManualCode}`, files: [file] }).catch(err => console.log('共有キャンセル'));
-      } else {
-        const link = document.createElement('a'); link.download = `barcode_${currentManualCode}.jpg`; link.href = canvas.toDataURL('image/jpeg', 0.85); link.click();
-      }
-    }, 'image/jpeg', 0.85);
-  });
-}
-
 function backToCustomerFromPayment() { document.getElementById('payment-modal').style.display = 'none'; }
+function closeRegisterConfirm() { document.getElementById('register-confirm-modal').style.display = 'none'; startRegisterScanner(); }
 </script>
 </body>
 </html> 

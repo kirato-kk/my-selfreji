@@ -360,6 +360,7 @@ box-sizing: border-box !important;
 </div>
 
 <div id="interactive" class="viewport">
+  <div id="customer-interactive" style="width: 100%; height: 100%; position: relative;"></div>
   <div id="customer-camera-off-overlay" class="camera-off-overlay">カメラはOFFです</div>
 </div>
 <div class="section-header">
@@ -3646,9 +3647,10 @@ if (camSetting === 'external') {
 // --- 1. お客様モード ---
 function startCustomerScanner() {
   stopCustomerScanner();
-  const container = document.querySelector('#interactive');
+  const container = document.querySelector('#customer-interactive'); // ← #interactive から変更
   if (!container) return;
   container.innerHTML = '';
+  // ... (中略)
 
   Quagga.init({
     inputStream: {
@@ -3696,10 +3698,9 @@ function customerScanHandler(result) {
 } 
 function stopCustomerScanner() {
   try { Quagga.stop(); Quagga.offDetected(customerScanHandler); } catch(e) {}
-  const container = document.querySelector('#interactive');
+  const container = document.querySelector('#customer-interactive'); // ← #interactive から変更
   if (container) container.innerHTML = '';
-} 
-
+}
 // --- 2. レジ画面 ---
 function startRegisterScanner() {
   stopRegisterScanner();

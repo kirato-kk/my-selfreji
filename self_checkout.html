@@ -260,55 +260,37 @@ box-sizing: border-box !important;
   background: transparent;
 }
 
-/* 画像①風の値札デザイン用CSS */
 .price-tag-box {
   background-color: #ffffff;
-  border: 3px solid #000000;
-  padding: 20px 15px;
-  border-radius: 6px;
+  border: 4px solid #000000;
+  padding: 25px 20px;
+  border-radius: 8px;
   display: inline-block;
   box-sizing: border-box;
   width: 100%;
-  max-width: 320px;
+  max-width: 380px; /* 枠を少し大きく拡大 */
   margin: 10px auto;
   text-align: left;
   font-family: 'Segoe UI', sans-serif;
 }
 .price-tag-name {
-  font-size: 26px;
+  font-size: 30px;
   font-weight: 900;
   color: #000;
   line-height: 1.2;
   margin-bottom: 15px;
   word-break: break-all;
 }
-.price-tag-price-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  margin-bottom: 15px;
-  border-bottom: 2px solid #000;
-  padding-bottom: 10px;
-}
-.price-tag-label {
-  font-size: 20px;
-  font-weight: bold;
-  color: #000;
-}
 .price-tag-amount {
-  font-size: 42px;
+  font-size: 50px; /* 金額の文字を大きく */
   font-weight: 900;
   color: #000;
   letter-spacing: -1px;
 }
-.price-tag-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-}
 .price-tag-barcode svg {
-  max-width: 160px;
-  height: 50px;
+  max-width: 100% !important;
+  width: 220px !important; /* バーコード自体の横幅を拡大 */
+  height: 80px !important;  /* 高さを出して読み取りやすく */
 }
 .price-tag-tax {
   font-size: 16px;
@@ -332,6 +314,22 @@ box-sizing: border-box !important;
   width: 100% !important;
   height: 100% !important;
   object-fit: cover !important;
+
+.camera-off-overlay {
+  display: none;
+  width: 100%;
+  height: 100%;
+  background-color: #4a4a4a !important;
+  color: #ffffff !important;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 16px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 20;
+}
 
 </style>
 </head>
@@ -361,7 +359,7 @@ box-sizing: border-box !important;
 </label>
 </div>
 <div id="interactive" class="viewport">
-<div id="customer-camera-off-overlay" style="display: none; width: 100%; height: 100%; background-color: #4a4a4a; color: #ffffff; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; position: absolute; top: 0; left: 0; z-index: 10;">カメラはOFFです</div>
+<div id="customer-camera-off-overlay" class="camera-off-overlay">カメラはOFFです</div>
 </div>
 <div class="section-header">
 <h2 id="purchase-list-title" onclick="handlePurchaseListTitleClick()" style="cursor: pointer; user-select: none;" title="ダブルタップ動作">購入リスト</h2>
@@ -388,7 +386,7 @@ box-sizing: border-box !important;
 </div>
 <div id="register-viewport-container" class="viewport" style="width: 100%; height: 200px; background-color: #000; border: 2px solid #ff4757; border-radius: 10px; overflow: hidden; margin-bottom: 15px; position: relative;">
 <div id="register-interactive" style="width: 100%; height: 100%; position: relative;"></div>
-<div id="register-camera-off-overlay" style="display: none; width: 100%; height: 100%; background-color: #4a4a4a; color: #ffffff; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; position: absolute; top: 0; left: 0; z-index: 10;">カメラはOFFです</div>
+<div id="register-camera-off-overlay" class="camera-off-overlay">カメラはOFFです</div>
 <button class="coupon-file-btn" onclick="document.getElementById('register-file-input').click()" title="ファイルから読み込み">
   <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-5.04-6.71l-2.75 3.54-1.96-2.36c-.2-.25-.57-.24-.75.01l-2.23 2.97c-.23.31-.01.75.38.75h13.08c.39 0 .61-.44.38-.75l-4.13-5.5c-.2-.27-.6-.27-.8 0z"/></svg>
 </button>
@@ -425,7 +423,7 @@ box-sizing: border-box !important;
 </div>
 <div id="staff-scan-viewport-container" class="viewport" style="width: 100%; height: 200px; background-color: #000; border: 2px solid #00adb5; border-radius: 10px; overflow: hidden; margin-bottom: 15px; position: relative;">
 <div id="staff-interactive" style="width: 100%; height: 100%; position: relative;"></div>
-<div id="staff-scan-camera-off-overlay" style="display: none; width: 100%; height: 100%; background-color: #4a4a4a; color: #ffffff; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; position: absolute; top: 0; left: 0; z-index: 10;">カメラはOFFです</div>
+<div id="staff-scan-camera-off-overlay" class="camera-off-overlay">カメラはOFFです</div>
 <button class="coupon-file-btn" onclick="document.getElementById('staff-item-file-input').click()" title="ファイルから読み込み">
   <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-5.04-6.71l-2.75 3.54-1.96-2.36c-.2-.25-.57-.24-.75.01l-2.23 2.97c-.23.31-.01.75.38.75h13.08c.39 0 .61-.44.38-.75l-4.13-5.5c-.2-.27-.6-.27-.8 0z"/></svg>
 </button>
@@ -1999,19 +1997,35 @@ generateAndShowPriceTag(item.name, item.price, code);
 }
 
 function generateAndShowPriceTag(name, price, code) {
-document.getElementById('tag-res-name').textContent = name;
-document.getElementById('tag-res-price').textContent = `${price}円`;
-const taxPrice = Math.round(price * 1.1);
-document.getElementById('tag-res-tax').textContent = `(税込価格 ${taxPrice}円)`;
-try {
-  let formatType = code.length === 13 ? "EAN13" : "CODE128";
-  JsBarcode("#tag-res-barcode-svg", code, { format: formatType, width: 1.5, height: 45, displayValue: true, fontSize: 11 });
-} catch(e) {
+  document.getElementById('tag-res-name').textContent = name;
+  document.getElementById('tag-res-price').textContent = `${price}円`;
+  const taxPrice = Math.round(price * 1.1);
+  document.getElementById('tag-res-tax').textContent = `(税込価格 ${taxPrice}円)`;
+  
   try {
-    JsBarcode("#tag-res-barcode-svg", code, { format: "CODE128", width: 1.5, height: 45, displayValue: true, fontSize: 11 });
-  } catch(err) { console.error(err); }
-}
-document.getElementById('tag-result-modal').style.display = 'flex';
+    let formatType = code.length === 13 ? "EAN13" : "CODE128";
+    // widthを 2.2、heightを 80 にして大きく鮮明に描画
+    JsBarcode("#tag-res-barcode-svg", code, { 
+      format: formatType, 
+      width: 2.2, 
+      height: 80, 
+      displayValue: true, 
+      fontSize: 14,
+      margin: 5
+    });
+  } catch(e) {
+    try {
+      JsBarcode("#tag-res-barcode-svg", code, { 
+        format: "CODE128", 
+        width: 2.2, 
+        height: 80, 
+        displayValue: true, 
+        fontSize: 14,
+        margin: 5
+      });
+    } catch(err) { console.error(err); }
+  }
+  document.getElementById('tag-result-modal').style.display = 'flex';
 }
 function closeTagResultModal() {
 document.getElementById('tag-result-modal').style.display = 'none';
@@ -3855,18 +3869,12 @@ function toggleCustomerCamera(checkbox) {
   localStorage.setItem('customerCameraOn', checkbox.checked);
   if (checkbox.checked) {
     if (offOverlay) offOverlay.style.display = 'none';
-    if (statusMsg) {
-      statusMsg.textContent = "枠内にバーコードをかざしてください";
-      statusMsg.style.color = "#2575fc";
-    }
+    if (statusMsg) { statusMsg.textContent = "枠内にバーコードをかざしてください"; statusMsg.style.color = "#2575fc"; }
     startCustomerScanner();
   } else {
     stopCustomerScanner();
     if (offOverlay) offOverlay.style.display = 'flex';
-    if (statusMsg) {
-      statusMsg.textContent = "カメラはOFFです";
-      statusMsg.style.color = "#747d8c";
-    }
+    if (statusMsg) { statusMsg.textContent = "カメラはOFFです"; statusMsg.style.color = "#747d8c"; }
   }
 }
 
@@ -3876,18 +3884,12 @@ function toggleRegisterCamera(checkbox) {
   localStorage.setItem('registerCameraOn', checkbox.checked);
   if (checkbox.checked) {
     if (offOverlay) offOverlay.style.display = 'none';
-    if (regStatusMsg) {
-      regStatusMsg.textContent = "QRコードを枠内にかざしてください";
-      regStatusMsg.style.color = "#ff4757";
-    }
+    if (regStatusMsg) { regStatusMsg.textContent = "QRコードを枠内にかざしてください"; regStatusMsg.style.color = "#ff4757"; }
     startRegisterScanner();
   } else {
     stopRegisterScanner();
     if (offOverlay) offOverlay.style.display = 'flex';
-    if (regStatusMsg) {
-      regStatusMsg.textContent = "カメラはOFFです";
-      regStatusMsg.style.color = "#747d8c";
-    }
+    if (regStatusMsg) { regStatusMsg.textContent = "カメラはOFFです"; regStatusMsg.style.color = "#747d8c"; }
   }
 }
 
@@ -3897,18 +3899,12 @@ function toggleStaffScanCamera(checkbox) {
   localStorage.setItem('staffCameraOn', checkbox.checked);
   if (checkbox.checked) {
     if (offOverlay) offOverlay.style.display = 'none';
-    if (stStatusMsg) {
-      stStatusMsg.textContent = "枠内に商品バーコードをかざしてください";
-      stStatusMsg.style.color = "#00adb5";
-    }
+    if (stStatusMsg) { stStatusMsg.textContent = "枠内に商品バーコードをかざしてください"; stStatusMsg.style.color = "#00adb5"; }
     startStaffScanner();
   } else {
     stopStaffScanner();
     if (offOverlay) offOverlay.style.display = 'flex';
-    if (stStatusMsg) {
-      stStatusMsg.textContent = "カメラはOFFです";
-      stStatusMsg.style.color = "#747d8c";
-    }
+    if (stStatusMsg) { stStatusMsg.textContent = "カメラはOFFです"; stStatusMsg.style.color = "#747d8c"; }
   }
 }
 let savedBarcodes = JSON.parse(localStorage.getItem('myPosSavedBarcodes')) || [];

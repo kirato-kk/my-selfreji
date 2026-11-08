@@ -2439,14 +2439,59 @@ if (matchedValStr.length <= 2) {
 discountedPrice = Math.round(baseItem.price * (1 - valNum / 100));
 } else {
 discountedPrice = Math.max(0, baseItem.price - valNum);
+}function processScannedBarcode(code, isStaffMode = false) {
+// 1. 商品データベースにそのままのコード（商品番号や通常バーコード）が存在する場合
+if (itemDatabase[code]) {
+const item = itemDatabase[code];
+if (code.endsWith("_0")) {
+addItem(item.name, 0, code, isStaffMode);
+} else if (item.waribiki && item.waribiki > 0) {
+let discPrice = item.price;
+if (item.waribiki <= 99) {
+discPrice = Math.round(item.price * (1 - item.waribiki / 100));
+} else {
+discPrice = Math.max(0, item.price - item.waribiki);
 }
+addItemCustomPrice(item.name, item.price, discPrice, code, isStaffMode);
+} else {
+addItem(item.name, item.price, code, isStaffMode);
+}
+setTimeout(() => { canScan = true; }, 1500);
+return;
+}
+
+// 2. 無料クーポンの判定
+if (code.endsWith("_0")) {
+const baseCode = code.replace("_0", "");
+if (itemDatabase[baseCode]) {
+addItem(`${itemDatabase[baseCode].name}無料`, 0, code, isStaffMode);
+setTimeout(() => { canScan = true; }, 1500);
+return;
+}
+}
+
+// 3. 割引コードなどの判定
+let matchedOriginalCode = null;
+let matchedValStr = "";
+for (let originalCode in itemDatabase) {
+if (code.startsWith(originalCode) && code.length > originalCode.length) {
+matchedOriginalCode = originalCode;
+matchedValStr = code.substring(originalCode.length);
+break;
+}
+}
+if (matchedOriginalCode) {
+const
 addItemCustomPrice(baseItem.name, baseItem.price, discountedPrice, code, isStaffMode);
 setTimeout(() => { canScan = true; }, 1500);
 return;
 }
+
+// どの条件にもヒットしなかった場合
 playSound(300, 0.2, 'sawtooth');
 setTimeout(() => { canScan = true; }, 1500);
-}
+} 
+
 
 function handleRegisterImageFile(event) {
 const file = event.target.files[0];
@@ -3605,81 +3650,96 @@ if (camSetting === 'external') {
 }
 }
 
+// --- 1. お客様モードのカメラ起動部分 ---
 function startCustomerScanner() {
-const constraints = { facingMode: getCameraConstraints(cameraSettings.customer), width: { ideal: 1280 }, height: { ideal: 720 } };
-Quagga.init({
-inputStream: { type: "LiveStream", target: document.querySelector('#interactive'), constraints: constraints },
-decoder: { readers: ["ean_reader", "ean_8_reader", "code_128_reader", "code_39_reader"], multiple: false },
-locate: true
-}, (err) => { if (!err) Quagga.start(); });
-Quagga.onDetected(customerScanHandler);
+  const constraints = {
+    facingMode: { ideal: "environment" }, // 外カメ（背面カメラ）を優先指定
+    width: { ideal: 1280 },
+    height: { ideal: 720 }
+  };
+  Quagga.init({
+    inputStream: { type: "LiveStream", target: document.querySelector('#interactive'), constraints: constraints },
+    decoder: { readers: ["ean_reader", "ean_8_reader", "code_128_reader", "code_39_reader"], multiple: false },
+    locate: true
+  }, (err) => { if (!err) Quagga.start(); });
+  Quagga.onDetected(customerScanHandler);
 }
 
-function stopCustomerScanner() { try { Quagga.offDetected(customerScanHandler); Quagga.stop(); } catch(e){} }
-
-function customerScanHandler(res) {
-if (!canScan) return;
-const code = res.codeResult.code; canScan = false;
-processScannedBarcode(code);
-}
-
+// --- 2. レジ画面のカメラ起動部分 ---
 function startRegisterScanner() {
-const video = document.getElementById('register-video');
-const canvasElement = document.getElementById('register-canvas');
-const canvas = canvasElement.getContext('2d');
-const videoConstraints = cameraSettings.register === 'external' ? { facingMode: { exact: "environment" } } : (cameraSettings.register === 'smartphone' ? { facingMode: "user" } : { facingMode: "environment" });
+  const video = document.getElementById('register-video');
+  const canvasElement = document.getElementById('register-canvas');
+  const canvas = canvasElement.getContext('2d');
+  
+  // 外カメ優先＋解像度の指定
+  const videoConstraints = {
+    facingMode: { ideal: "environment" },
+    width: { ideal: 1280 },
+    height: { ideal: 720 }
+  };
 
-navigator.mediaDevices.getUserMedia({ video: videoConstraints }).then((stream) => {
-registerStream = stream; video.srcObject = stream; video.setAttribute("playsinline", true);
-video.onloadedmetadata = () => {
-video.play().then(() => {
-if (registerScanInterval) clearInterval(registerScanInterval);
-registerScanInterval = setInterval(() => {
-if (video.readyState === video.HAVE_ENOUGH_DATA) {
-canvasElement.height = video.videoHeight; canvasElement.width = video.videoWidth;
-canvas.drawImage(video, 0, 0, canvasElement.width, canvasElement.height);
-var imageData = canvas.getImageData(0, 0, canvasElement.width, canvasElement.height);
-var code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: "dontInvert" });
-if (code) { handleRegisterQRCode(code.data); }
-}
-}, 300);
-}).catch(e => console.error(e));
-};
-}).catch((err) => { console.error(err); alert("カメラを起動できませんでした。"); });
+  navigator.mediaDevices.getUserMedia({ video: videoConstraints }).then((stream) => {
+    registerStream = stream; video.srcObject = stream; video.setAttribute("playsinline", true);
+    video.onloadedmetadata = () => {
+      video.play().then(() => {
+        if (registerScanInterval) clearInterval(registerScanInterval);
+        registerScanInterval = setInterval(() => {
+          if (video.readyState === video.HAVE_ENOUGH_DATA) {
+            canvasElement.height = video.videoHeight; canvasElement.width = video.videoWidth;
+            canvas.drawImage(video, 0, 0, canvasElement.width, canvasElement.height);
+            var imageData = canvas.getImageData(0, 0, canvasElement.width, canvasElement.height);
+            var code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: "dontInvert" });
+            if (code) { handleRegisterQRCode(code.data); }
+          }
+        }, 300);
+      }).catch(e => console.error(e));
+    };
+  }).catch((err) => { 
+    console.error(err); 
+    // 万が一失敗したときのフォールバック（一般的なカメラ指定）
+    navigator.mediaDevices.getUserMedia({ video: true }).then((stream) => {
+      registerStream = stream; video.srcObject = stream; video.play();
+    }).catch(e => alert("カメラを起動できませんでした。")); 
+  });
 }
 
-function stopRegisterScanner() {
-if (registerScanInterval) { clearInterval(registerScanInterval); registerScanInterval = null; }
-if (registerStream) { registerStream.getTracks().forEach(track => track.stop()); registerStream = null; }
-}
-
-/* ================= スタッフスキャン専用カメラ読み取り ================= */
+// --- 3. スタッフスキャンのカメラ起動部分 ---
 function startStaffScanner() {
-const video = document.getElementById('staff-scan-video');
-const canvasElement = document.getElementById('staff-scan-canvas');
-const canvas = canvasElement.getContext('2d');
-const videoConstraints = cameraSettings.staff === 'external' ? { facingMode: { exact: "environment" } } : (cameraSettings.staff === 'smartphone' ? { facingMode: "user" } : { facingMode: "environment" });
+  const video = document.getElementById('staff-scan-video');
+  const canvasElement = document.getElementById('staff-scan-canvas');
+  const canvas = canvasElement.getContext('2d');
 
-navigator.mediaDevices.getUserMedia({ video: videoConstraints }).then((stream) => {
-staffScanStream = stream; video.srcObject = stream; video.setAttribute("playsinline", true);
-video.onloadedmetadata = () => {
-video.play().then(() => {
-if (staffScanInterval) clearInterval(staffScanInterval);
-staffScanInterval = setInterval(() => {
-if (video.readyState === video.HAVE_ENOUGH_DATA && canScan) {
-canvasElement.height = video.videoHeight; canvasElement.width = video.videoWidth;
-canvas.drawImage(video, 0, 0, canvasElement.width, canvasElement.height);
-var imageData = canvas.getImageData(0, 0, canvasElement.width, canvasElement.height);
-const codeResult = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: "dontInvert" });
-if (codeResult) {
-canScan = false;
-processScannedBarcode(codeResult.data, true);
-}
-}
-}, 300);
-}).catch(e => console.error(e));
-};
-}).catch((err) => { console.error(err); alert("スタッフスキャン用カメラを起動できませんでした。"); });
+  const videoConstraints = {
+    facingMode: { ideal: "environment" },
+    width: { ideal: 1280 },
+    height: { ideal: 720 }
+  };
+
+  navigator.mediaDevices.getUserMedia({ video: videoConstraints }).then((stream) => {
+    staffScanStream = stream; video.srcObject = stream; video.setAttribute("playsinline", true);
+    video.onloadedmetadata = () => {
+      video.play().then(() => {
+        if (staffScanInterval) clearInterval(staffScanInterval);
+        staffScanInterval = setInterval(() => {
+          if (video.readyState === video.HAVE_ENOUGH_DATA && canScan) {
+            canvasElement.height = video.videoHeight; canvasElement.width = video.videoWidth;
+            canvas.drawImage(video, 0, 0, canvasElement.width, canvasElement.height);
+            var imageData = canvas.getImageData(0, 0, canvasElement.width, canvasElement.height);
+            const codeResult = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: "dontInvert" });
+            if (codeResult) {
+              canScan = false;
+              processScannedBarcode(codeResult.data, true);
+            }
+          }
+        }, 300);
+      }).catch(e => console.error(e));
+    };
+  }).catch((err) => { 
+    console.error(err); 
+    navigator.mediaDevices.getUserMedia({ video: true }).then((stream) => {
+      staffScanStream = stream; video.srcObject = stream; video.play();
+    }).catch(e => alert("スタッフスキャン用カメラを起動できませんでした。")); 
+  });
 }
 
 function stopStaffScanner() {

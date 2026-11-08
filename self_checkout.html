@@ -1364,6 +1364,34 @@ box-sizing: border-box !important;
 <button class="close-btn" onclick="closeHistory()" style="margin-top: 15px;">閉じる</button>
 </div>
 </div>
+
+<!-- 管理設定パスワード入力モーダル（電卓パッド式） -->
+<div class="modal-overlay" id="password-input-modal">
+<div class="modal-content-box" style="text-align: center;">
+<h2>パスワード入力</h2>
+<p style="font-size: 12px; color: #666; margin: 5px 0;">管理パスワードを入力してください</p>
+<div class="calc-display" id="password-input-display" style="letter-spacing: 5px; color: #333;">----</div>
+<div class="calculator-pad">
+<button class="calc-key" onclick="appendPasswordCalc(1)">1</button>
+<button class="calc-key" onclick="appendPasswordCalc(2)">2</button>
+<button class="calc-key" onclick="appendPasswordCalc(3)">3</button>
+<button class="calc-key" onclick="appendPasswordCalc(4)">4</button>
+<button class="calc-key" onclick="appendPasswordCalc(5)">5</button>
+<button class="calc-key" onclick="appendPasswordCalc(6)">6</button>
+<button class="calc-key" onclick="appendPasswordCalc(7)">7</button>
+<button class="calc-key" onclick="appendPasswordCalc(8)">8</button>
+<button class="calc-key" onclick="appendPasswordCalc(9)">9</button>
+<button class="calc-key" onclick="clearPasswordCalc()">C</button>
+<button class="calc-key" onclick="appendPasswordCalc(0)">0</button>
+<button class="calc-key" onclick="backspacePasswordCalc()">←</button>
+</div>
+<button class="btn pay-btn" style="margin-top:5px; padding:12px; font-size:16px;" onclick="confirmPasswordInput()">入力完了</button>
+<div style="text-align: left; margin-top: 10px;">
+<button class="modal-btn-back" onclick="closePasswordInputModal()">← 戻る</button>
+</div>
+</div>
+</div>
+
 <script>
 let defaultDatabase = {
 "4901330502880": { name: "ポテトチップス", price: 160, waribiki: 0 },
@@ -2852,17 +2880,60 @@ stStatusMsg.style.color = "#747d8c";
 }
 }
 
+let currentPasswordInput = "";
+
 function openSettings() {
 if (currentMode === 'register' || currentMode === 'staff-scan') {
 proceedToSettings();
 return;
 }
-const input = prompt("パスワードを入力してください");
-if (input !== SALES_PASSWORD) {
-if (input !== null) alert("パスワードが違います");
-return;
+currentPasswordInput = "";
+updatePasswordDisplay();
+document.getElementById('password-input-modal').style.display = 'flex';
 }
+
+function closePasswordInputModal() {
+document.getElementById('password-input-modal').style.display = 'none';
+}
+
+
+function appendPasswordCalc(num) {
+if (currentPasswordInput.length < 6) {
+currentPasswordInput += String(num);
+updatePasswordDisplay();
+}
+}
+
+function clearPasswordCalc() {
+currentPasswordInput = "";
+updatePasswordDisplay();
+}
+
+function backspacePasswordCalc() {
+if (currentPasswordInput.length > 0) {
+currentPasswordInput = currentPasswordInput.slice(0, -1);
+updatePasswordDisplay();
+}
+}
+
+function updatePasswordDisplay() {
+const display = document.getElementById('password-input-display');
+if (currentPasswordInput.length === 0) {
+display.textContent = "----";
+} else {
+display.textContent = "●".repeat(currentPasswordInput.length);
+}
+}
+
+function confirmPasswordInput() {
+if (currentPasswordInput === SALES_PASSWORD) {
+closePasswordInputModal();
 proceedToSettings();
+} else {
+alert("パスワードが違います");
+currentPasswordInput = "";
+updatePasswordDisplay();
+}
 }
 
 function proceedToSettings() {

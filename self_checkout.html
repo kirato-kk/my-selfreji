@@ -320,6 +320,19 @@ box-sizing: border-box !important;
 .setting-select-box {
   width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ccc; font-size: 13px; margin-top: 4px; box-sizing: border-box;
 }
+
+/* QuaggaJSが生成するキャンバスの余計な黒帯を防止 */
+#interactive canvas.drawingBuffer,
+#staff-interactive canvas.drawingBuffer {
+  display: none !important;
+}
+
+#interactive video,
+#staff-interactive video {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+
 </style>
 </head>
 <body>
@@ -373,14 +386,14 @@ box-sizing: border-box !important;
 <span class="toggle-slider"></span>
 </label>
 </div>
-<div id="register-viewport-container">
-<video id="register-video" playsinline autoplay muted></video>
-<canvas id="register-canvas"></canvas>
+<div id="register-viewport-container" class="viewport" style="width: 100%; height: 200px; background-color: #000; border: 2px solid #ff4757; border-radius: 10px; overflow: hidden; margin-bottom: 15px; position: relative;">
+<div id="register-interactive" style="width: 100%; height: 100%; position: relative;"></div>
 <div id="register-camera-off-overlay" style="display: none; width: 100%; height: 100%; background-color: #4a4a4a; color: #ffffff; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; position: absolute; top: 0; left: 0; z-index: 10;">カメラはOFFです</div>
 <button class="coupon-file-btn" onclick="document.getElementById('register-file-input').click()" title="ファイルから読み込み">
   <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-5.04-6.71l-2.75 3.54-1.96-2.36c-.2-.25-.57-.24-.75.01l-2.23 2.97c-.23.31-.01.75.38.75h13.08c.39 0 .61-.44.38-.75l-4.13-5.5c-.2-.27-.6-.27-.8 0z"/></svg>
 </button>
-</div>
+</div> 
+
 <button class="btn" style="background-color: #00adb5; margin-bottom: 10px;" onclick="openStaffScanPage()">
   <svg viewBox="0 0 24 24"><path d="M3 5v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2zm2 2h14v10H5V7z"/></svg>
   <span>スタッフスキャン</span>
@@ -3615,11 +3628,13 @@ if (camSetting === 'external') {
 }
 }
 
-// --- 1. お客様モードのカメラ起動部分（QuaggaJS版：黒帯解消修正） ---
+// --- 1. お客様モードのカメラ起動部分（高精度＆黒帯解消版） ---
 function startCustomerScanner() {
   stopCustomerScanner();
   const container = document.querySelector('#interactive');
   if (!container) return;
+
+  container.innerHTML = '';
 
   Quagga.init({
     inputStream: {
@@ -3627,15 +3642,20 @@ function startCustomerScanner() {
       target: container,
       constraints: {
         facingMode: "environment",
-        width: { ideal: 640 },
-        height: { ideal: 480 }
+        width: { min: 640, ideal: 1280, max: 1920 },
+        height: { min: 480, ideal: 720, max: 1080 }
       }
     },
     decoder: {
-      readers: ["ean_reader", "ean_8_reader", "code_128_reader", "code_39_reader"],
+      readers: [
+        "ean_reader",
+        "ean_8_reader",
+        "code_128_reader",
+        "code_39_reader"
+      ],
       multiple: false
     },
-    locate: true
+    locate: false
   }, (err) => {
     if (err) {
       console.error("Quagga init err:", err);
@@ -3643,7 +3663,6 @@ function startCustomerScanner() {
     }
     try {
       Quagga.start();
-      // 黒帯やズレを防ぐためvideo要素のCSSを強制調整
       const videoEl = container.querySelector('video');
       if (videoEl) {
         videoEl.style.width = "100%";
@@ -3655,14 +3674,21 @@ function startCustomerScanner() {
 
   try { Quagga.offDetected(customerScanHandler); } catch(e){}
   Quagga.onDetected(customerScanHandler);
-} 
+}
 
 function customerScanHandler(result) {
   if (!canScan) return;
-  const code = result && result.codeResult ? result.codeResult.code : null;
-  if (code) {
-    canScan = false;
-    processScannedBarcode(code, false);
+  if (result && result.codeResult && result.codeResult.code) {
+    const code = result.codeResult.code;
+    const errors = result.codeResult.decodedCodes
+      .filter(x => x.error !== undefined)
+      .map(x => x.error);
+    const avgError = errors.length > 0 ? errors.reduce((a, b) => a + b, 0) / errors.length : 0;
+
+    if (avgError < 0.25) {
+      canScan = false;
+      processScannedBarcode(code, false);
+    }
   }
 }
 
@@ -3673,66 +3699,18 @@ function stopCustomerScanner() {
   } catch(e) {}
   const container = document.querySelector('#interactive');
   if (container) {
-    const video = container.querySelector('video');
-    if (video) video.remove();
-    const canvas = container.querySelector('canvas');
-    if (canvas) canvas.remove();
+    container.innerHTML = '';
   }
-}
+} 
 
-// --- 2. レジ画面のカメラ起動部分（jsQR版） ---
+
+// --- 2. レジ画面のカメラ起動部分（QuaggaJS版・高精度＆黒帯解消） ---
 function startRegisterScanner() {
   stopRegisterScanner();
-  const video = document.getElementById('register-video');
-  const canvasElement = document.getElementById('register-canvas');
-  if (!video || !canvasElement) return;
-  const canvas = canvasElement.getContext('2d');
-
-  navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-    .then((stream) => {
-      registerStream = stream;
-      video.srcObject = stream;
-      video.setAttribute("playsinline", true);
-      video.play().then(() => {
-        if (registerScanInterval) clearInterval(registerScanInterval);
-        registerScanInterval = setInterval(() => {
-          if (video.readyState === video.HAVE_ENOUGH_DATA) {
-            canvasElement.height = video.videoHeight;
-            canvasElement.width = video.videoWidth;
-            canvas.drawImage(video, 0, 0, canvasElement.width, canvasElement.height);
-            var imageData = canvas.getImageData(0, 0, canvasElement.width, canvasElement.height);
-            var code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: "dontInvert" });
-            if (code) { handleRegisterQRCode(code.data); }
-          }
-        }, 300);
-      }).catch(e => console.error(e));
-    })
-    .catch((err) => {
-      console.error("Register cam error, fallback:", err);
-      navigator.mediaDevices.getUserMedia({ video: true }).then((stream) => {
-        registerStream = stream;
-        video.srcObject = stream;
-        video.setAttribute("playsinline", true);
-        video.play();
-      }).catch(e => console.warn("レジカメラ起動不可"));
-    });
-}
-
-function stopRegisterScanner() {
-  if (registerScanInterval) { clearInterval(registerScanInterval); registerScanInterval = null; }
-  if (registerStream) { 
-    registerStream.getTracks().forEach(track => track.stop()); 
-    registerStream = null; 
-  }
-  const video = document.getElementById('register-video');
-  if (video) video.srcObject = null;
-}
-
-// --- 3. スタッフスキャンのカメラ起動部分（QuaggaJS版に統一） ---
-function startStaffScanner() {
-  stopStaffScanner();
-  const container = document.querySelector('#staff-interactive');
+  const container = document.querySelector('#register-interactive');
   if (!container) return;
+
+  container.innerHTML = '';
 
   Quagga.init({
     inputStream: {
@@ -3740,22 +3718,102 @@ function startStaffScanner() {
       target: container,
       constraints: {
         facingMode: "environment",
-        width: { ideal: 640 },
-        height: { ideal: 480 }
+        width: { min: 640, ideal: 1280, max: 1920 },
+        height: { min: 480, ideal: 720, max: 1080 }
       }
     },
-    decoder: { 
-      readers: ["ean_reader", "ean_8_reader", "code_128_reader", "code_39_reader"], 
-      multiple: false 
+    decoder: {
+      readers: [
+        "ean_reader",
+        "ean_8_reader",
+        "code_128_reader",
+        "code_39_reader"
+      ],
+      multiple: false
     },
-    locate: true
-  }, (err) => { 
+    locate: false // 誤検知や余計なエラー音を防止
+  }, (err) => {
+    if (err) {
+      console.error("Register Quagga init err:", err);
+      return;
+    }
+    try {
+      Quagga.start();
+      const videoEl = container.querySelector('video');
+      if (videoEl) {
+        videoEl.style.width = "100%";
+        videoEl.style.height = "100%";
+        videoEl.style.objectFit = "cover";
+      }
+    } catch(e){}
+  });
+
+  try { Quagga.offDetected(registerScanHandler); } catch(e){}
+  Quagga.onDetected(registerScanHandler);
+}
+
+function registerScanHandler(result) {
+  if (result && result.codeResult && result.codeResult.code) {
+    const code = result.codeResult.code;
+    const errors = result.codeResult.decodedCodes
+      .filter(x => x.error !== undefined)
+      .map(x => x.error);
+    const avgError = errors.length > 0 ? errors.reduce((a, b) => a + b, 0) / errors.length : 0;
+
+    // 精度フィルタ（クリアに読み取れた場合のみQRハンドラへ渡す）
+    if (avgError < 0.25) {
+      handleRegisterQRCode(code);
+    }
+  }
+}
+
+function stopRegisterScanner() {
+  try {
+    Quagga.stop();
+    Quagga.offDetected(registerScanHandler);
+  } catch(e) {}
+  const container = document.querySelector('#register-interactive');
+  if (container) {
+    container.innerHTML = '';
+  }
+} 
+
+// --- 3. スタッフスキャンのカメラ起動部分（高精度＆黒帯解消版） ---
+function startStaffScanner() {
+  stopStaffScanner();
+  const container = document.querySelector('#staff-interactive');
+  if (!container) return;
+
+  // 枠内を一度クリーンにする
+  container.innerHTML = '';
+
+  Quagga.init({
+    inputStream: {
+      type: "LiveStream",
+      target: container,
+      constraints: {
+        facingMode: "environment",
+        width: { min: 640, ideal: 1280, max: 1920 },
+        height: { min: 480, ideal: 720, max: 1080 }
+      }
+    },
+    decoder: {
+      readers: [
+        "ean_reader",
+        "ean_8_reader",
+        "code_128_reader",
+        "code_39_reader"
+      ],
+      multiple: false
+    },
+    locate: false // 背景の木目などの誤検知を防ぎ、バーコード自体の読み取り精度を向上
+  }, (err) => {
     if (err) {
       console.error("Staff Quagga init err:", err);
       return;
     }
-    try { 
-      Quagga.start(); 
+    try {
+      Quagga.start();
       const videoEl = container.querySelector('video');
       if (videoEl) {
         videoEl.style.width = "100%";
@@ -3771,26 +3829,36 @@ function startStaffScanner() {
 
 function staffScanHandler(result) {
   if (!canScan) return;
-  const code = result && result.codeResult ? result.codeResult.code : null;
-  if (code) {
-    canScan = false;
-    processScannedBarcode(code, true);
+
+  // 読み取り精度（エラー判定）のフィルタリング
+  if (result && result.codeResult && result.codeResult.code) {
+    const code = result.codeResult.code;
+   
+    // 確信度の低いノイズ読み取りを弾く（誤検知による「ブー」音防止）
+    const errors = result.codeResult.decodedCodes
+      .filter(x => x.error !== undefined)
+      .map(x => x.error);
+    const avgError = errors.length > 0 ? errors.reduce((a, b) => a + b, 0) / errors.length : 0;
+
+    // 平均エラー率が閾値（0.25）以下のクリアな読み取りのみ合格とする
+    if (avgError < 0.25) {
+      canScan = false;
+      processScannedBarcode(code, true);
+    }
   }
 }
 
 function stopStaffScanner() {
   try {
-    // お客様モードのQuaggaと競合しないよう安全に停止
+    Quagga.stop();
     Quagga.offDetected(staffScanHandler);
   } catch(e) {}
   const container = document.querySelector('#staff-interactive');
   if (container) {
-    const video = container.querySelector('video');
-    if (video) video.remove();
-    const canvas = container.querySelector('canvas');
-    if (canvas) canvas.remove();
+    container.innerHTML = '';
   }
-}
+} 
+
 
 // --- 4. クーポン用カメラ起動部分 ---
 function startCouponScanner() {

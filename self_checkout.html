@@ -2396,102 +2396,65 @@ renderRefundHistoryList(filtered);
 }
 
 function processScannedBarcode(code, isStaffMode = false) {
-if (itemDatabase[code]) {
-const item = itemDatabase[code];
-if (code.endsWith("_0")) {
-addItem(item.name, 0, code, isStaffMode);
-} else if (item.waribiki && item.waribiki > 0) {
-let discPrice = item.price;
-if (item.waribiki <= 99) {
-discPrice = Math.round(item.price * (1 - item.waribiki / 100));
-} else {
-discPrice = Math.max(0, item.price - item.waribiki);
-}
-addItemCustomPrice(item.name, item.price, discPrice, code, isStaffMode);
-} else {
-addItem(item.name, item.price, code, isStaffMode);
-}
-setTimeout(() => { canScan = true; }, 1500);
-return;
-}
-if (code.endsWith("_0")) {
-const baseCode = code.replace("_0", "");
-if (itemDatabase[baseCode]) {
-addItem(`${itemDatabase[baseCode].name}無料`, 0, code, isStaffMode);
-setTimeout(() => { canScan = true; }, 1500);
-return;
-}
-}
-let matchedOriginalCode = null;
-let matchedValStr = "";
-for (let originalCode in itemDatabase) {
-if (code.startsWith(originalCode) && code.length > originalCode.length) {
-matchedOriginalCode = originalCode;
-matchedValStr = code.substring(originalCode.length);
-break;
-}
-}
-if (matchedOriginalCode) {
-const baseItem = itemDatabase[matchedOriginalCode];
-const valNum = parseInt(matchedValStr);
-let discountedPrice = baseItem.price;
-if (matchedValStr.length <= 2) {
-discountedPrice = Math.round(baseItem.price * (1 - valNum / 100));
-} else {
-discountedPrice = Math.max(0, baseItem.price - valNum);
-}function processScannedBarcode(code, isStaffMode = false) {
-// 1. 商品データベースにそのままのコード（商品番号や通常バーコード）が存在する場合
-if (itemDatabase[code]) {
-const item = itemDatabase[code];
-if (code.endsWith("_0")) {
-addItem(item.name, 0, code, isStaffMode);
-} else if (item.waribiki && item.waribiki > 0) {
-let discPrice = item.price;
-if (item.waribiki <= 99) {
-discPrice = Math.round(item.price * (1 - item.waribiki / 100));
-} else {
-discPrice = Math.max(0, item.price - item.waribiki);
-}
-addItemCustomPrice(item.name, item.price, discPrice, code, isStaffMode);
-} else {
-addItem(item.name, item.price, code, isStaffMode);
-}
-setTimeout(() => { canScan = true; }, 1500);
-return;
-}
+  // 1. 商品データベースにそのままのコード（商品番号や通常バーコード）が存在する場合
+  if (itemDatabase[code]) {
+    const item = itemDatabase[code];
+    if (code.endsWith("_0")) {
+      addItem(item.name, 0, code, isStaffMode);
+    } else if (item.waribiki && item.waribiki > 0) {
+      let discPrice = item.price;
+      if (item.waribiki <= 99) {
+        discPrice = Math.round(item.price * (1 - item.waribiki / 100));
+      } else {
+        discPrice = Math.max(0, item.price - item.waribiki);
+      }
+      addItemCustomPrice(item.name, item.price, discPrice, code, isStaffMode);
+    } else {
+      addItem(item.name, item.price, code, isStaffMode);
+    }
+    setTimeout(() => { canScan = true; }, 1500);
+    return;
+  }
 
-// 2. 無料クーポンの判定
-if (code.endsWith("_0")) {
-const baseCode = code.replace("_0", "");
-if (itemDatabase[baseCode]) {
-addItem(`${itemDatabase[baseCode].name}無料`, 0, code, isStaffMode);
-setTimeout(() => { canScan = true; }, 1500);
-return;
-}
-}
+  // 2. 無料クーポンの判定
+  if (code.endsWith("_0")) {
+    const baseCode = code.replace("_0", "");
+    if (itemDatabase[baseCode]) {
+      addItem(`${itemDatabase[baseCode].name}無料`, 0, code, isStaffMode);
+      setTimeout(() => { canScan = true; }, 1500);
+      return;
+    }
+  }
 
-// 3. 割引コードなどの判定
-let matchedOriginalCode = null;
-let matchedValStr = "";
-for (let originalCode in itemDatabase) {
-if (code.startsWith(originalCode) && code.length > originalCode.length) {
-matchedOriginalCode = originalCode;
-matchedValStr = code.substring(originalCode.length);
-break;
-}
-}
-if (matchedOriginalCode) {
-const
-addItemCustomPrice(baseItem.name, baseItem.price, discountedPrice, code, isStaffMode);
-setTimeout(() => { canScan = true; }, 1500);
-return;
-}
+  // 3. 割引コードなどの判定
+  let matchedOriginalCode = null;
+  let matchedValStr = "";
+  for (let originalCode in itemDatabase) {
+    if (code.startsWith(originalCode) && code.length > originalCode.length) {
+      matchedOriginalCode = originalCode;
+      matchedValStr = code.substring(originalCode.length);
+      break;
+    }
+  }
+  
+  if (matchedOriginalCode) {
+    const baseItem = itemDatabase[matchedOriginalCode];
+    const valNum = parseInt(matchedValStr);
+    let discountedPrice = baseItem.price;
+    if (matchedValStr.length <= 2) {
+      discountedPrice = Math.round(baseItem.price * (1 - valNum / 100));
+    } else {
+      discountedPrice = Math.max(0, baseItem.price - valNum);
+    }
+    addItemCustomPrice(baseItem.name, baseItem.price, discountedPrice, code, isStaffMode);
+    setTimeout(() => { canScan = true; }, 1500);
+    return;
+  }
 
-// どの条件にもヒットしなかった場合
-playSound(300, 0.2, 'sawtooth');
-setTimeout(() => { canScan = true; }, 1500);
-} 
-
+  // どの条件にもヒットしなかった場合
+  playSound(300, 0.2, 'sawtooth');
+  setTimeout(() => { canScan = true; }, 1500);
+}
 
 function handleRegisterImageFile(event) {
 const file = event.target.files[0];

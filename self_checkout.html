@@ -3628,12 +3628,11 @@ if (camSetting === 'external') {
 }
 }
 
-// --- 1. お客様モードのカメラ起動部分（高精度＆黒帯解消版） ---
+// --- 1. お客様モード ---
 function startCustomerScanner() {
   stopCustomerScanner();
   const container = document.querySelector('#interactive');
   if (!container) return;
-
   container.innerHTML = '';
 
   Quagga.init({
@@ -3647,20 +3646,12 @@ function startCustomerScanner() {
       }
     },
     decoder: {
-      readers: [
-        "ean_reader",
-        "ean_8_reader",
-        "code_128_reader",
-        "code_39_reader"
-      ],
+      readers: ["ean_reader", "ean_8_reader", "code_128_reader", "code_39_reader"],
       multiple: false
     },
-    locate: false
+    locate: true // ★離れた距離や角度でも読めるようにtrueに戻す
   }, (err) => {
-    if (err) {
-      console.error("Quagga init err:", err);
-      return;
-    }
+    if (err) return;
     try {
       Quagga.start();
       const videoEl = container.querySelector('video');
@@ -3680,36 +3671,26 @@ function customerScanHandler(result) {
   if (!canScan) return;
   if (result && result.codeResult && result.codeResult.code) {
     const code = result.codeResult.code;
-    const errors = result.codeResult.decodedCodes
-      .filter(x => x.error !== undefined)
-      .map(x => x.error);
-    const avgError = errors.length > 0 ? errors.reduce((a, b) => a + b, 0) / errors.length : 0;
-
-    if (avgError < 0.25) {
-      canScan = false;
-      processScannedBarcode(code, false);
-    }
+   
+    // ★ゴミデータや不完全な誤検知を弾く（8桁未満や極端に短いものは無視してブーを鳴らさない）
+    if (!code || code.length < 5) return;
+   
+    canScan = false;
+    processScannedBarcode(code, false);
   }
 }
 
 function stopCustomerScanner() {
-  try {
-    Quagga.stop();
-    Quagga.offDetected(customerScanHandler);
-  } catch(e) {}
+  try { Quagga.stop(); Quagga.offDetected(customerScanHandler); } catch(e) {}
   const container = document.querySelector('#interactive');
-  if (container) {
-    container.innerHTML = '';
-  }
+  if (container) container.innerHTML = '';
 } 
 
-
-// --- 2. レジ画面のカメラ起動部分（QuaggaJS版・高精度＆黒帯解消） ---
+// --- 2. レジ画面 ---
 function startRegisterScanner() {
   stopRegisterScanner();
   const container = document.querySelector('#register-interactive');
   if (!container) return;
-
   container.innerHTML = '';
 
   Quagga.init({
@@ -3723,20 +3704,12 @@ function startRegisterScanner() {
       }
     },
     decoder: {
-      readers: [
-        "ean_reader",
-        "ean_8_reader",
-        "code_128_reader",
-        "code_39_reader"
-      ],
+      readers: ["ean_reader", "ean_8_reader", "code_128_reader", "code_39_reader"],
       multiple: false
     },
-    locate: false // 誤検知や余計なエラー音を防止
+    locate: true
   }, (err) => {
-    if (err) {
-      console.error("Register Quagga init err:", err);
-      return;
-    }
+    if (err) return;
     try {
       Quagga.start();
       const videoEl = container.querySelector('video');
@@ -3755,36 +3728,23 @@ function startRegisterScanner() {
 function registerScanHandler(result) {
   if (result && result.codeResult && result.codeResult.code) {
     const code = result.codeResult.code;
-    const errors = result.codeResult.decodedCodes
-      .filter(x => x.error !== undefined)
-      .map(x => x.error);
-    const avgError = errors.length > 0 ? errors.reduce((a, b) => a + b, 0) / errors.length : 0;
-
-    // 精度フィルタ（クリアに読み取れた場合のみQRハンドラへ渡す）
-    if (avgError < 0.25) {
+    if (code && (code.startsWith("LUCKY_") || code.length >= 5)) {
       handleRegisterQRCode(code);
     }
   }
 }
 
 function stopRegisterScanner() {
-  try {
-    Quagga.stop();
-    Quagga.offDetected(registerScanHandler);
-  } catch(e) {}
+  try { Quagga.stop(); Quagga.offDetected(registerScanHandler); } catch(e) {}
   const container = document.querySelector('#register-interactive');
-  if (container) {
-    container.innerHTML = '';
-  }
+  if (container) container.innerHTML = '';
 } 
 
-// --- 3. スタッフスキャンのカメラ起動部分（高精度＆黒帯解消版） ---
+// --- 3. スタッフスキャン ---
 function startStaffScanner() {
   stopStaffScanner();
   const container = document.querySelector('#staff-interactive');
   if (!container) return;
-
-  // 枠内を一度クリーンにする
   container.innerHTML = '';
 
   Quagga.init({
@@ -3798,20 +3758,12 @@ function startStaffScanner() {
       }
     },
     decoder: {
-      readers: [
-        "ean_reader",
-        "ean_8_reader",
-        "code_128_reader",
-        "code_39_reader"
-      ],
+      readers: ["ean_reader", "ean_8_reader", "code_128_reader", "code_39_reader"],
       multiple: false
     },
-    locate: false // 背景の木目などの誤検知を防ぎ、バーコード自体の読み取り精度を向上
+    locate: true
   }, (err) => {
-    if (err) {
-      console.error("Staff Quagga init err:", err);
-      return;
-    }
+    if (err) return;
     try {
       Quagga.start();
       const videoEl = container.querySelector('video');
@@ -3829,35 +3781,23 @@ function startStaffScanner() {
 
 function staffScanHandler(result) {
   if (!canScan) return;
-
-  // 読み取り精度（エラー判定）のフィルタリング
   if (result && result.codeResult && result.codeResult.code) {
     const code = result.codeResult.code;
    
-    // 確信度の低いノイズ読み取りを弾く（誤検知による「ブー」音防止）
-    const errors = result.codeResult.decodedCodes
-      .filter(x => x.error !== undefined)
-      .map(x => x.error);
-    const avgError = errors.length > 0 ? errors.reduce((a, b) => a + b, 0) / errors.length : 0;
+    // ゴミデータを弾く
+    if (!code || code.length < 5) return;
 
-    // 平均エラー率が閾値（0.25）以下のクリアな読み取りのみ合格とする
-    if (avgError < 0.25) {
-      canScan = false;
-      processScannedBarcode(code, true);
-    }
+    canScan = false;
+    processScannedBarcode(code, true);
   }
 }
 
 function stopStaffScanner() {
-  try {
-    Quagga.stop();
-    Quagga.offDetected(staffScanHandler);
-  } catch(e) {}
+  try { Quagga.stop(); Quagga.offDetected(staffScanHandler); } catch(e) {}
   const container = document.querySelector('#staff-interactive');
-  if (container) {
-    container.innerHTML = '';
-  }
+  if (container) container.innerHTML = '';
 } 
+
 
 
 // --- 4. クーポン用カメラ起動部分 ---

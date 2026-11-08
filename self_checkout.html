@@ -3613,8 +3613,7 @@ if (camSetting === 'external') {
 }
 }
 
-// --- 1. お客様モードのカメラ起動部分（QuaggaJS版） ---
-// --- 1. お客様モードのカメラ起動部分（QuaggaJS版） ---
+// --- 1. お客様モードのカメラ起動部分（QuaggaJS版：黒帯解消修正） ---
 function startCustomerScanner() {
   stopCustomerScanner();
   const container = document.querySelector('#interactive');
@@ -3624,21 +3623,37 @@ function startCustomerScanner() {
     inputStream: {
       type: "LiveStream",
       target: container,
-      constraints: { facingMode: "environment" }
+      constraints: {
+        facingMode: "environment",
+        width: { ideal: 640 },
+        height: { ideal: 480 }
+      }
     },
-    decoder: { readers: ["ean_reader", "ean_8_reader", "code_128_reader", "code_39_reader"], multiple: false },
+    decoder: {
+      readers: ["ean_reader", "ean_8_reader", "code_128_reader", "code_39_reader"],
+      multiple: false
+    },
     locate: true
-  }, (err) => { 
+  }, (err) => {
     if (err) {
       console.error("Quagga init err:", err);
       return;
     }
-    try { Quagga.start(); } catch(e){}
+    try {
+      Quagga.start();
+      // 黒帯やズレを防ぐためvideo要素のCSSを強制調整
+      const videoEl = container.querySelector('video');
+      if (videoEl) {
+        videoEl.style.width = "100%";
+        videoEl.style.height = "100%";
+        videoEl.style.objectFit = "cover";
+      }
+    } catch(e){}
   });
 
   try { Quagga.offDetected(customerScanHandler); } catch(e){}
   Quagga.onDetected(customerScanHandler);
-}
+} 
 
 function customerScanHandler(result) {
   if (!canScan) return;
@@ -3711,7 +3726,7 @@ function stopRegisterScanner() {
   if (video) video.srcObject = null;
 }
 
-// --- 3. スタッフスキャンのカメラ起動部分（jsQR版） ---
+// --- 3. スタッフスキャンのカメラ起動部分（jsQR版：読み取り改善） ---
 function startStaffScanner() {
   stopStaffScanner();
   const video = document.getElementById('staff-scan-video');
@@ -3727,18 +3742,26 @@ function startStaffScanner() {
       video.play().then(() => {
         if (staffScanInterval) clearInterval(staffScanInterval);
         staffScanInterval = setInterval(() => {
-          if (video.readyState === video.HAVE_ENOUGH_DATA && canScan) {
-            canvasElement.height = video.videoHeight;
-            canvasElement.width = video.videoWidth;
-            canvas.drawImage(video, 0, 0, canvasElement.width, canvasElement.height);
-            var imageData = canvas.getImageData(0, 0, canvasElement.width, canvasElement.height);
-            var codeResult = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: "dontInvert" });
-            if (codeResult) {
-              canScan = false;
-              processScannedBarcode(codeResult.data, true);
+          // ビデオの読み込み準備ができているかつ、スキャンロックがかかっていない場合
+          if (video.readyState >= 2 && canScan) {
+            const vWidth = video.videoWidth || 640;
+            const vHeight = video.videoHeight || 480;
+            canvasElement.width = vWidth;
+            canvasElement.height = vHeight;
+           
+            canvas.drawImage(video, 0, 0, vWidth, vHeight);
+            try {
+              var imageData = canvas.getImageData(0, 0, vWidth, vHeight);
+              var codeResult = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: "dontInvert" });
+              if (codeResult && codeResult.data) {
+                canScan = false;
+                processScannedBarcode(codeResult.data, true);
+              }
+            } catch (err) {
+              // キャンバスのセキュリティエラーなどをガード
             }
           }
-        }, 300);
+        }, 200); // 読み取り間隔を少し短くして検知率アップ
       }).catch(e => console.error(e));
     })
     .catch((err) => {
@@ -3750,7 +3773,7 @@ function startStaffScanner() {
         video.play();
       }).catch(e => console.warn("スタッフスキャンカメラ起動不可"));
     });
-}
+} 
 
 function stopStaffScanner() {
   if (staffScanInterval) { clearInterval(staffScanInterval); staffScanInterval = null; }

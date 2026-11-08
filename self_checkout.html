@@ -3672,14 +3672,13 @@ function customerScanHandler(result) {
   if (result && result.codeResult && result.codeResult.code) {
     const code = result.codeResult.code;
    
-    // ★ゴミデータや不完全な誤検知を弾く（8桁未満や極端に短いものは無視してブーを鳴らさない）
+    // ★ 4桁以下のゴミノイズだけを弾き、100001などの商品番号（5桁以上）は確実に通す
     if (!code || code.length < 5) return;
    
     canScan = false;
     processScannedBarcode(code, false);
   }
-}
-
+} 
 function stopCustomerScanner() {
   try { Quagga.stop(); Quagga.offDetected(customerScanHandler); } catch(e) {}
   const container = document.querySelector('#interactive');
@@ -3784,13 +3783,14 @@ function staffScanHandler(result) {
   if (result && result.codeResult && result.codeResult.code) {
     const code = result.codeResult.code;
    
-    // ゴミデータを弾く
+    // ★ 4桁以下のゴミノイズだけを弾き、100001などの商品番号（5桁以上）は確実に通す
     if (!code || code.length < 5) return;
 
     canScan = false;
     processScannedBarcode(code, true);
   }
-}
+} 
+
 
 function stopStaffScanner() {
   try { Quagga.stop(); Quagga.offDetected(staffScanHandler); } catch(e) {}

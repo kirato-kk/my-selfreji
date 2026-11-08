@@ -3614,45 +3614,35 @@ if (camSetting === 'external') {
 }
 
 // --- 1. お客様モードのカメラ起動部分（QuaggaJS版） ---
+// --- 1. お客様モードのカメラ起動部分（QuaggaJS版） ---
 function startCustomerScanner() {
+  stopCustomerScanner();
   const container = document.querySelector('#interactive');
-  // 既存のビデオ要素があれば削除してクリーンにする
-  const oldVideo = container.querySelector('video');
-  if (oldVideo) oldVideo.remove();
-  
+  if (!container) return;
+
   Quagga.init({
     inputStream: {
       type: "LiveStream",
       target: container,
-      constraints: {
-        facingMode: "environment"
-      }
+      constraints: { facingMode: "environment" }
     },
     decoder: { readers: ["ean_reader", "ean_8_reader", "code_128_reader", "code_39_reader"], multiple: false },
     locate: true
   }, (err) => { 
     if (err) {
-      console.error("Quagga initialization failed:", err);
-      // 失敗した場合は制約なしで再トライ
-      Quagga.init({
-        inputStream: { type: "LiveStream", target: container },
-        decoder: { readers: ["ean_reader", "ean_8_reader", "code_128_reader", "code_39_reader"] }
-      }, (err2) => {
-        if (!err2) Quagga.start();
-      });
+      console.error("Quagga init err:", err);
       return;
     }
-    Quagga.start();
+    try { Quagga.start(); } catch(e){}
   });
-  
-  // 重複登録を防ぐため一度外して登録
-  Quagga.offDetected(customerScanHandler);
+
+  try { Quagga.offDetected(customerScanHandler); } catch(e){}
   Quagga.onDetected(customerScanHandler);
 }
 
 function customerScanHandler(result) {
   if (!canScan) return;
-  const code = result.codeResult.code;
+  const code = result && result.codeResult ? result.codeResult.code : null;
   if (code) {
     canScan = false;
     processScannedBarcode(code, false);
@@ -3674,234 +3664,171 @@ function stopCustomerScanner() {
 }
 
 // --- 2. レジ画面のカメラ起動部分（jsQR版） ---
-let registerStream = null;
-let registerScanInterval = null;
-
 function startRegisterScanner() {
+  stopRegisterScanner();
   const video = document.getElementById('register-video');
   const canvasElement = document.getElementById('register-canvas');
   if (!video || !canvasElement) return;
   const canvas = canvasElement.getContext('2d');
 
-  stopRegisterScanner();
-
-  navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }).then((stream) => {
-    registerStream = stream;
-    video.srcObject = stream;
-    video.setAttribute("playsinline", true);
-    video.play().then(() => {
-      if (registerScanInterval) clearInterval(registerScanInterval);
-      registerScanInterval = setInterval(() => {
-        if (video.readyState === video.HAVE_ENOUGH_DATA) {
-          canvasElement.height = video.videoHeight;
-          canvasElement.width = video.videoWidth;
-          canvas.drawImage(video, 0, 0, canvasElement.width, canvasElement.height);
-          var imageData = canvas.getImageData(0, 0, canvasElement.width, canvasElement.height);
-          var code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: "dontInvert" });
-          if (code) { handleRegisterQRCode(code.data); }
-        }
-      }, 300);
-    }).catch(e => console.error(e));
-  }).catch((err) => { 
-    console.error("Register camera error, trying fallback:", err);
-    navigator.mediaDevices.getUserMedia({ video: true }).then((stream) => {
+  navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+    .then((stream) => {
       registerStream = stream;
       video.srcObject = stream;
       video.setAttribute("playsinline", true);
-      video.play();
-    }).catch(e => alert("レジ用カメラを起動できませんでした。ブラウザのカメラ権限をご確認ください。")); 
-  });
+      video.play().then(() => {
+        if (registerScanInterval) clearInterval(registerScanInterval);
+        registerScanInterval = setInterval(() => {
+          if (video.readyState === video.HAVE_ENOUGH_DATA) {
+            canvasElement.height = video.videoHeight;
+            canvasElement.width = video.videoWidth;
+            canvas.drawImage(video, 0, 0, canvasElement.width, canvasElement.height);
+            var imageData = canvas.getImageData(0, 0, canvasElement.width, canvasElement.height);
+            var code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: "dontInvert" });
+            if (code) { handleRegisterQRCode(code.data); }
+          }
+        }, 300);
+      }).catch(e => console.error(e));
+    })
+    .catch((err) => {
+      console.error("Register cam error, fallback:", err);
+      navigator.mediaDevices.getUserMedia({ video: true }).then((stream) => {
+        registerStream = stream;
+        video.srcObject = stream;
+        video.setAttribute("playsinline", true);
+        video.play();
+      }).catch(e => console.warn("レジカメラ起動不可"));
+    });
 }
 
 function stopRegisterScanner() {
   if (registerScanInterval) { clearInterval(registerScanInterval); registerScanInterval = null; }
-  if (registerStream) { registerStream.getTracks().forEach(track => track.stop()); registerStream = null; }
+  if (registerStream) { 
+    registerStream.getTracks().forEach(track => track.stop()); 
+    registerStream = null; 
+  }
   const video = document.getElementById('register-video');
   if (video) video.srcObject = null;
 }
 
 // --- 3. スタッフスキャンのカメラ起動部分（jsQR版） ---
-let staffScanStream = null;
-let staffScanInterval = null;
-
 function startStaffScanner() {
+  stopStaffScanner();
   const video = document.getElementById('staff-scan-video');
   const canvasElement = document.getElementById('staff-scan-canvas');
   if (!video || !canvasElement) return;
   const canvas = canvasElement.getContext('2d');
 
-  stopStaffScanner();
-
-  navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }).then((stream) => {
-    staffScanStream = stream;
-    video.srcObject = stream;
-    video.setAttribute("playsinline", true);
-    video.play().then(() => {
-      if (staffScanInterval) clearInterval(staffScanInterval);
-      staffScanInterval = setInterval(() => {
-        if (video.readyState === video.HAVE_ENOUGH_DATA && canScan) {
-          canvasElement.height = video.videoHeight;
-          canvasElement.width = video.videoWidth;
-          canvas.drawImage(video, 0, 0, canvasElement.width, canvasElement.height);
-          var imageData = canvas.getImageData(0, 0, canvasElement.width, canvasElement.height);
-          var codeResult = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: "dontInvert" });
-          if (codeResult) {
-            canScan = false;
-            processScannedBarcode(codeResult.data, true);
-          }
-        }
-      }, 300);
-    }).catch(e => console.error(e));
-  }).catch((err) => { 
-    console.error("Staff scan camera error, trying fallback:", err);
-    navigator.mediaDevices.getUserMedia({ video: true }).then((stream) => {
+  navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+    .then((stream) => {
       staffScanStream = stream;
       video.srcObject = stream;
       video.setAttribute("playsinline", true);
-      video.play();
-    }).catch(e => alert("スタッフスキャン用カメラを起動できませんでした。")); 
-  });
+      video.play().then(() => {
+        if (staffScanInterval) clearInterval(staffScanInterval);
+        staffScanInterval = setInterval(() => {
+          if (video.readyState === video.HAVE_ENOUGH_DATA && canScan) {
+            canvasElement.height = video.videoHeight;
+            canvasElement.width = video.videoWidth;
+            canvas.drawImage(video, 0, 0, canvasElement.width, canvasElement.height);
+            var imageData = canvas.getImageData(0, 0, canvasElement.width, canvasElement.height);
+            var codeResult = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: "dontInvert" });
+            if (codeResult) {
+              canScan = false;
+              processScannedBarcode(codeResult.data, true);
+            }
+          }
+        }, 300);
+      }).catch(e => console.error(e));
+    })
+    .catch((err) => {
+      console.error("Staff scan cam error, fallback:", err);
+      navigator.mediaDevices.getUserMedia({ video: true }).then((stream) => {
+        staffScanStream = stream;
+        video.srcObject = stream;
+        video.setAttribute("playsinline", true);
+        video.play();
+      }).catch(e => console.warn("スタッフスキャンカメラ起動不可"));
+    });
 }
 
 function stopStaffScanner() {
   if (staffScanInterval) { clearInterval(staffScanInterval); staffScanInterval = null; }
-  if (staffScanStream) { staffScanStream.getTracks().forEach(track => track.stop()); staffScanStream = null; }
+  if (staffScanStream) { 
+    staffScanStream.getTracks().forEach(track => track.stop()); 
+    staffScanStream = null; 
+  }
   const video = document.getElementById('staff-scan-video');
   if (video) video.srcObject = null;
 }
 
 // --- 4. クーポン用カメラ起動部分 ---
-let couponStream = null;
-let couponScanInterval = null;
-
 function startCouponScanner() {
+  stopCouponScanner();
   const video = document.getElementById('coupon-video');
   const canvasElement = document.getElementById('coupon-canvas');
   if (!video || !canvasElement) return;
   const canvas = canvasElement.getContext('2d');
 
-  stopCouponScanner();
-
-  navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }).then((stream) => {
-    couponStream = stream;
-    video.srcObject = stream;
-    video.setAttribute("playsinline", true);
-    video.play().then(() => {
-      if (couponScanInterval) clearInterval(couponScanInterval);
-      couponScanInterval = setInterval(() => {
-        if (video.readyState === video.HAVE_ENOUGH_DATA) {
-          canvasElement.height = video.videoHeight;
-          canvasElement.width = video.videoWidth;
-          canvas.drawImage(video, 0, 0, canvasElement.width, canvasElement.height);
-          var imageData = canvas.getImageData(0, 0, canvasElement.width, canvasElement.height);
-          var code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: "dontInvert" });
-          if (code) { processCouponData(code.data); }
-        }
-      }, 300);
-    }).catch(e => console.error(e));
-  }).catch((err) => { 
-    console.error("Coupon camera error:", err);
-    navigator.mediaDevices.getUserMedia({ video: true }).then((stream) => {
+  navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+    .then((stream) => {
       couponStream = stream;
       video.srcObject = stream;
       video.setAttribute("playsinline", true);
-      video.play();
-    }).catch(e => alert("クーポン用カメラを起動できませんでした。")); 
-  });
+      video.play().then(() => {
+        if (couponScanInterval) clearInterval(couponScanInterval);
+        couponScanInterval = setInterval(() => {
+          if (video.readyState === video.HAVE_ENOUGH_DATA) {
+            canvasElement.height = video.videoHeight;
+            canvasElement.width = video.videoWidth;
+            canvas.drawImage(video, 0, 0, canvasElement.width, canvasElement.height);
+            var imageData = canvas.getImageData(0, 0, canvasElement.width, canvasElement.height);
+            var code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: "dontInvert" });
+            if (code) { processCouponData(code.data); }
+          }
+        }, 300);
+      }).catch(e => console.error(e));
+    })
+    .catch((err) => {
+      console.error("Coupon cam error, fallback:", err);
+      navigator.mediaDevices.getUserMedia({ video: true }).then((stream) => {
+        couponStream = stream;
+        video.srcObject = stream;
+        video.setAttribute("playsinline", true);
+        video.play();
+      }).catch(e => console.warn("クーポンカメラ起動不可"));
+    });
 }
 
 function stopCouponScanner() {
   if (couponScanInterval) { clearInterval(couponScanInterval); couponScanInterval = null; }
-  if (couponStream) { couponStream.getTracks().forEach(track => track.stop()); couponStream = null; }
+  if (couponStream) { 
+    couponStream.getTracks().forEach(track => track.stop()); 
+    couponStream = null; 
+  }
   const video = document.getElementById('coupon-video');
   if (video) video.srcObject = null;
 }
 
-// --- 5. QRコード読み取りハンドラ ---
-function handleRegisterQRCode(codeData) {
-  if (codeData && codeData.startsWith("LUCKY_")) {
-    stopRegisterScanner(); 
-    playSound(1200, 0.1);
-    const parts = codeData.split("_");
-    const itemCodes = parts.slice(1, parts.length - 1);
-    let parsedItemsMap = {};
-    itemCodes.forEach(c => {
-      let foundName = "";
-      let foundPrice = 0;
-      let origPrice = null;
-      if (c.endsWith("_0")) {
-        const baseCode = c.replace("_0", "");
-        if (itemDatabase[baseCode]) {
-          foundName = itemDatabase[baseCode].name;
-          foundPrice = 0;
-        }
-      } else if (itemDatabase[c]) {
-        const base = itemDatabase[c];
-        foundName = base.name;
-        if (base.waribiki && base.waribiki > 0) {
-          origPrice = base.price;
-          if (base.waribiki <= 99) {
-            foundPrice = Math.round(base.price * (1 - base.waribiki / 100));
-          } else {
-            foundPrice = Math.max(0, base.price - base.waribiki);
-          }
-        } else {
-          foundPrice = base.price;
-        }
-      } else {
-        for (let orig in itemDatabase) {
-          if (c.startsWith(orig) && c.length > orig.length) {
-            const base = itemDatabase[orig];
-            const valStr = c.substring(orig.length);
-            const valNum = parseInt(valStr);
-            foundName = base.name;
-            origPrice = base.price;
-            if (valStr.length <= 2) {
-              foundPrice = Math.round(base.price * (1 - valNum / 100));
-            } else {
-              foundPrice = Math.max(0, base.price - valNum);
-            }
-            break;
-          }
-        }
-      }
-      if (foundName) {
-        const taxPrice = Math.round(foundPrice * 1.1);
-        const key = `${foundName}_${taxPrice}_${origPrice || 0}_${c}`;
-        if (!parsedItemsMap[key]) {
-          parsedItemsMap[key] = {
-            name: foundName,
-            price: foundPrice,
-            originalPrice: origPrice,
-            taxPrice: taxPrice,
-            quantity: 0,
-            code: c
-          };
-        }
-        parsedItemsMap[key].quantity += 1;
-      }
-    });
-    registerParsedCartItems = Object.values(parsedItemsMap);
-    renderRegisterConfirmList();
-    document.getElementById('register-confirm-modal').style.display = 'flex';
-  }
-}
-
-// --- 6. 各種トグルスイッチの連動関数 ---
+// --- 5. 各種トグルスイッチの連動関数 ---
 function toggleCustomerCamera(checkbox) {
   const offOverlay = document.getElementById('customer-camera-off-overlay');
   const statusMsg = document.getElementById('status-msg');
   localStorage.setItem('customerCameraOn', checkbox.checked);
   if (checkbox.checked) {
-    offOverlay.style.display = 'none';
-    statusMsg.textContent = "枠内にバーコードをかざしてください";
-    statusMsg.style.color = "#2575fc";
+    if (offOverlay) offOverlay.style.display = 'none';
+    if (statusMsg) {
+      statusMsg.textContent = "枠内にバーコードをかざしてください";
+      statusMsg.style.color = "#2575fc";
+    }
     startCustomerScanner();
   } else {
     stopCustomerScanner();
-    offOverlay.style.display = 'flex';
-    statusMsg.textContent = "カメラはOFFです";
-    statusMsg.style.color = "#747d8c";
+    if (offOverlay) offOverlay.style.display = 'flex';
+    if (statusMsg) {
+      statusMsg.textContent = "カメラはOFFです";
+      statusMsg.style.color = "#747d8c";
+    }
   }
 }
 
@@ -3910,15 +3837,19 @@ function toggleRegisterCamera(checkbox) {
   const regStatusMsg = document.getElementById('register-status-msg');
   localStorage.setItem('registerCameraOn', checkbox.checked);
   if (checkbox.checked) {
-    offOverlay.style.display = 'none';
-    regStatusMsg.textContent = "QRコードを枠内にかざしてください";
-    regStatusMsg.style.color = "#ff4757";
+    if (offOverlay) offOverlay.style.display = 'none';
+    if (regStatusMsg) {
+      regStatusMsg.textContent = "QRコードを枠内にかざしてください";
+      regStatusMsg.style.color = "#ff4757";
+    }
     startRegisterScanner();
   } else {
     stopRegisterScanner();
-    offOverlay.style.display = 'flex';
-    regStatusMsg.textContent = "カメラはOFFです";
-    regStatusMsg.style.color = "#747d8c";
+    if (offOverlay) offOverlay.style.display = 'flex';
+    if (regStatusMsg) {
+      regStatusMsg.textContent = "カメラはOFFです";
+      regStatusMsg.style.color = "#747d8c";
+    }
   }
 }
 
@@ -3927,15 +3858,19 @@ function toggleStaffScanCamera(checkbox) {
   const stStatusMsg = document.getElementById('staff-scan-status-msg');
   localStorage.setItem('staffCameraOn', checkbox.checked);
   if (checkbox.checked) {
-    offOverlay.style.display = 'none';
-    stStatusMsg.textContent = "枠内に商品バーコードをかざしてください";
-    stStatusMsg.style.color = "#00adb5";
+    if (offOverlay) offOverlay.style.display = 'none';
+    if (stStatusMsg) {
+      stStatusMsg.textContent = "枠内に商品バーコードをかざしてください";
+      stStatusMsg.style.color = "#00adb5";
+    }
     startStaffScanner();
   } else {
     stopStaffScanner();
-    offOverlay.style.display = 'flex';
-    stStatusMsg.textContent = "カメラはOFFです";
-    stStatusMsg.style.color = "#747d8c";
+    if (offOverlay) offOverlay.style.display = 'flex';
+    if (stStatusMsg) {
+      stStatusMsg.textContent = "カメラはOFFです";
+      stStatusMsg.style.color = "#747d8c";
+    }
   }
 }
 let savedBarcodes = JSON.parse(localStorage.getItem('myPosSavedBarcodes')) || [];

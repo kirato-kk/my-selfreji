@@ -2168,7 +2168,7 @@ if (type === 'pct') {
 label.textContent = "割引率";
 document.getElementById('disc-input-value').value = "";
 } else {
-label.textContent = "割引金額";
+label.textContent = "割引金額 (1〜5桁: 例 100)";
 document.getElementById('disc-input-value').value = "";
 }
 }
@@ -2183,7 +2183,7 @@ if (type === 'pct') {
 if (numVal < 1 || numVal > 99) { alert("割引率は1〜99の間で入力してください"); return; }
 suffix = String(numVal).padStart(2, '0');
 } else {
-if (numVal < 100 || numVal > 9999) { alert("円引きは3〜4桁(100〜9999)で入力してください"); return; }
+if (numVal < 1 || numVal > 99999) { alert("円引きは1〜5桁(1〜99999円)で入力してください"); return; }
 suffix = String(numVal);
 }
 currentDiscBarcode = `${discSelectedProduct.code}${suffix}`;
@@ -2204,7 +2204,8 @@ try {
 JsBarcode("#disc-result-svg", currentDiscBarcode, { format: "CODE128", width: 1.8, height: 50, displayValue: true, fontSize: 12 });
 } catch(e) { console.error(e); }
 document.getElementById('disc-result-modal').style.display = 'flex';
-}
+} 
+
 
 function promptSaveCurrentDiscDiscBarcode() {
 if (!currentDiscBarcode) return;
@@ -2770,11 +2771,16 @@ stTotal += subtotal;
 stCount += remainQty;
 let optionsHtml = '';
 for (let q = 1; q <= 20; q++) { optionsHtml += `<option value="${q}" ${item.quantity === q ? 'selected' : ''}>${q}</option>`; }
+
+let priceDisplayHtml = `単価: ${item.price}円 (税込${item.taxPrice}円)`;
+if (item.originalPrice) {
+priceDisplayHtml = `単価: <s style="color:#ff4757; margin-right:4px;">${item.originalPrice}円</s> <b style="color:#ff4757; font-size:14px;">${item.price}円</b> (税込${item.taxPrice}円)`;
+}
 container.innerHTML += `
 <div class="cart-item-row">
 <div class="cart-item-left">
 <span>▶ ${item.name}</span>
-<small style="color: #666;">単価: ${item.price}円 (税込${item.taxPrice}円)</small>
+<small style="color: #666;">${priceDisplayHtml}</small>
 </div>
 <div class="cart-item-right">
 <div class="qty-select-wrapper">
@@ -2789,7 +2795,7 @@ container.innerHTML += `
 });
 document.getElementById('staff-scan-total-price').textContent = stTotal;
 document.getElementById('staff-scan-total-count').textContent = stCount;
-}
+} 
 
 function changeStaffQuantity(index, newQty) {
 let qty = parseInt(newQty);

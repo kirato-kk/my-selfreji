@@ -2119,7 +2119,7 @@ openTagMakerMenuModal();
 }
 function sharePriceTagImage() {
 const area = document.getElementById('tag-result-capture-area');
-html2canvas(area, { scale: 2.0, backgroundColor: '#ffffff', logging: false }).then(canvas => {
+html2canvas(area, { scale: 1.5, backgroundColor: '#ffffff', logging: false, useCORS: true }).then(canvas => {
 canvas.toBlob(blob => {
 const file = new File([blob], "price_tag.jpg", { type: "image/jpeg" });
 if (navigator.canShare && navigator.canShare({ files: [file] })) {
@@ -2128,6 +2128,7 @@ navigator.share({ title: '値札', text: '生成された値札画像です', fi
 const link = document.createElement('a'); link.download = 'price_tag.jpg'; link.href = canvas.toDataURL('image/jpeg', 0.85); link.click();
 }
 }, 'image/jpeg', 0.85);
+});
 });
 }
 
@@ -2213,8 +2214,9 @@ break;
 }
 discSelectedProduct = { code: realCode, name: prodName, price: basePrice };
 document.getElementById('disc-target-product-name').textContent = `${prodName} (¥${basePrice})`;
-document.getElementById('disc-input-value').value = "";
-document.getElementById('disc-input-modal').style.display = 'flex';
+discCalcValue = ""; // テンキーの入力値をリセット
+updateDiscCalcDisplay();
+document.getElementById('disc-input-modal').style.display = 'flex'; // モーダルを確実に表示
 }
 function toggleDiscTypeInput() {
 const type = document.querySelector('input[name="disc-type"]:checked').value;
@@ -2278,7 +2280,7 @@ alert("割引ステッカーデザインを保存しました！");
 
 function shareDiscBarcodeImage() {
 const area = document.getElementById('disc-result-area');
-html2canvas(area, { scale: 2.0, backgroundColor: null, logging: false }).then(canvas => {
+html2canvas(area, { scale: 1.5, backgroundColor: '#ffffff', logging: false, useCORS: true }).then(canvas => {
 canvas.toBlob(blob => {
 const file = new File([blob], `discount_${currentDiscBarcode}.jpg`, { type: "image/jpeg" });
 if (navigator.canShare && navigator.canShare({ files: [file] })) {
@@ -2287,6 +2289,7 @@ navigator.share({ title: '割引バーコード', text: `割引コード: ${curr
 const link = document.createElement('a'); link.download = `discount_${currentDiscBarcode}.jpg`; link.href = canvas.toDataURL('image/jpeg', 0.85); link.click();
 }
 }, 'image/jpeg', 0.85);
+});
 });
 }
 function closeDiscResultModal() {
@@ -3700,10 +3703,18 @@ document.getElementById('receipt-total-text').textContent = `${totalItemsCount}�
 document.getElementById('receipt-pay-method-text').textContent = selectedPayMethod === '11Pay' ? '11Pay決済' : '現金';
 document.getElementById('receipt-cash-text').textContent = `${lastReceivedCash}円`;
 document.getElementById('receipt-change-text').textContent = `${lastChangeCash}円`;
+// openReceiptModalFromChange 内の該当部分
 const amountStr = String(finalTotal).padStart(10, '0');
 const receiptBarcodeCode = `20${amountStr}`;
 try {
-JsBarcode("#receipt-barcode-element", receiptBarcodeCode, { format: "CODE128", width: 1.2, height: 35, displayValue: true, fontSize: 10, margin: 0 });
+  JsBarcode("#receipt-barcode-element", receiptBarcodeCode, { 
+    format: "CODE128", 
+    width: 2.2,       // 線を太くしてつぶれを防止
+    height: 60,       // 高さを出して読み取りやすく
+    displayValue: true, 
+    fontSize: 12,
+    margin: 5
+  });
 } catch (e) { console.error(e); }
 document.getElementById('receipt-modal').style.display = 'flex';
 const itemsPurchased = `まとめ買い・商品合計 (¥${finalTotal})`;
@@ -3714,11 +3725,10 @@ localStorage.setItem('myPosSalesHistory', JSON.stringify(salesHistory));
 /* レシート・バーコードの高速画像化・印刷最適化設定 */
 function shareReceiptImage() {
 const target = document.getElementById('receipt-target');
-// 影や余分なグラデーションを一時的に排除して綺麗な白背景に固定
 target.style.boxShadow = "none";
 target.style.background = "#ffffff";
-html2canvas(target, { scale: 2, backgroundColor: '#ffffff', logging: false, useCORS: true }).then(canvas => {
-target.style.boxShadow = ""; // 戻す
+html2canvas(target, { scale: 1.5, backgroundColor: '#ffffff', logging: false, useCORS: true }).then(canvas => {
+target.style.boxShadow = "";
 target.style.background = "";
 canvas.toBlob(blob => {
 const file = new File([blob], "receipt.jpg", { type: "image/jpeg" });
@@ -3749,7 +3759,7 @@ margin: 2
 let manualStepValue = "";
 function openManualBarcodeModalFromMenu() {
 document.getElementById('barcode-menu-modal').style.display = 'none';
-manualStepValue = "4901234567890";
+manualStepValue = "";
 updateManualStepDisplay();
 document.getElementById('manual-input-step-modal').style.display = 'flex';
 }

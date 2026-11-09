@@ -1879,9 +1879,9 @@ document.getElementById('maker-val').value = "";
 }
 }
 function generateDiscountCouponFinal() {
-const title = document.getElementById('maker-title').value.trim();
-const val = document.getElementById('maker-val').value.trim();
-if (!title || !val || isNaN(val)) { alert("正しいタイトルと数値を入力してください"); return; }
+  const title = document.getElementById('maker-title').value.trim();
+  const val = makerCalcValue.trim(); // ← テンキーの入力変数に変更
+  if (!title || !val || isNaN(val)) { alert("正しいタイトルと数値を入力してください"); return; }
 const couponVal = `${val}${document.querySelector('input[name="maker-disc-type"]:checked').value === 'pct' ? '%' : '円'}`;
 const newC = { id: Date.now(), title: title, val: couponVal };
 savedCoupons.unshift(newC);
@@ -2231,9 +2231,9 @@ document.getElementById('disc-input-value').value = "";
 }
 let currentDiscBarcode = "";
 function generateDiscountBarcodeFinal() {
-const type = document.querySelector('input[name="disc-type"]:checked').value;
-const val = document.getElementById('disc-input-value').value.trim();
-if (!val || isNaN(val)) { alert("有効な数値を入力してください"); return; }
+  const type = document.querySelector('input[name="disc-type"]:checked').value;
+  const val = discCalcValue.trim(); // ← テンキーの入力変数に変更
+  if (!val || isNaN(val)) { alert("有効な数値を入力してください"); return; }
 const numVal = parseInt(val);
 let suffix = "";
 if (type === 'pct') {

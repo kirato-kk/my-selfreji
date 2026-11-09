@@ -3885,10 +3885,9 @@ if (camSetting === 'external') {
 // --- 1. お客様モード ---
 function startCustomerScanner() {
   stopCustomerScanner();
-  const container = document.querySelector('#customer-interactive'); // ← #interactive から変更
+  const container = document.querySelector('#customer-interactive');
   if (!container) return;
   container.innerHTML = '';
-  // ... (中略)
 
   Quagga.init({
     inputStream: {
@@ -3904,7 +3903,7 @@ function startCustomerScanner() {
       readers: ["ean_reader", "ean_8_reader", "code_128_reader", "code_39_reader"],
       multiple: false
     },
-    locate: true // ★離れた距離や角度でも読めるようにtrueに戻す
+    locate: true
   }, (err) => {
     if (err) return;
     try {
@@ -3926,19 +3925,19 @@ function customerScanHandler(result) {
   if (!canScan) return;
   if (result && result.codeResult && result.codeResult.code) {
     const code = result.codeResult.code;
-   
-    // ★ 4桁以下のゴミノイズだけを弾き、100001などの商品番号（5桁以上）は確実に通す
     if (!code || code.length < 5) return;
-   
     canScan = false;
     processScannedBarcode(code, false);
   }
 } 
+
 function stopCustomerScanner() {
   try { Quagga.stop(); Quagga.offDetected(customerScanHandler); } catch(e) {}
-  const container = document.querySelector('#customer-interactive'); // ← #interactive から変更
+  const container = document.querySelector('#customer-interactive');
   if (container) container.innerHTML = '';
 }
+
+
 // --- 2. レジ画面 ---
 function startRegisterScanner() {
   stopRegisterScanner();
@@ -3993,6 +3992,7 @@ function stopRegisterScanner() {
   if (container) container.innerHTML = '';
 } 
 
+
 // --- 3. スタッフスキャン ---
 function startStaffScanner() {
   stopStaffScanner();
@@ -4036,24 +4036,17 @@ function staffScanHandler(result) {
   if (!canScan) return;
   if (result && result.codeResult && result.codeResult.code) {
     const code = result.codeResult.code;
-   
-    // ★ 4桁以下のゴミノイズだけを弾き、100001などの商品番号（5桁以上）は確実に通す
     if (!code || code.length < 5) return;
-
     canScan = false;
     processScannedBarcode(code, true);
   }
 } 
 
-
 function stopStaffScanner() {
   try { Quagga.stop(); Quagga.offDetected(staffScanHandler); } catch(e) {}
   const container = document.querySelector('#staff-interactive');
   if (container) container.innerHTML = '';
-} 
-
-
-
+}
 // --- 4. クーポン用カメラ起動部分 ---
 function startCouponScanner() {
   stopCouponScanner();

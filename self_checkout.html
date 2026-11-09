@@ -756,23 +756,37 @@ box-sizing: border-box !important;
 </div>
 </div>
 
-<!-- ④ 割引クーポン：入力モーダル -->
+<!-- ④ 割引クーポン：入力モーダル（テンキー付き） -->
 <div class="modal-overlay" id="discount-coupon-input-modal">
 <div class="modal-content-box" style="text-align: center;">
-<h3 style="color:#e67e22;">割引クーポン作成</h3>
-<div style="text-align: left; background: #f8f9fa; padding: 12px; border-radius: 8px; margin: 12px 0;">
-<label style="display:block; font-size:12px; font-weight:bold; margin-bottom:6px;">クーポン名</label>
-<input type="text" id="maker-title" placeholder="例: 特別割引券" style="width:100%; padding:8px; box-sizing:border-box; margin-bottom:10px; border:1px solid #ccc; border-radius:6px; font-size:13px;">
-<label style="display:block; font-size:12px; font-weight:bold; margin-bottom:6px;">割引の種類</label>
-<div style="display:flex; gap:15px; margin-bottom:10px;">
+<h3 style="color:#e67e22; margin-bottom:5px;">割引クーポン作成</h3>
+<div style="text-align: left; background: #f8f9fa; padding: 10px; border-radius: 8px; margin-bottom: 8px;">
+<label style="display:block; font-size:11px; font-weight:bold; margin-bottom:2px;">クーポン名</label>
+<input type="text" id="maker-title" placeholder="例: 特別割引券" style="width:100%; padding:6px; box-sizing:border-box; margin-bottom:6px; border:1px solid #ccc; border-radius:6px; font-size:13px;">
+<label style="display:block; font-size:11px; font-weight:bold; margin-bottom:2px;">割引の種類</label>
+<div style="display:flex; gap:15px; margin-bottom:6px;">
 <label><input type="radio" name="maker-disc-type" value="pct" checked onclick="toggleMakerDiscTypeInput()"> % 割引</label>
 <label><input type="radio" name="maker-disc-type" value="yen" onclick="toggleMakerDiscTypeInput()"> 円引き</label>
 </div>
-<label style="display:block; font-size:12px; font-weight:bold; margin-bottom:4px;" id="maker-disc-val-label">割引値</label>
-<input type="number" id="maker-val" placeholder="例: 10" style="width:100%; padding:8px; font-size:16px; border:1px solid #ccc; border-radius:6px; box-sizing:border-box;">
+<label style="display:block; font-size:11px; font-weight:bold; margin-bottom:2px;" id="maker-disc-val-label">割引値</label>
+<div class="calc-display" id="maker-calc-display" style="font-size: 20px; padding: 6px; margin-bottom: 6px; background:#fff;">0</div>
 </div>
-<div style="display:flex; gap:10px;">
-<button class="modal-btn-back" style="flex:1;" onclick="backToCouponTypeSelectFromDiscount()">← 戻る</button>
+<div class="calculator-pad" style="gap: 4px; margin: 5px 0;">
+<button class="calc-key" style="padding:8px; font-size:15px;" onclick="appendMakerCalc('1')">1</button>
+<button class="calc-key" style="padding:8px; font-size:15px;" onclick="appendMakerCalc('2')">2</button>
+<button class="calc-key" style="padding:8px; font-size:15px;" onclick="appendMakerCalc('3')">3</button>
+<button class="calc-key" style="padding:8px; font-size:15px;" onclick="appendMakerCalc('4')">4</button>
+<button class="calc-key" style="padding:8px; font-size:15px;" onclick="appendMakerCalc('5')">5</button>
+<button class="calc-key" style="padding:8px; font-size:15px;" onclick="appendMakerCalc('6')">6</button>
+<button class="calc-key" style="padding:8px; font-size:15px;" onclick="appendMakerCalc('7')">7</button>
+<button class="calc-key" style="padding:8px; font-size:15px;" onclick="appendMakerCalc('8')">8</button>
+<button class="calc-key" style="padding:8px; font-size:15px;" onclick="appendMakerCalc('9')">9</button>
+<button class="calc-key" style="padding:8px; font-size:15px;" onclick="clearMakerCalc()">C</button>
+<button class="calc-key" style="padding:8px; font-size:15px;" onclick="appendMakerCalc('0')">0</button>
+<button class="calc-key" style="padding:8px; font-size:15px;" onclick="backspaceMakerCalc()">←</button>
+</div>
+<div style="display:flex; gap:10px; margin-top:5px;">
+<button class="modal-btn-back" style="flex:1;" onclick="closeDiscountCouponInputModal()">閉じる</button>
 <button class="btn pay-btn" style="flex:2; margin:0; padding:10px; background:#e67e22;" onclick="generateDiscountCouponFinal()">完了</button>
 </div>
 </div>
@@ -1047,29 +1061,46 @@ box-sizing: border-box !important;
   <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-5.04-6.71l-2.75 3.54-1.96-2.36c-.2-.25-.57-.24-.75.01l-2.23 2.97c-.23.31-.01.75.38.75h13.08c.39 0 .61-.44.38-.75l-4.13-5.5c-.2-.27-.6-.27-.8 0z"/></svg>
 </button>
 </div>
-<button class="modal-btn-back" style="margin-top: 10px;" onclick="closeDiscScanModal()">← 戻る</button>
+<button class="modal-btn-back" style="margin-top: 10px;" onclick="closeDiscScanModalToSettings()">閉じる</button>
 </div>
 </div>
 
+
+<!-- 割引設定モーダル（テンキー付き） -->
 <div class="modal-overlay" id="disc-input-modal">
 <div class="modal-content-box" style="text-align: center;">
-<h3>割引設定</h3>
-<p style="font-size: 13px; font-weight: bold; color: #2575fc; margin: 8px 0;" id="disc-target-product-name">商品名</p>
-<div style="text-align: left; background: #f8f9fa; padding: 12px; border-radius: 8px; margin-bottom: 12px;">
-<label style="display:block; font-size:12px; font-weight:bold; margin-bottom:6px;">割引の種類</label>
-<div style="display:flex; gap:15px; margin-bottom:10px;">
+<h3 style="margin-bottom:2px;">割引設定</h3>
+<p style="font-size: 12px; font-weight: bold; color: #2575fc; margin: 2px 0;" id="disc-target-product-name">商品名</p>
+<div style="text-align: left; background: #f8f9fa; padding: 10px; border-radius: 8px; margin-bottom: 6px;">
+<label style="display:block; font-size:11px; font-weight:bold; margin-bottom:2px;">割引の種類</label>
+<div style="display:flex; gap:15px; margin-bottom:4px;">
 <label><input type="radio" name="disc-type" value="pct" checked onclick="toggleDiscTypeInput()"> % 割引</label>
 <label><input type="radio" name="disc-type" value="yen" onclick="toggleDiscTypeInput()"> 円引き</label>
 </div>
-<label style="display:block; font-size:12px; font-weight:bold; margin-bottom:4px;" id="disc-val-label">割引値</label>
-<input type="number" id="disc-input-value" placeholder="例: 10" style="width:100%; padding:8px; font-size:16px; border:1px solid #ccc; border-radius:6px; box-sizing:border-box;">
+<label style="display:block; font-size:11px; font-weight:bold; margin-bottom:2px;" id="disc-val-label">割引値</label>
+<div class="calc-display" id="disc-calc-display" style="font-size: 20px; padding: 6px; margin-bottom: 4px; background:#fff;">0</div>
 </div>
-<div style="display:flex; gap:10px;">
-<button class="modal-btn-back" style="flex:1;" onclick="backFromDiscInputToScan()">← 戻る</button>
+<div class="calculator-pad" style="gap: 4px; margin: 5px 0;">
+<button class="calc-key" style="padding:8px; font-size:15px;" onclick="appendDiscCalc('1')">1</button>
+<button class="calc-key" style="padding:8px; font-size:15px;" onclick="appendDiscCalc('2')">2</button>
+<button class="calc-key" style="padding:8px; font-size:15px;" onclick="appendDiscCalc('3')">3</button>
+<button class="calc-key" style="padding:8px; font-size:15px;" onclick="appendDiscCalc('4')">4</button>
+<button class="calc-key" style="padding:8px; font-size:15px;" onclick="appendDiscCalc('5')">5</button>
+<button class="calc-key" style="padding:8px; font-size:15px;" onclick="appendDiscCalc('6')">6</button>
+<button class="calc-key" style="padding:8px; font-size:15px;" onclick="appendDiscCalc('7')">7</button>
+<button class="calc-key" style="padding:8px; font-size:15px;" onclick="appendDiscCalc('8')">8</button>
+<button class="calc-key" style="padding:8px; font-size:15px;" onclick="appendDiscCalc('9')">9</button>
+<button class="calc-key" style="padding:8px; font-size:15px;" onclick="clearDiscCalc()">C</button>
+<button class="calc-key" style="padding:8px; font-size:15px;" onclick="appendDiscCalc('0')">0</button>
+<button class="calc-key" style="padding:8px; font-size:15px;" onclick="backspaceDiscCalc()">←</button>
+</div>
+<div style="display:flex; gap:10px; margin-top:5px;">
+<button class="modal-btn-back" style="flex:1;" onclick="closeDiscInputModalFromX()">閉じる</button>
 <button class="btn pay-btn" style="flex:2; margin:0; padding:10px;" onclick="generateDiscountBarcodeFinal()">完了</button>
 </div>
 </div>
-</div>
+</div> 
+
 
 <!-- 画像①風デザインを適用した割引バーコード結果モーダル -->
 <div class="modal-overlay" id="disc-result-modal">
@@ -1339,10 +1370,7 @@ box-sizing: border-box !important;
 <div class="modal-overlay" id="manual-barcode-modal">
 <div class="modal-content-box" style="text-align: center; position: relative;">
 <h2>数字でのバーコード作成</h2>
-<p style="font-size:12px; color:#666; margin-bottom: 10px;">数字を入力してください</p>
-<div style="margin-bottom: 10px;">
-<input type="text" id="manual-barcode-input" placeholder="例: 4901234567890" style="width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 5px; font-size: 14px; text-align: center;" oninput="generateManualBarcode()">
-</div>
+<p style="font-size:12px; color:#666; margin-bottom: 10px;">生成されたバーコード</p>
 <div style="position: absolute; top: 15px; right: 15px; display: flex; gap: 5px;">
 <button class="reload-barcode-btn" onclick="promptSaveManualBarcode()" title="このバーコードを保存" style="position: static; background: #2ed573; color: white;"><svg viewBox="0 0 24 24"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></svg></button>
 </div>
@@ -1353,7 +1381,6 @@ box-sizing: border-box !important;
 <button class="close-btn" onclick="closeManualBarcodeModal()">閉じる</button>
 </div>
 </div>
-
 <div class="modal-overlay" id="history-modal">
 <div class="modal-content-box" style="text-align: left; font-family: 'Segoe UI', sans-serif;">
 <h2>売上履歴</h2>
@@ -1391,6 +1418,33 @@ box-sizing: border-box !important;
 </div>
 </div>
 </div>
+
+<!-- ================= 🔢 数字でのバーコード作成：ステップ1（テンキー入力用新モーダル） ================= -->
+<div class="modal-overlay" id="manual-input-step-modal">
+<div class="modal-content-box" style="text-align: center;">
+<h2 style="font-size: 18px; color: #2575fc; margin-bottom: 5px;">数字でのバーコード作成</h2>
+<p style="font-size: 12px; color: #666; margin-bottom: 10px;">バーコードにする数字を入力してください</p>
+<div class="calc-display" id="manual-step-display" style="font-size: 22px; letter-spacing: 1px;"></div>
+<div class="calculator-pad">
+<button class="calc-key" onclick="appendManualStepCalc('1')">1</button>
+<button class="calc-key" onclick="appendManualStepCalc('2')">2</button>
+<button class="calc-key" onclick="appendManualStepCalc('3')">3</button>
+<button class="calc-key" onclick="appendManualStepCalc('4')">4</button>
+<button class="calc-key" onclick="appendManualStepCalc('5')">5</button>
+<button class="calc-key" onclick="appendManualStepCalc('6')">6</button>
+<button class="calc-key" onclick="appendManualStepCalc('7')">7</button>
+<button class="calc-key" onclick="appendManualStepCalc('8')">8</button>
+<button class="calc-key" onclick="appendManualStepCalc('9')">9</button>
+<button class="calc-key" onclick="clearManualStepCalc()">C</button>
+<button class="calc-key" onclick="appendManualStepCalc('0')">0</button>
+<button class="calc-key" onclick="backspaceManualStepCalc()">←</button>
+</div>
+<button class="btn pay-btn" style="margin-top:5px; padding:12px; font-size:16px;" onclick="proceedToManualBarcodeResult()">次へ（バーコード表示）</button>
+<button class="close-btn" onclick="closeManualInputStepModal()" style="margin-top: 10px;">閉じる</button>
+</div>
+</div> 
+
+
 
 <script>
 let defaultDatabase = {
@@ -1805,7 +1859,8 @@ showSavedCouponQRDirect(couponTitle, couponVal);
 function openDiscountCouponInputModal() {
 document.getElementById('coupon-type-select-modal').style.display = 'none';
 document.getElementById('maker-title').value = '';
-document.getElementById('maker-val').value = '';
+makerCalcValue = '';
+updateMakerCalcDisplay();
 document.getElementById('discount-coupon-input-modal').style.display = 'flex';
 }
 function backToCouponTypeSelectFromDiscount() {
@@ -3656,19 +3711,114 @@ salesHistory.push({ date: currentDate, count: totalItemsCount, total: finalTotal
 localStorage.setItem('myPosSalesHistory', JSON.stringify(salesHistory));
 }
 
+/* レシート・バーコードの高速画像化・印刷最適化設定 */
 function shareReceiptImage() {
-const receiptElement = document.getElementById('receipt-target');
-html2canvas(receiptElement, { scale: 1.0, useCORS: true, logging: false }).then(canvas => {
+const target = document.getElementById('receipt-target');
+// 影や余分なグラデーションを一時的に排除して綺麗な白背景に固定
+target.style.boxShadow = "none";
+target.style.background = "#ffffff";
+html2canvas(target, { scale: 2, backgroundColor: '#ffffff', logging: false, useCORS: true }).then(canvas => {
+target.style.boxShadow = ""; // 戻す
+target.style.background = "";
 canvas.toBlob(blob => {
 const file = new File([blob], "receipt.jpg", { type: "image/jpeg" });
 if (navigator.canShare && navigator.canShare({ files: [file] })) {
-navigator.share({ title: 'お買い上げレシート', text: `${receiptSettings.storeTitle}のレシート画像です`, files: [file] }).catch(err => console.log('共有キャンセル'));
+navigator.share({ title: 'レシート', files: [file] }).catch(() => {});
 } else {
-const link = document.createElement('a'); link.download = 'receipt.jpg'; link.href = canvas.toDataURL('image/jpeg', 0.85); link.click();
+const link = document.createElement('a'); link.download = 'receipt.jpg'; link.href = canvas.toDataURL('image/jpeg', 0.9); link.click();
 }
-}, 'image/jpeg', 0.85);
+}, 'image/jpeg', 0.9);
 });
 }
+
+/* レシートバーコードを潰れず綺麗に大きく描画する修正 */
+function renderReceiptBarcode(codeVal) {
+try {
+JsBarcode("#receipt-barcode-element", codeVal, {
+format: "CODE128",
+width: 2.1,       // 線の太さを調整して潰れを防止
+height: 55,      // 高さを少し大きくして読み取りやすく
+displayValue: true,
+fontSize: 12,
+margin: 2
+});
+} catch(e) {}
+}
+
+/* 数字でのバーコード作成の新規フロー制御 */
+let manualStepValue = "";
+function openManualBarcodeModalFromMenu() {
+document.getElementById('barcode-menu-modal').style.display = 'none';
+manualStepValue = "4901234567890";
+updateManualStepDisplay();
+document.getElementById('manual-input-step-modal').style.display = 'flex';
+}
+function closeManualInputStepModal() {
+document.getElementById('manual-input-step-modal').style.display = 'none';
+openBarcodeMenuModal();
+}
+function updateManualStepDisplay() {
+document.getElementById('manual-step-display').textContent = manualStepValue === "" ? "0" : manualStepValue;
+}
+function appendManualStepCalc(digit) {
+if (manualStepValue.length >= 15) return;
+manualStepValue += digit;
+updateManualStepDisplay();
+}
+function clearManualStepCalc() {
+manualStepValue = "";
+updateManualStepDisplay();
+}
+function backspaceManualStepCalc() {
+manualStepValue = manualStepValue.slice(0, -1);
+updateManualStepDisplay();
+}
+function proceedToManualBarcodeResult() {
+if (!manualStepValue) { alert("数字を入力してください"); return; }
+currentManualCode = manualStepValue;
+try {
+const fmt = currentManualCode.length === 13 ? "EAN13" : "CODE128";
+JsBarcode("#manual-generated-barcode-svg", currentManualCode, { format: fmt, width: 2.0, height: 60, displayValue: true, fontSize: 13 });
+} catch(e) {}
+document.getElementById('manual-input-step-modal').style.display = 'none';
+document.getElementById('manual-barcode-modal').style.display = 'flex';
+}
+
+/* 割引クーポン作成のテンキー制御 */
+let makerCalcValue = "";
+function updateMakerCalcDisplay() {
+document.getElementById('maker-calc-display').textContent = makerCalcValue === "" ? "0" : makerCalcValue;
+}
+function appendMakerCalc(digit) {
+if (makerCalcValue.length >= 5) return; // 最大5桁
+makerCalcValue += digit;
+updateMakerCalcDisplay();
+}
+function clearMakerCalc() { makerCalcValue = ""; updateMakerCalcDisplay(); }
+function backspaceMakerCalc() { makerCalcValue = makerCalcValue.slice(0, -1); updateMakerCalcDisplay(); }
+
+/* 割引設定（商品個別）のテンキー制御 */
+let discCalcValue = "";
+function updateDiscCalcDisplay() {
+document.getElementById('disc-calc-display').textContent = discCalcValue === "" ? "0" : discCalcValue;
+}
+function appendDiscCalc(digit) {
+if (discCalcValue.length >= 5) return; // 最大5桁
+discCalcValue += digit;
+updateDiscCalcDisplay();
+}
+function clearDiscCalc() { discCalcValue = ""; updateDiscCalcDisplay(); }
+function backspaceDiscCalc() { discCalcValue = discCalcValue.slice(0, -1); updateDiscCalcDisplay(); }
+
+function closeDiscountCouponInputModal() {
+document.getElementById('discount-coupon-input-modal').style.display = 'none';
+document.getElementById('coupon-type-select-modal').style.display = 'flex';
+}
+function closeDiscInputModalFromX() {
+document.getElementById('disc-input-modal').style.display = 'none';
+document.getElementById('disc-select-product-modal').style.display = 'flex';
+} 
+
 
 function showSalesHistory() {
 document.getElementById('history-search-input').value = '';
@@ -4097,6 +4247,25 @@ const link = document.createElement('a'); link.download = `barcode_${currentManu
 function backToCustomerFromPayment() {
 document.getElementById('payment-modal').style.display = 'none';
 }
+
+function closeDiscScanModalToSettings() {
+if (discScanner) {
+discScanner.stop().then(() => {
+try { discScanner.clear(); } catch(e){}
+discScanner = null;
+document.getElementById('disc-scan-modal').style.display = 'none';
+document.getElementById('settings-modal').style.display = 'flex';
+}).catch(() => {
+discScanner = null;
+document.getElementById('disc-scan-modal').style.display = 'none';
+document.getElementById('settings-modal').style.display = 'flex';
+});
+} else {
+document.getElementById('disc-scan-modal').style.display = 'none';
+document.getElementById('settings-modal').style.display = 'flex';
+}
+}
+
 </script>
 </body>
 </html>

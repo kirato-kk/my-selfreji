@@ -1110,24 +1110,14 @@ box-sizing: border-box !important;
 </div>
 <h3 style="margin-top:0; font-size:16px;">割引バーコード完成</h3>
 <p style="font-size:11px; color:#666; margin: 2px 0;" id="disc-result-code-text">コード: </p>
-<div id="disc-result-area" style="margin: 10px auto;">
-  <div class="disc-sticker-box">
-    <div class="disc-sticker-header">本体価格より</div>
-    <div class="disc-sticker-main">
-      <div id="disc-sticker-text-el" class="disc-sticker-text">10%引き</div>
-      <div class="disc-sticker-circle">
-        <div id="disc-sticker-circle-text-el" class="disc-sticker-circle-text">10%</div>
-      </div>
-    </div>
-    <div class="disc-sticker-barcode-container">
-      <svg id="disc-result-svg"></svg>
-    </div>
-  </div>
+<div id="disc-result-area" style="background:#ffffff; padding:20px; border-radius:8px; margin: 15px auto; display:inline-block;">
+  <svg id="disc-result-svg" style="max-width:100%; width:240px; height:80px;"></svg>
 </div>
 <button class="btn share-btn" onclick="shareDiscBarcodeImage()" style="margin-top:5px;">印刷</button>
 <button class="close-btn" onclick="closeDiscResultModal()" style="margin-top:5px;">閉じる</button>
 </div>
-</div>
+</div> 
+
 
 <!-- ================= 📁 バーコード類まとめ選択モーダル ================= -->
 <div class="modal-overlay" id="barcode-menu-modal">
@@ -1198,10 +1188,9 @@ box-sizing: border-box !important;
 
 <!-- 4. バーコード類 -->
 <button class="btn" style="background-color: #9b59b6; margin-bottom:10px; font-size:15px; padding:10px; display:flex; align-items:center; justify-content:center; gap:8px;" onclick="openBarcodeMenuModal()">
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="6" y1="9" x2="6" y2="15"/><line x1="10" y1="9" x2="10" y2="15"/><line x1="14" y1="9" x2="14" y2="15"/><line x1="18" y1="9" x2="18" y2="15"/></svg>
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2z"/><line x1="7" y1="12" x2="17" y2="12"/></svg>
   <span>バーコード類</span>
-</button>
-
+</button> 
 <!-- 5. レシート -->
 <button class="btn" style="background-color: #16a085; margin-bottom:10px; font-size:15px; padding:10px; display:flex; align-items:center; justify-content:center; gap:8px;" onclick="openReceiptSettingsModal()">
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
@@ -1240,9 +1229,9 @@ box-sizing: border-box !important;
 
 <!-- 11. リセット類 -->
 <button class="btn" style="background-color: #e74c3c; margin-top:5px; font-size:15px; padding:10px; display:flex; align-items:center; justify-content:center; gap:8px;" onclick="openResetMenuModal()">
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.73-5.73"/></svg>
   <span>リセット類</span>
-</button> 
+</button>  
 
 </div>
 <button class="close-btn" onclick="closeSettings()" style="margin-top: 20px;">閉じる</button>
@@ -2223,29 +2212,31 @@ const type = document.querySelector('input[name="disc-type"]:checked').value;
 const label = document.getElementById('disc-val-label');
 if (type === 'pct') {
 label.textContent = "割引率";
-document.getElementById('disc-input-value').value = "";
 } else {
 label.textContent = "割引金額 (1〜5桁: 例 100)";
-document.getElementById('disc-input-value').value = "";
 }
-}
+} 
+
 let currentDiscBarcode = "";
 function generateDiscountBarcodeFinal() {
   const type = document.querySelector('input[name="disc-type"]:checked').value;
-  const val = discCalcValue.trim(); // ← テンキーの入力変数に変更
+  const val = discCalcValue.trim();
   if (!val || isNaN(val)) { alert("有効な数値を入力してください"); return; }
-const numVal = parseInt(val);
-let suffix = "";
-if (type === 'pct') {
-if (numVal < 1 || numVal > 99) { alert("割引率は1〜99の間で入力してください"); return; }
-suffix = String(numVal).padStart(2, '0');
-} else {
-if (numVal < 1 || numVal > 99999) { alert("円引きは1〜5桁(1〜99999円)で入力してください"); return; }
-suffix = String(numVal);
-}
-currentDiscBarcode = `${discSelectedProduct.code}${suffix}`;
-document.getElementById('disc-input-modal').style.display = 'none';
-document.getElementById('disc-result-code-text').textContent = `[コード: ${currentDiscBarcode}]`;
+  const numVal = parseInt(val);
+  let suffix = "";
+  if (type === 'pct') {
+    if (numVal < 1 || numVal > 99) { alert("割引率は1〜99の間で入力してください"); return; }
+    suffix = String(numVal).padStart(2, '0');
+  } else {
+    if (numVal < 1 || numVal > 99999) { alert("円引きは1〜5桁(1〜99999円)で入力してください"); return; }
+    suffix = String(numVal);
+  }
+  currentDiscBarcode = `${discSelectedProduct.code}${suffix}`;
+  document.getElementById('disc-input-modal').style.display = 'none';
+  document.getElementById('disc-result-code-text').textContent = `[コード: ${currentDiscBarcode}]`;
+
+ 
+
 
 const textEl = document.getElementById('disc-sticker-text-el');
 const circleTextEl = document.getElementById('disc-sticker-circle-text-el');
@@ -2257,10 +2248,11 @@ if (type === 'pct') {
   circleTextEl.textContent = `${numVal}円`;
 }
 
-try {
-JsBarcode("#disc-result-svg", currentDiscBarcode, { format: "CODE128", width: 1.8, height: 50, displayValue: true, fontSize: 12 });
-} catch(e) { console.error(e); }
-document.getElementById('disc-result-modal').style.display = 'flex';
+ try {
+    // 値札と同じように大きく読み取りやすいバーコードにする
+    JsBarcode("#disc-result-svg", currentDiscBarcode, { format: "CODE128", width: 2.2, height: 80, displayValue: true, fontSize: 14, margin: 5 });
+  } catch(e) { console.error(e); }
+  document.getElementById('disc-result-modal').style.display = 'flex';
 } 
 
 
@@ -3707,14 +3699,15 @@ document.getElementById('receipt-change-text').textContent = `${lastChangeCash}�
 const amountStr = String(finalTotal).padStart(10, '0');
 const receiptBarcodeCode = `20${amountStr}`;
 try {
-  JsBarcode("#receipt-barcode-element", receiptBarcodeCode, { 
-    format: "CODE128", 
-    width: 2.2,       // 線を太くしてつぶれを防止
-    height: 60,       // 高さを出して読み取りやすく
-    displayValue: true, 
+  JsBarcode("#receipt-barcode-element", receiptBarcodeCode, {
+    format: "CODE128",
+    width: 2.2,       // 横幅を広げて読み取りやすく
+    height: 45,       // 高さはそのまま
+    displayValue: true,
     fontSize: 12,
     margin: 5
-  });
+  }); 
+
 } catch (e) { console.error(e); }
 document.getElementById('receipt-modal').style.display = 'flex';
 const itemsPurchased = `まとめ買い・商品合計 (¥${finalTotal})`;

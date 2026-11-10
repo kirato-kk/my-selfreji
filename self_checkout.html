@@ -2118,52 +2118,52 @@ document.getElementById('tag-result-modal').style.display = 'none';
 openTagMakerMenuModal();
 }
 function sharePriceTagImage() {
-const area = document.getElementById('tag-result-capture-area');
-html2canvas(area, { scale: 1.5, backgroundColor: '#ffffff', logging: false, useCORS: true }).then(canvas => {
-canvas.toBlob(blob => {
-const file = new File([blob], "price_tag.jpg", { type: "image/jpeg" });
-if (navigator.canShare && navigator.canShare({ files: [file] })) {
-navigator.share({ title: '値札', text: '生成された値札画像です', files: [file] }).catch(err => console.log('共有キャンセル'));
-} else {
-const link = document.createElement('a'); link.download = 'price_tag.jpg'; link.href = canvas.toDataURL('image/jpeg', 0.85); link.click();
-}
-}, 'image/jpeg', 0.85);
-});
-});
+    const area = document.getElementById('tag-result-capture-area');
+    html2canvas(area, { scale: 1.5, backgroundColor: '#ffffff', logging: false, useCORS: true }).then(canvas => {
+        canvas.toBlob(blob => {
+            const file = new File([blob], "price_tag.jpg", { type: "image/jpeg" });
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                navigator.share({ title: '値札', text: '生成された値札画像です', files: [file] }).catch(err => console.log('共有キャンセル'));
+            } else {
+                const link = document.createElement('a'); link.download = 'price_tag.jpg'; link.href = canvas.toDataURL('image/jpeg', 0.85); link.click();
+            }
+        }, 'image/jpeg', 0.85);
+    });
 }
 
 let discSelectedProduct = null;
 let discScanner = null;
 function openDiscountBarcodeScanModal() {
-document.getElementById('disc-scan-modal').style.display = 'flex';
-const readerDiv = document.getElementById('disc-reader');
-readerDiv.innerHTML = "";
-if (discScanner) { try { discScanner.clear(); } catch(e){} discScanner = null; }
-discScanner = new Html5Qrcode("disc-reader");
-discScanner.start(
-{ facingMode: "environment" },
-{ fps: 10, qrbox: { width: 200, height: 150 } },
-(decodedText) => {
-playSound(1200, 0.08);
-handleDiscScannedCode(decodedText);
-},
-(error) => {}
-).catch(err => console.log("割引カメラ起動エラー", err));
+    document.getElementById('disc-scan-modal').style.display = 'flex';
+    const readerDiv = document.getElementById('disc-reader');
+    readerDiv.innerHTML = "";
+    if (discScanner) { try { discScanner.clear(); } catch(e){} discScanner = null; }
+    discScanner = new Html5Qrcode("disc-reader");
+    discScanner.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: { width: 200, height: 150 } },
+        (decodedText) => {
+            playSound(1200, 0.08);
+            handleDiscScannedCode(decodedText);
+        },
+        (error) => {}
+    ).catch(err => console.log("割引カメラ起動エラー", err));
 }
 function closeDiscScanModal() {
-if (discScanner) {
-discScanner.stop().then(() => {
-try { discScanner.clear(); } catch(e){}
-discScanner = null;
-document.getElementById('disc-scan-modal').style.display = 'none';
-}).catch(() => {
-discScanner = null;
-document.getElementById('disc-scan-modal').style.display = 'none';
-});
-} else {
-document.getElementById('disc-scan-modal').style.display = 'none';
+    if (discScanner) {
+        discScanner.stop().then(() => {
+            try { discScanner.clear(); } catch(e){}
+            discScanner = null;
+            document.getElementById('disc-scan-modal').style.display = 'none';
+        }).catch(() => {
+            discScanner = null;
+            document.getElementById('disc-scan-modal').style.display = 'none';
+        });
+    } else {
+        document.getElementById('disc-scan-modal').style.display = 'none';
+    }
 }
-}
+
 function backFromDiscInputToScan() {
 document.getElementById('disc-input-modal').style.display = 'none';
 openDiscountBarcodeScanModal();
@@ -4268,6 +4268,47 @@ document.getElementById('disc-scan-modal').style.display = 'none';
 document.getElementById('settings-modal').style.display = 'flex';
 }
 }
+
+function handleRegisterQRCode(codeData) {
+  if (codeData && codeData.startsWith("LUCKY_")) {
+    const parts = codeData.split('_');
+    const itemCodes = parts.slice(1, parts.length - 1);
+    
+    registerParsedCartItems = [];
+    itemCodes.forEach(c => {
+      let itemName = "商品";
+      let price = 100;
+      if (itemDatabase[c]) {
+        itemName = itemDatabase[c].name;
+        price = itemDatabase[c].price;
+      }
+      const taxPrice = Math.round(price * 1.1);
+      let existing = registerParsedCartItems.find(i => i.name === itemName);
+      if (existing) {
+        existing.quantity += 1;
+      } else {
+        registerParsedCartItems.push({ name: itemName, price: price, taxPrice: taxPrice, quantity: 1, code: c });
+      }
+    });
+    
+    stopRegisterScanner();
+    renderRegisterConfirmList();
+    document.getElementById('register-confirm-modal').style.display = 'flex';
+  }
+}
+// 【エラー判別・デバッグ用コード】予期せぬエラーが発生した際にポップアップで通知する
+window.onerror = function(message, source, lineno, colno, error) {
+  const errorMsg = `【エラー検知】\n内容: ${message}\n行番号: ${lineno}\n列番号: ${colno}`;
+  console.error(errorMsg, error);
+  alert(errorMsg);
+  return true;
+};
+
+window.addEventListener('unhandledrejection', function(event) {
+  const errorMsg = `【非同期エラー検知】\n内容: ${event.reason}`;
+  console.error(errorMsg);
+  alert(errorMsg);
+});
 
 </script>
 </body>

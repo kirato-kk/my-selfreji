@@ -2265,35 +2265,35 @@ document.getElementById('disc-result-modal').style.display = 'flex';
 
 
 function promptSaveCurrentDiscDiscBarcode() {
-if (!currentDiscBarcode) return;
-const nameInput = prompt("この割引バーコードの名前を入力してください", `${discSelectedProduct.name}_割引`);
-if (nameInput === null) return;
-const barcodeName = nameInput.trim() === "" ? "割引バーコード" : nameInput.trim();
-const area = document.getElementById('disc-result-area');
-html2canvas(area, { scale: 1.0, backgroundColor: null, logging: false }).then(canvas => {
-const imgData = canvas.toDataURL('image/jpeg', 0.85);
-savedBarcodes.unshift({ name: barcodeName, code: currentDiscBarcode, image: imgData, isDiscountSticker: true });
-localStorage.setItem('myPosSavedBarcodes', JSON.stringify(savedBarcodes));
-alert("割引ステッカーデザインを保存しました！");
-});
+    if (!currentDiscBarcode) return;
+    const nameInput = prompt("この割引バーコードの名前を入力してください", `${discSelectedProduct.name}_割引`);
+    if (nameInput === null) return;
+    const barcodeName = nameInput.trim() === "" ? "割引バーコード" : nameInput.trim();
+    const area = document.getElementById('disc-result-area');
+    html2canvas(area, { scale: 1.0, backgroundColor: null, logging: false }).then(canvas => {
+        const imgData = canvas.toDataURL('image/jpeg', 0.85);
+        savedBarcodes.unshift({ name: barcodeName, code: currentDiscBarcode, image: imgData, isDiscountSticker: true });
+        localStorage.setItem('myPosSavedBarcodes', JSON.stringify(savedBarcodes));
+        alert("割引ステッカーデザインを保存しました！");
+    });
 }
 
 function shareDiscBarcodeImage() {
-const area = document.getElementById('disc-result-area');
-html2canvas(area, { scale: 1.5, backgroundColor: '#ffffff', logging: false, useCORS: true }).then(canvas => {
-canvas.toBlob(blob => {
-const file = new File([blob], `discount_${currentDiscBarcode}.jpg`, { type: "image/jpeg" });
-if (navigator.canShare && navigator.canShare({ files: [file] })) {
-navigator.share({ title: '割引バーコード', text: `割引コード: ${currentDiscBarcode}`, files: [file] }).catch(err => console.log('共有キャンセル'));
-} else {
-const link = document.createElement('a'); link.download = `discount_${currentDiscBarcode}.jpg`; link.href = canvas.toDataURL('image/jpeg', 0.85); link.click();
+    const area = document.getElementById('disc-result-area');
+    html2canvas(area, { scale: 1.5, backgroundColor: '#ffffff', logging: false, useCORS: true }).then(canvas => {
+        canvas.toBlob(blob => {
+            const file = new File([blob], `discount_${currentDiscBarcode}.jpg`, { type: "image/jpeg" });
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                navigator.share({ title: '割引バーコード', text: `割引コード: ${currentDiscBarcode}`, files: [file] }).catch(err => console.log('共有キャンセル'));
+            } else {
+                const link = document.createElement('a'); link.download = `discount_${currentDiscBarcode}.jpg`; link.href = canvas.toDataURL('image/jpeg', 0.85); link.click();
+            }
+        }, 'image/jpeg', 0.85);
+    });
 }
-}, 'image/jpeg', 0.85);
-});
-});
-}
+
 function closeDiscResultModal() {
-document.getElementById('disc-result-modal').style.display = 'none';
+    document.getElementById('disc-result-modal').style.display = 'none';
 }
 
 let refundTargetAmount = 0;

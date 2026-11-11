@@ -1386,7 +1386,7 @@ box-sizing: border-box !important;
 <div class="modal-content-box" style="text-align: center;">
 <h2>パスワード入力</h2>
 <p style="font-size: 12px; color: #666; margin: 5px 0;">管理パスワードを入力してください</p>
-<div class="calc-display" id="password-input-display" style="letter-spacing: 5px; color: #333;">----</div>
+<div class="calc-display" id="password-input-display" style="letter-spacing: 5px; color: #333;"></div>
 <div class="calculator-pad">
 <button class="calc-key" onclick="appendPasswordCalc(1)">1</button>
 <button class="calc-key" onclick="appendPasswordCalc(2)">2</button>
@@ -2964,8 +2964,9 @@ updatePasswordDisplay();
 
 function updatePasswordDisplay() {
 const display = document.getElementById('password-input-display');
+display.style.textAlign = "center"; // 中央揃えを確実に適用
 if (currentPasswordInput.length === 0) {
-display.textContent = "----";
+display.textContent = "";
 } else {
 display.textContent = "●".repeat(currentPasswordInput.length);
 }
@@ -4278,6 +4279,7 @@ function handleRegisterQRCode(codeData) {
     document.getElementById('register-confirm-modal').style.display = 'flex';
   }
 }
+
 
 </script>
 </body>

@@ -2218,7 +2218,7 @@ label.textContent = "割引金額 (1〜5桁: 例 100)";
 let currentDiscBarcode = "";
 function generateDiscountBarcodeFinal() {
   const type = document.querySelector('input[name="disc-type"]:checked').value;
-  const val = makerCalcValue.trim();
+  const val = discCalcValue.trim(); // ← 割引バーコード用の変数（discCalcValue）に修正
   if (!val || isNaN(val)) { alert("有効な数値を入力してください"); return; }
   const numVal = parseInt(val);
   let suffix = "";

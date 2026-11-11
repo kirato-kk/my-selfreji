@@ -344,6 +344,39 @@ box-sizing: border-box !important;
   left: 0;
   z-index: 20;
 }
+
+
+
+/* モーダルの背景（暗転部分） */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+/* モーダルの中のボックス */
+.modal-content-box {
+  background: #fff;
+  width: 90%;
+  max-width: 320px;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  box-sizing: border-box;
+}
+
+/* 警告アイコン（⚠️など）のスタイル */
+.warning-icon {
+  font-size: 48px;
+  line-height: 1;
+  margin-bottom: 10px;
+}
 </style>
 </head>
 <body>
@@ -1446,7 +1479,41 @@ box-sizing: border-box !important;
 </div>
 </div> 
 
+<!-- ⚠️ 売上記録のみリセット確認モーダル -->
+<div class="modal-overlay" id="sales-reset-confirm-modal">
+<div class="modal-content-box" style="text-align: center; padding: 25px 20px;">
+<div class="warning-icon">⚠️</div>
+<h3 style="font-size: 18px; margin-bottom: 10px; color: #2c3e50;">売上記録を削除しますか？</h3>
+<p style="font-size: 12px; color: #666; margin-bottom: 20px;">保存されている売上データがすべて消去されます。</p>
+<div style="display: flex; gap: 10px;">
+<button class="modal-btn-back" style="flex: 1;" onclick="closeSalesResetConfirm()">キャンセル</button>
+<button class="btn pay-btn" style="flex: 2; margin: 0; padding: 10px; background-color: #ff4757;" onclick="executeSalesReset()">OK</button>
+</div>
+</div>
+</div>
 
+<!-- ✅ 売上記録リセット完了モーダル -->
+<div class="modal-overlay" id="sales-reset-success-modal">
+<div class="modal-content-box" style="text-align: center; padding: 25px 20px;">
+<div style="font-size: 54px; line-height: 1; margin: 10px 0;">✅</div>
+<h3 style="font-size: 18px; margin-bottom: 10px; color: #2c3e50;">リセット完了</h3>
+<p style="font-size: 12px; color: #666; margin-bottom: 20px;">売上記録をリセットしました。</p>
+<button class="btn pay-btn" style="width: 100%; margin: 0; padding: 10px;" onclick="closeSalesResetSuccess()">OK</button>
+</div>
+</div>
+
+<!-- ⚠️ すべてのデータリセット確認モーダル -->
+<div class="modal-overlay" id="all-reset-confirm-modal">
+<div class="modal-content-box" style="text-align: center; padding: 25px 20px;">
+<div class="warning-icon">⚠️</div>
+<h3 style="font-size: 18px; margin-bottom: 10px; color: #2c3e50;">すべてのデータをリセット<br>しますか？</h3>
+<p style="font-size: 12px; color: #666; margin-bottom: 20px;">アプリのデータが初期化されます。</p>
+<div style="display: flex; gap: 10px;">
+<button class="modal-btn-back" style="flex: 1;" onclick="closeAllResetConfirm()">キャンセル</button>
+<button class="btn pay-btn" style="flex: 2; margin: 0; padding: 10px; background-color: #ff4757;" onclick="executeAllReset()">OK</button>
+</div>
+</div>
+</div>
 
 <script>
 let defaultDatabase = {
@@ -1647,8 +1714,8 @@ document.getElementById('reset-menu-modal').style.display = 'none';
 document.getElementById('settings-modal').style.display = 'flex';
 }
 function resetSalesOnlyFromMenu() {
-document.getElementById('reset-menu-modal').style.display = 'none';
-resetSalesOnly();
+  document.getElementById('reset-menu-modal').style.display = 'none';
+  document.getElementById('sales-reset-confirm-modal').style.display = 'flex';
 }
 function resetAllDataFromMenu() {
 document.getElementById('reset-menu-modal').style.display = 'none';
@@ -1781,6 +1848,43 @@ grid.innerHTML += `
 }
 }
 }
+function resetSalesOnlyFromMenu() {
+  document.getElementById('reset-menu-modal').style.display = 'none';
+  document.getElementById('sales-reset-confirm-modal').style.display = 'flex';
+}
+
+function closeSalesResetConfirm() {
+  document.getElementById('sales-reset-confirm-modal').style.display = 'none';
+  document.getElementById('reset-menu-modal').style.display = 'flex';
+}
+
+function executeSalesReset() {
+  localStorage.removeItem('myPosSalesHistory');
+  salesHistory = [];
+  document.getElementById('sales-reset-confirm-modal').style.display = 'none';
+  document.getElementById('sales-reset-success-modal').style.display = 'flex';
+}
+
+function closeSalesResetSuccess() {
+  document.getElementById('sales-reset-success-modal').style.display = 'none';
+  closeSettings();
+}
+
+function resetAllDataFromMenu() {
+  document.getElementById('reset-menu-modal').style.display = 'none';
+  document.getElementById('all-reset-confirm-modal').style.display = 'flex';
+}
+
+function closeAllResetConfirm() {
+  document.getElementById('all-reset-confirm-modal').style.display = 'none';
+  document.getElementById('reset-menu-modal').style.display = 'flex';
+}
+
+function executeAllReset() {
+  localStorage.clear();
+  location.reload();
+}
+
 function selectFreeCouponItemNoBarcode(code) {
 const item = itemDatabase[code];
 if (!item) return;

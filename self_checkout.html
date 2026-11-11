@@ -448,12 +448,12 @@ box-sizing: border-box !important;
 </button>
 </div>
 <div class="section-header">
-<h2>スキャン商品リスト</h2>
-<button class="add-nobarcode-btn" onclick="openStaffNoBarcodeModal()">＋ 商品を追加</button>
+<h2>購入リスト</h2>
+<button class="add-nobarcode-btn" onclick="openStaffNoBarcodeModal()">＋ バーコードの無い商品を追加</button>
 </div>
-<div class="cart" id="staff-scan-cart-list"><p style="color: #888; text-align: center;">商品がスキャンされていません</p></div>
+<div class="cart" id="staff-scan-cart-list"><p style="color: #888; text-align: center;">スキャンされた商品がここに表示されます</p></div>
 <div class="total"><span id="staff-scan-total-count">0</span>点 合計: <span id="staff-scan-total-price">0</span> 円</div>
-<button class="btn pay-btn" onclick="completeStaffScanAndOpenCheckout()">完了（お会計へ）</button>
+<button class="btn pay-btn" onclick="completeStaffScanAndOpenCheckout()">お会計</button>
 <button class="btn" style="background-color: #555; margin-top: 10px;" onclick="switchView('register')">
   <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
   <span>スタッフモードに戻る</span>
@@ -463,7 +463,7 @@ box-sizing: border-box !important;
 <div class="modal-overlay" id="nobarcode-modal">
 <div class="modal-content-box nobarcode-modal">
 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-<h3 style="margin:0; font-size:16px; color:#333;">商品を選択</h3>
+<h3 style="margin:0; font-size:16px; color:#333;">バーコードの無い商品を追加</h3>
 <button onclick="closeNoBarcodeModal()" style="background:none; border:none; font-size:18px; cursor:pointer; color:#888;">✕</button>
 </div>
 <div class="tab-container">
@@ -481,7 +481,7 @@ box-sizing: border-box !important;
 <div class="modal-overlay" id="staff-nobarcode-modal">
 <div class="modal-content-box nobarcode-modal">
 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-<h3 style="margin:0; font-size:16px; color:#00adb5;">商品を選択（スタッフ）</h3>
+<h3 style="margin:0; font-size:16px; color:#00adb5;">バーコードの無い商品を追加</h3>
 <button onclick="closeStaffNoBarcodeModal()" style="background:none; border:none; font-size:18px; cursor:pointer; color:#888;">✕</button>
 </div>
 <div class="tab-container">
@@ -676,7 +676,7 @@ box-sizing: border-box !important;
 <div style="text-align:center; font-size:11px; margin-top:2px;" id="receipt-no-label">店:005013 レシートNo.:2746</div>
 </div>
 </div>
-<button class="btn share-btn" onclick="shareReceiptImage()">レシート印刷</button>
+<button class="btn share-btn" onclick="shareReceiptImage()">印刷</button>
 <button class="btn close-btn" onclick="closeReceiptToRegister()">閉じる</button>
 </div>
 </div>
@@ -684,8 +684,8 @@ box-sizing: border-box !important;
 <!-- ① クーポンメインメニュー -->
 <div class="modal-overlay" id="coupon-maker-menu-modal">
 <div class="modal-content-box" style="text-align: center;">
-<h3 style="font-size: 18px; margin-bottom: 12px; color: #ff0033;">クーポン選択</h3>
-<p style="font-size: 12px; color: #666; margin-bottom: 15px;">イラスト付きボタンから選択してください</p>
+<h3 style="font-size: 18px; margin-bottom: 12px; color: #ff0033;">クーポン</h3>
+<p style="font-size: 12px; color: #666; margin-bottom: 15px;">クーポン種類選択</p>
 <div class="pay-method-options" style="flex-direction: column; gap: 10px;">
 <button class="pay-method-btn" onclick="openCouponTypeSelectModal()" style="border-color: #ff0033; color: #ff0033;">
 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
@@ -704,7 +704,7 @@ box-sizing: border-box !important;
 <div class="modal-overlay" id="coupon-type-select-modal">
 <div class="modal-content-box" style="text-align: center;">
 <h3 style="font-size: 18px; margin-bottom: 12px; color: #ff0033;">クーポン作成</h3>
-<p style="font-size: 12px; color: #666; margin-bottom: 15px;">作成するクーポンの種類を選択してください</p>
+<p style="font-size: 12px; color: #666; margin-bottom: 15px;">クーポン種類選択</p>
 <div class="pay-method-options" style="flex-direction: column; gap: 10px;">
 <button class="pay-method-btn" onclick="openFreeCouponSelectProductTypeModal()" style="border-color: #20bf6b; color: #20bf6b;">
 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"/><path d="M4 6v12a2 2 0 0 0 2 2h14v-4"/><path d="M18 12a2 2 0 0 0-2 2c0 1.1.9 2 2 2h4v-4h-4z"/></svg>
@@ -779,7 +779,7 @@ box-sizing: border-box !important;
 <h3 style="color:#e67e22; margin-bottom:5px;">割引クーポン作成</h3>
 <div style="text-align: left; background: #f8f9fa; padding: 10px; border-radius: 8px; margin-bottom: 8px;">
 <label style="display:block; font-size:11px; font-weight:bold; margin-bottom:2px;">クーポン名</label>
-<input type="text" id="maker-title" placeholder="例: 特別割引券" style="width:100%; padding:6px; box-sizing:border-box; margin-bottom:6px; border:1px solid #ccc; border-radius:6px; font-size:13px;">
+<input type="text" id="maker-title" placeholder="" style="width:100%; padding:6px; box-sizing:border-box; margin-bottom:6px; border:1px solid #ccc; border-radius:6px; font-size:13px;">
 <label style="display:block; font-size:11px; font-weight:bold; margin-bottom:2px;">割引の種類</label>
 <div style="display:flex; gap:15px; margin-bottom:6px;">
 <label><input type="radio" name="maker-disc-type" value="pct" checked onclick="toggleMakerDiscTypeInput()"> % 割引</label>
@@ -835,16 +835,16 @@ box-sizing: border-box !important;
 <!-- ================= 🏷️ 値札作成・選択メインメニューモーダル ================= -->
 <div class="modal-overlay" id="tag-maker-menu-modal">
 <div class="modal-content-box" style="text-align: center;">
-<h3 style="font-size: 18px; margin-bottom: 12px; color: #2980b9;">値札作成</h3>
+<h3 style="font-size: 18px; margin-bottom: 12px; color: #2980b9;">値札</h3>
 <p style="font-size: 12px; color: #666; margin-bottom: 15px;">作成方法を選択してください</p>
 <div class="pay-method-options" style="flex-direction: column; gap: 10px;">
 <button class="pay-method-btn" onclick="openTagScanModal()" style="border-color: #2575fc; color: #2575fc;">
 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-<span>スキャンして作成</span>
+<span>スキャン</span>
 </button>
 <button class="pay-method-btn" onclick="openTagSelectProductModal()" style="border-color: #f1c40f; color: #d35400;">
 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/><path d="M13 8h5"/><path d="M13 12h5"/><path d="M13 16h5"/></svg>
-<span>商品を選択して作成</span>
+<span>商品を選択</span>
 </button>
 </div>
 <button class="close-btn" onclick="closeTagMakerMenuModal()" style="margin-top: 15px;">閉じる</button>
@@ -854,8 +854,8 @@ box-sizing: border-box !important;
 <!-- 🏷️ 値札作成：スキャンモーダル -->
 <div class="modal-overlay" id="tag-scan-modal">
 <div class="modal-content-box" style="text-align: center;">
-<h3 style="color:#2575fc;">値札スキャン作成</h3>
-<p style="font-size: 12px; color: #666; margin-bottom: 10px;">値札を作る商品のバーコードをかざしてください</p>
+<h3 style="color:#2575fc;">スキャン</h3>
+<p style="font-size: 12px; color: #666; margin-bottom: 10px;">商品バーコードをかざしてください</p>
 <div class="refund-scanner-wrapper" style="border-color:#2575fc;">
 <div id="tag-reader" style="width: 100%; min-height: 180px; background: #222;"></div>
 <button class="scanner-file-btn" onclick="document.getElementById('tag-scan-file-input').click()" title="ファイルから読み込み">
@@ -870,7 +870,7 @@ box-sizing: border-box !important;
 <div class="modal-overlay" id="tag-select-product-modal">
 <div class="modal-content-box nobarcode-modal">
 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-<h3 style="margin:0; font-size:16px; color:#d35400;">値札を作る商品を選択</h3>
+<h3 style="margin:0; font-size:16px; color:#d35400;">商品を選択</h3>
 <button onclick="closeTagSelectProductModal()" style="background:none; border:none; font-size:18px; cursor:pointer; color:#888;">✕</button>
 </div>
 <div class="tab-container">
@@ -888,10 +888,10 @@ box-sizing: border-box !important;
 <!-- 🏷️ 値札結果表示・印刷モーダル -->
 <div class="modal-overlay" id="tag-result-modal">
 <div class="modal-content-box" style="text-align: center; width: 360px;">
-<h3 style="margin-top:0; font-size:16px;">値札完成</h3>
+<h3 style="margin-top:0; font-size:16px;">値札</h3>
 <div id="tag-result-capture-area" style="background:#fff; padding:10px; display:inline-block; border-radius:8px;">
   <div class="price-tag-box">
-    <div id="tag-res-name" class="price-tag-name">りんごあああ</div>
+    <div id="tag-res-name" class="price-tag-name">りんご</div>
     <div class="price-tag-price-row">
       <span class="price-tag-label">本体価格</span>
       <span id="tag-res-price" class="price-tag-amount">100円</span>
@@ -935,7 +935,7 @@ box-sizing: border-box !important;
 
 <div class="modal-overlay" id="refund-scan-modal">
 <div class="modal-content-box" style="text-align: center;">
-<h3 style="color:#2575fc;">レシートバーコードスキャン</h3>
+<h3 style="color:#2575fc;">バーコードスキャン</h3>
 <p style="font-size: 12px; color: #666; margin-bottom: 10px;">レシート下部のバーコードをかざしてください</p>
 <div class="refund-scanner-wrapper">
 <div id="refund-reader" style="width: 100%; min-height: 180px; background: #222;"></div>
@@ -1125,7 +1125,7 @@ box-sizing: border-box !important;
 <div style="position: absolute; top: 15px; right: 15px; display: flex; gap: 5px; z-index: 10;">
 <button class="reload-barcode-btn" onclick="promptSaveCurrentDiscDiscBarcode()" title="この割引バーコードを保存" style="background: #2ed573; color: white; border: none;"><svg viewBox="0 0 24 24"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></svg></button>
 </div>
-<h3 style="margin-top:0; font-size:16px;">割引バーコード完成</h3>
+<h3 style="margin-top:0; font-size:16px;">割引バーコード</h3>
 <p style="font-size:11px; color:#666; margin: 2px 0;" id="disc-result-code-text">コード: </p>
 <div id="disc-result-area" style="background:#ffffff; padding:20px; border-radius:8px; margin: 15px auto; display:inline-block;">
   <svg id="disc-result-svg" style="max-width:100%; width:240px; height:80px;"></svg>
@@ -1139,8 +1139,8 @@ box-sizing: border-box !important;
 <!-- ================= 📁 バーコード類まとめ選択モーダル ================= -->
 <div class="modal-overlay" id="barcode-menu-modal">
 <div class="modal-content-box" style="text-align: center;">
-<h3 style="font-size: 18px; margin-bottom: 12px; color: #2575fc;">バーコード類</h3>
-<p style="font-size: 12px; color: #666; margin-bottom: 15px;">イラスト付きボタンから選択してください</p>
+<h3 style="font-size: 18px; margin-bottom: 12px; color: #2575fc;">バーコード</h3>
+<p style="font-size: 12px; color: #666; margin-bottom: 15px;">バーコード種類選択</p>
 <div class="pay-method-options" style="flex-direction: column; gap: 10px;">
 <button class="pay-method-btn" onclick="openBarcodeModalFromMenu()" style="border-color: #9b59b6; color: #9b59b6;">
 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2z"/><line x1="7" y1="7" x2="7" y2="17"/><line x1="10" y1="7" x2="10" y2="17"/><line x1="13" y1="7" x2="13" y2="17"/><line x1="17" y1="7" x2="17" y2="17"/></svg>
@@ -1162,8 +1162,8 @@ box-sizing: border-box !important;
 <!-- ================= 🔄 リセット類まとめ選択モーダル ================= -->
 <div class="modal-overlay" id="reset-menu-modal">
 <div class="modal-content-box" style="text-align: center;">
-<h3 style="font-size: 18px; margin-bottom: 12px; color: #ff4757;">リセット類</h3>
-<p style="font-size: 12px; color: #666; margin-bottom: 15px;">イラスト付きボタンから選択してください</p>
+<h3 style="font-size: 18px; margin-bottom: 12px; color: #ff4757;">リセット</h3>
+<p style="font-size: 12px; color: #666; margin-bottom: 15px;">リセット種類選択</p>
 <div class="pay-method-options" style="flex-direction: column; gap: 10px;">
 <button class="pay-method-btn" onclick="resetSalesOnlyFromMenu()" style="border-color: #ffa502; color: #ffa502;">
 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
@@ -1360,7 +1360,7 @@ box-sizing: border-box !important;
 <div id="barcode-target-area" style="background:#ffffff; padding:15px; border-radius:8px; margin: 15px 0; display:inline-block;">
 <svg id="generated-barcode-svg" style="max-width:100%; height:70px;"></svg>
 </div>
-<button class="btn share-btn" onclick="shareBarcodeImage()" style="margin-top: 10px;">バーコードを印刷</button>
+<button class="btn share-btn" onclick="shareBarcodeImage()" style="margin-top: 10px;">印刷</button>
 <button class="close-btn" onclick="closeBarcodeModal()">閉じる</button>
 </div>
 </div>
@@ -1383,7 +1383,7 @@ box-sizing: border-box !important;
 <div id="manual-barcode-target-area" style="background:#ffffff; padding:15px; border-radius:8px; margin: 10px 0; display:inline-block;">
 <svg id="manual-generated-barcode-svg" style="max-width:100%; height:70px;"></svg>
 </div>
-<button class="btn share-btn" onclick="shareManualBarcodeImage()" style="margin-top: 5px;">バーコードを印刷</button>
+<button class="btn share-btn" onclick="shareManualBarcodeImage()" style="margin-top: 5px;">印刷</button>
 <button class="close-btn" onclick="closeManualBarcodeModal()">閉じる</button>
 </div>
 </div>
@@ -1445,7 +1445,7 @@ box-sizing: border-box !important;
 <button class="calc-key" onclick="appendManualStepCalc('0')">0</button>
 <button class="calc-key" onclick="backspaceManualStepCalc()">←</button>
 </div>
-<button class="btn pay-btn" style="margin-top:5px; padding:12px; font-size:16px;" onclick="proceedToManualBarcodeResult()">次へ（バーコード表示）</button>
+<button class="btn pay-btn" style="margin-top:5px; padding:12px; font-size:16px;" onclick="proceedToManualBarcodeResult()">次へ</button>
 <button class="close-btn" onclick="closeManualInputStepModal()" style="margin-top: 10px;">閉じる</button>
 </div>
 </div> 
@@ -1519,9 +1519,9 @@ let defaultDatabase = {
 "100011": { name: "オレンジ", price: 135, waribiki: 0, category: "yasai" },
 "100012": { name: "バナナ", price: 129, waribiki: 0, category: "yasai" },
 "100013": { name: "イチゴ", price: 267, waribiki: 0, category: "yasai" },
-"200001": { name: "国産牛ステーキ用", price: 980, waribiki: 100, category: "niku" },
+"200001": { name: "国産牛ステーキ用", price: 980, waribiki: 0, category: "niku" },
 "200002": { name: "豚ロース薄切り", price: 398, waribiki: 0, category: "niku" },
-"200003": { name: "鶏もも肉(カット)", price: 298, waribiki: 10, category: "niku" },
+"200003": { name: "鶏もも肉(カット)", price: 298, waribiki: 0, category: "niku" },
 "200004": { name: "生鮭切り身", price: 450, waribiki: 0, category: "niku" },
 "300001": { name: "特製から揚げ弁当", price: 550, waribiki: 0, category: "sozai" },
 "300002": { name: "ロースカツサンド", price: 380, waribiki: 0, category: "sozai" },
@@ -1948,9 +1948,9 @@ function toggleMakerDiscTypeInput() {
 const type = document.querySelector('input[name="maker-disc-type"]:checked').value;
 const label = document.getElementById('maker-disc-val-label');
 if (type === 'pct') {
-label.textContent = "割引率 (1〜2桁: 例 10)";
+label.textContent = "割引率";
 } else {
-label.textContent = "割引金額 (例 200)";
+label.textContent = "割引金額";
 }
 }
 function generateDiscountCouponFinal() {
@@ -2299,7 +2299,7 @@ const label = document.getElementById('disc-val-label');
 if (type === 'pct') {
 label.textContent = "割引率";
 } else {
-label.textContent = "割引金額 (1〜5桁: 例 100)";
+label.textContent = "割引金額";
 }
 } 
 

@@ -4278,19 +4278,6 @@ function handleRegisterQRCode(codeData) {
     document.getElementById('register-confirm-modal').style.display = 'flex';
   }
 }
-// 【エラー判別・デバッグ用コード】予期せぬエラーが発生した際にポップアップで通知する
-window.onerror = function(message, source, lineno, colno, error) {
-  const errorMsg = `【エラー検知】\n内容: ${message}\n行番号: ${lineno}\n列番号: ${colno}`;
-  console.error(errorMsg, error);
-  alert(errorMsg);
-  return true;
-};
-
-window.addEventListener('unhandledrejection', function(event) {
-  const errorMsg = `【非同期エラー検知】\n内容: ${event.reason}`;
-  console.error(errorMsg);
-  alert(errorMsg);
-});
 
 </script>
 </body>

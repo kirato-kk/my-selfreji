@@ -128,7 +128,20 @@ text-align: left; position: relative; margin-bottom: 20px; width: 280px; margin-
 .calculator-pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 15px 0; }
 .calc-key { background: #f1f2f6; border: 1px solid #dfe4ea; padding: 12px; font-size: 18px; font-weight: bold; border-radius: 8px; cursor: pointer; color: #2f3542; }
 .calc-key:active { background: #ced6e0; }
-.calc-display { font-size: 24px; font-weight: bold; background: #f8f9fa; border: 1px solid #ccc; padding: 10px; border-radius: 8px; text-align: right; margin-bottom: 10px; color: #333; }
+.calc-display { 
+  font-size: 24px; 
+  font-weight: bold; 
+  background: #f8f9fa; 
+  border: 1px solid #ccc; 
+  padding: 10px; 
+  border-radius: 8px; 
+  text-align: center; 
+  margin-bottom: 10px; 
+  color: #333; 
+  height: 30px;          /* ★高さを固定 */
+  line-height: 30px;     /* ★高さを合わせて文字を上下中央に配置 */
+  overflow: hidden;      /* ★万が一あふれたときに枠が伸びるのを防ぐ */
+}
 #qrcode, #11pay-qrcode-target, #refund-11pay-qrcode-target { display: flex; justify-content: center; margin: 15px 0; }
 #qrcode img, #11pay-qrcode-target img, #refund-11pay-qrcode-target img { border: 5px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); width: 220px; height: 220px; }
 .view-container { display: none; }

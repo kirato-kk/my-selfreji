@@ -121,7 +121,7 @@ text-align: left; position: relative; margin-bottom: 20px; width: 280px; margin-
 .receipt-items-container { border-bottom: 1px dashed #333; padding-bottom: 8px; margin-bottom: 8px; min-height: 80px; }
 .receipt-total-section { font-size: 13px; font-weight: bold; text-align: right; margin-bottom: 10px; line-height: 1.5; border-bottom: 1px dashed #333; padding-bottom: 8px; }
 .receipt-barcode-wrapper { text-align: center; margin-top: 10px; margin-bottom: 5px; }
-.receipt-barcode-svg { max-width: 100%; height: 45px; }
+.receipt-barcode-svg { max-width: 100%; width: 100% !important; height: 80px !important; }
 .receipt-message { text-align: center; font-size: 11px; color: #444; margin-top: 8px; line-height: 1.4; }
 .close-btn { width: 100%; padding: 12px; background: #e0e0e0; color: #333; border: none; font-weight: bold; cursor: pointer; border-radius: 10px; font-family: 'Segoe UI', sans-serif; margin-top: 5px; }
 .staff-box { background: #ff4757; color: white; padding: 15px; border-radius: 10px; margin-bottom: 15px; font-family: 'Segoe UI', sans-serif; }
@@ -1861,10 +1861,8 @@ const type = document.querySelector('input[name="maker-disc-type"]:checked').val
 const label = document.getElementById('maker-disc-val-label');
 if (type === 'pct') {
 label.textContent = "割引率 (1〜2桁: 例 10)";
-document.getElementById('maker-val').value = "";
 } else {
 label.textContent = "割引金額 (例 200)";
-document.getElementById('maker-val').value = "";
 }
 }
 function generateDiscountCouponFinal() {
@@ -2220,7 +2218,7 @@ label.textContent = "割引金額 (1〜5桁: 例 100)";
 let currentDiscBarcode = "";
 function generateDiscountBarcodeFinal() {
   const type = document.querySelector('input[name="disc-type"]:checked').value;
-  const val = discCalcValue.trim();
+  const val = makerCalcValue.trim();
   if (!val || isNaN(val)) { alert("有効な数値を入力してください"); return; }
   const numVal = parseInt(val);
   let suffix = "";
@@ -2235,27 +2233,19 @@ function generateDiscountBarcodeFinal() {
   document.getElementById('disc-input-modal').style.display = 'none';
   document.getElementById('disc-result-code-text').textContent = `[コード: ${currentDiscBarcode}]`;
 
- 
-
-
-const textEl = document.getElementById('disc-sticker-text-el');
-const circleTextEl = document.getElementById('disc-sticker-circle-text-el');
-if (type === 'pct') {
-  textEl.textContent = `${numVal}%引き`;
-  circleTextEl.textContent = `${numVal}%`;
-} else {
-  textEl.textContent = `${numVal}円引き`;
-  circleTextEl.textContent = `${numVal}円`;
-}
-
- try {
-    // 値札と同じように大きく読み取りやすいバーコードにする
-    JsBarcode("#disc-result-svg", currentDiscBarcode, { format: "CODE128", width: 2.2, height: 80, displayValue: true, fontSize: 14, margin: 5 });
+  try {
+    JsBarcode("#disc-result-svg", currentDiscBarcode, { 
+      format: "CODE128", 
+      width: 2.5, 
+      height: 90, 
+      displayValue: true, 
+      fontSize: 16, 
+      margin: 5 
+    });
   } catch(e) { console.error(e); }
+  
   document.getElementById('disc-result-modal').style.display = 'flex';
-} 
-
-
+}
 function promptSaveCurrentDiscDiscBarcode() {
     if (!currentDiscBarcode) return;
     const nameInput = prompt("この割引バーコードの名前を入力してください", `${discSelectedProduct.name}_割引`);
@@ -3701,13 +3691,12 @@ const receiptBarcodeCode = `20${amountStr}`;
 try {
   JsBarcode("#receipt-barcode-element", receiptBarcodeCode, {
     format: "CODE128",
-    width: 2.2,       // 横幅を広げて読み取りやすく
-    height: 45,       // 高さはそのまま
+    width: 2.5,       // 太くして読み取りやすく
+    height: 50,       // 高さを拡大
     displayValue: true,
-    fontSize: 12,
+    fontSize: 14,
     margin: 5
   }); 
-
 } catch (e) { console.error(e); }
 document.getElementById('receipt-modal').style.display = 'flex';
 const itemsPurchased = `まとめ買い・商品合計 (¥${finalTotal})`;

@@ -3591,15 +3591,25 @@ document.getElementById('cash-input-modal').style.display = 'flex';
 }
 
 function show11PayQRModal(finalTotal) {
-const qrData = `PAY_${finalTotal}`;
-const target = document.getElementById('11pay-qrcode-target');
-target.innerHTML = '';
-try {
-const qr = qrcode(0, 'M'); qr.addData(qrData); qr.make();
-target.innerHTML = qr.createImgTag(6);
-} catch (e) { target.innerHTML = "QR生成エラー"; }
-document.getElementById('11pay-amount-text').textContent = `請求額: ${finalTotal}円`;
-document.getElementById('11pay-qr-modal').style.display = 'flex';
+    // 画面上に表示されている店舗名の要素から直接取得することで文字化けを防ぐ
+    const storeTitleElement = document.getElementById('store-title'); // ※実際の店舗名が表示されている要素のIDに合わせて変更してください
+    const storeName = storeTitleElement ? storeTitleElement.innerText : "KKマート";
+    
+    const qrData = `PAY_${finalTotal}_${storeName}`;
+
+    const target = document.getElementById('11pay-qrcode-target');
+    target.innerHTML = '';
+    try {
+        const qr = qrcode(0, 'M'); 
+        qr.addData(qrData); 
+        qr.make();
+        target.innerHTML = qr.createImgTag(6);
+    } catch (e) { 
+        target.innerHTML = "QR生成エラー"; 
+    }
+    
+    document.getElementById('11pay-amount-text').textContent = `請求額: ${finalTotal}円`;
+    document.getElementById('11pay-qr-modal').style.display = 'flex';
 }
 
 function complete11PayPayment() {
